@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
 interface PageData {
@@ -30,7 +30,9 @@ interface Reply {
 
 export default function KeepsakePage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const slug = params.slug as string;
+  const isRecipient = searchParams.get('recipient') === 'true';
 
   const [page, setPage] = useState<PageData | null>(null);
   const [contributions, setContributions] = useState<Contribution[]>([]);
@@ -231,57 +233,78 @@ export default function KeepsakePage() {
         {/* Creator View: Share & Manage */}
         {isCreator && (
           <div className="mt-16 mb-10">
-            <div className="max-w-[600px] mx-auto">
+            <div className="max-w-[600px] mx-auto space-y-4">
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-center">
                 <p className="text-xs font-semibold tracking-widest text-gray-400 mb-3">CREATOR TOOLS</p>
                 <p className="text-sm text-gray-500 mb-4">
-                  Share the contributor link so people can add messages and photos.
+                  Share links with contributors and the recipient.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <button
-                    onClick={() => {
-                      const url = `${window.location.origin}/p/${slug}`;
-                      navigator.clipboard.writeText(url);
-                    }}
-                    className="flex-1 py-3 rounded-lg text-sm font-semibold border-2 transition-all hover:opacity-90"
-                    style={{ borderColor: '#c9a961', color: '#c9a961' }}
-                  >
-                    🔗 Copy Contributor Link
-                  </button>
-                  <button
-                    onClick={() => window.location.href = '/dashboard'}
-                    className="flex-1 py-3 rounded-lg text-white text-sm font-semibold transition-all hover:opacity-90"
-                    style={{ backgroundColor: '#1e3a5f' }}
-                  >
-                    ← Back to Dashboard
-                  </button>
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      onClick={() => {
+                        const url = `${window.location.origin}/p/${slug}`;
+                        navigator.clipboard.writeText(url);
+                      }}
+                      className="flex-1 py-3 rounded-lg text-sm font-semibold border-2 transition-all hover:opacity-90"
+                      style={{ borderColor: '#c9a961', color: '#c9a961' }}
+                    >
+                      🔗 Copy Contributor Link
+                    </button>
+                    <button
+                      onClick={() => {
+                        const url = `${window.location.origin}/p/${slug}/keepsake?recipient=true`;
+                        navigator.clipboard.writeText(url);
+                      }}
+                      className="flex-1 py-3 rounded-lg text-sm font-semibold border-2 transition-all hover:opacity-90"
+                      style={{ borderColor: '#1e3a5f', color: '#1e3a5f' }}
+                    >
+                      🎁 Copy Recipient Link
+                    </button>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      onClick={() => window.location.href = `/p/${slug}`}
+                      className="flex-1 py-3 rounded-lg text-sm font-semibold transition-all hover:opacity-90"
+                      style={{ backgroundColor: '#c9a961', color: 'white' }}
+                    >
+                      ✍️ Add Your Contribution
+                    </button>
+                    <button
+                      onClick={() => window.location.href = '/dashboard'}
+                      className="flex-1 py-3 rounded-lg text-white text-sm font-semibold transition-all hover:opacity-90"
+                      style={{ backgroundColor: '#1e3a5f' }}
+                    >
+                      ← Back to Dashboard
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Recipient View: Say Thanks Section */}
-        {!isCreator && (
-          <div className="mt-16 mb-10">
+        {/* Replies Section — visible to everyone (read-only) */}
+        {replies.length > 0 && !isCreator && (
+          <div className="mt-16 mb-4">
             <div className="max-w-[600px] mx-auto text-center">
-
-              {/* Existing Replies */}
-              {replies.length > 0 && (
-                <div className="mb-8">
-                  <p className="text-xs font-semibold tracking-widest text-gray-400 mb-4">
-                    💛 {page.recipient_name.toUpperCase()}&apos;S REPLY
-                  </p>
-                  {replies.map((reply) => (
-                    <div key={reply.id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-4">
-                      <p className="text-gray-700 italic">&ldquo;{reply.reply_text}&rdquo;</p>
-                      <p className="text-sm text-gray-400 mt-2">— {page.recipient_name}</p>
-                    </div>
-                  ))}
+              <p className="text-xs font-semibold tracking-widest text-gray-400 mb-4">
+                💛 {page.recipient_name.toUpperCase()}&apos;S REPLY
+              </p>
+              {replies.map((reply) => (
+                <div key={reply.id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-4">
+                  <p className="text-gray-700 italic">&ldquo;{reply.reply_text}&rdquo;</p>
+                  <p className="text-sm text-gray-400 mt-2">— {page.recipient_name}</p>
                 </div>
-              )}
+              ))}
+            </div>
+          </div>
+        )}
 
-              {/* Reply Form */}
+        {/* Recipient-Only: Say Thanks Form (only shows with ?recipient=true) */}
+        {isRecipient && !isCreator && (
+          <div className="mt-8 mb-10">
+            <div className="max-w-[600px] mx-auto text-center">
               {!showReplyForm && !replySent && (
                 <button
                   onClick={() => setShowReplyForm(true)}
