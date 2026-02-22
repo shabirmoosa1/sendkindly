@@ -31,16 +31,33 @@ export default function SignupPage() {
         }
 
         try {
-            const { error } = await supabase.auth.signUp({
+            const { data, error } = await supabase.auth.signUp({
                 email,
                 password,
             });
 
             if (error) {
-                throw error;
+                // Friendly error messages for common Supabase errors
+                if (error.message.toLowerCase().includes('rate limit')) {
+                    setError('Too many signup attempts. Please wait a few minutes and try again, or ask Shabir to create your account from the Supabase dashboard.');
+                } else if (error.message.toLowerCase().includes('already registered')) {
+                    setError('This email is already registered. Try signing in instead.');
+                } else {
+                    setError(error.message);
+                }
+                setLoading(false);
+                return;
             }
 
-            router.push('/dashboard');
+            // If email confirmations are enabled and no session returned,
+            // show a check-email message instead of redirecting
+            if (data?.user && !data.session) {
+                setError(null);
+                alert('Check your email for a confirmation link, then sign in.');
+                router.push('/login');
+            } else {
+                router.push('/dashboard');
+            }
         } catch (err: any) {
             setError(err.message);
         } finally {

@@ -24,7 +24,17 @@ export default function LoginPage() {
             });
 
             if (error) {
-                throw error;
+                if (error.message.toLowerCase().includes('invalid login credentials')) {
+                    setError('Incorrect email or password. Please try again or reset your password.');
+                } else if (error.message.toLowerCase().includes('email not confirmed')) {
+                    setError('Your email has not been confirmed yet. Please check your inbox or ask Shabir to help.');
+                } else if (error.message.toLowerCase().includes('rate limit')) {
+                    setError('Too many login attempts. Please wait a few minutes and try again.');
+                } else {
+                    setError(error.message);
+                }
+                setLoading(false);
+                return;
             }
 
             router.push('/dashboard');
