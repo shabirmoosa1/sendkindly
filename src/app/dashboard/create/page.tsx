@@ -8,7 +8,9 @@ type Step = 1 | 2 | 3;
 
 const occasions = [
   'birthday', 'wedding', 'baby_shower', 'graduation',
-  'farewell', 'memorial', 'thank_you', 'other'
+  'farewell', 'memorial', 'thank_you',
+  'work_anniversary', 'retirement', 'promotion', 'new_job',
+  'other'
 ];
 
 const templates = [
@@ -158,12 +160,12 @@ export default function CreatePage() {
               </h1>
               <p className="text-gray-500 mb-8">Pick a style that fits the celebration.</p>
 
-              <div className="grid grid-cols-3 gap-4 mb-8">
+              <div className="flex flex-col gap-3 mb-8">
                 {templates.map((t) => (
                   <button
                     key={t.id}
                     onClick={() => setTemplate(t.id)}
-                    className={`p-5 rounded-xl border-2 text-center transition-all ${
+                    className={`flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all ${
                       template === t.id ? 'shadow-md' : 'border-gray-200 hover:border-gray-300'
                     }`}
                     style={{
@@ -171,9 +173,11 @@ export default function CreatePage() {
                       borderColor: template === t.id ? '#1e3a5f' : undefined,
                     }}
                   >
-                    <span className="text-3xl block mb-2">{t.emoji}</span>
-                    <span className="font-semibold text-sm block" style={{ color: '#1e3a5f' }}>{t.name}</span>
-                    <span className="text-xs text-gray-500">{t.desc}</span>
+                    <span className="text-3xl shrink-0">{t.emoji}</span>
+                    <div>
+                      <span className="font-semibold text-sm block" style={{ color: '#1e3a5f' }}>{t.name}</span>
+                      <span className="text-xs text-gray-500">{t.desc}</span>
+                    </div>
                   </button>
                 ))}
               </div>
