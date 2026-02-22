@@ -127,22 +127,22 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#faf8f5' }}>
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-[1100px] mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🎁</span>
-            <span className="text-xl font-bold" style={{ color: '#1e3a5f' }}>SendKindly</span>
+            <span className="text-lg sm:text-xl font-bold" style={{ color: '#1e3a5f' }}>SendKindly</span>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-500 hidden sm:inline">{userEmail}</span>
-            <button onClick={handleSignOut} className="text-sm text-gray-500 hover:text-gray-700 transition-colors">Sign Out</button>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <span className="text-sm text-gray-500 hidden sm:inline truncate max-w-[200px]">{userEmail}</span>
+            <button onClick={handleSignOut} className="text-sm text-gray-500 hover:text-gray-700 transition-colors whitespace-nowrap">Sign Out</button>
           </div>
         </div>
       </nav>
 
       <main className="max-w-[1100px] mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold" style={{ color: '#1e3a5f' }}>Your Celebrations</h1>
-          <button onClick={() => router.push('/dashboard/create')} className="flex items-center gap-2 text-white font-semibold px-5 py-2.5 rounded-lg transition-all hover:opacity-90 shadow-sm" style={{ backgroundColor: '#1e3a5f' }}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: '#1e3a5f' }}>Your Celebrations</h1>
+          <button onClick={() => router.push('/dashboard/create')} className="flex items-center justify-center gap-2 text-white font-semibold px-5 py-2.5 rounded-lg transition-all hover:opacity-90 shadow-sm shrink-0" style={{ backgroundColor: '#1e3a5f' }}>
             <span className="text-lg">+</span> New Celebration
           </button>
         </div>
@@ -182,11 +182,11 @@ export default function DashboardPage() {
                     <span>·</span>
                     <span>{formatDate(page.created_at)}</span>
                   </div>
-                  <div className="flex gap-3">
-                    <button onClick={() => copyShareLink(page.slug)} className="flex-1 text-center py-2 rounded-lg text-sm font-medium border transition-all" style={{ borderColor: '#c9a961', color: copiedSlug === page.slug ? '#16a34a' : '#c9a961' }}>
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <button onClick={() => copyShareLink(page.slug)} className="flex-1 text-center py-2.5 rounded-lg text-sm font-medium border transition-all" style={{ borderColor: '#c9a961', color: copiedSlug === page.slug ? '#16a34a' : '#c9a961' }}>
                       {copiedSlug === page.slug ? '✓ Link Copied!' : '🔗 Copy Share Link'}
                     </button>
-                    <button onClick={() => router.push(`/p/${page.slug}/keepsake`)} className="flex-1 text-center py-2 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90" style={{ backgroundColor: '#1e3a5f' }}>View Keepsake</button>
+                    <button onClick={() => router.push(`/p/${page.slug}/keepsake`)} className="flex-1 text-center py-2.5 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90" style={{ backgroundColor: '#1e3a5f' }}>View Keepsake</button>
                   </div>
                 </div>
               ))}

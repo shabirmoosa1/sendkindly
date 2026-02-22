@@ -172,17 +172,28 @@ export default function ContributorPage() {
         {/* Hero Card */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">
           <div
-            className="h-48 flex items-end"
+            className="h-48 flex items-end relative overflow-hidden"
             style={{
               background: page.hero_image_url
                 ? `url(${page.hero_image_url}) center/cover`
-                : 'linear-gradient(135deg, #c9a961 0%, #1e3a5f 100%)',
+                : 'linear-gradient(135deg, #c9a961 0%, #b76e4c 40%, #1e3a5f 100%)',
             }}
-          />
+          >
+            {/* Decorative elements when no image */}
+            {!page.hero_image_url && (
+              <div className="absolute inset-0 flex items-center justify-center opacity-15">
+                <span className="text-8xl">🎁</span>
+              </div>
+            )}
+            {/* Gradient fade at bottom */}
+            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white/30 to-transparent" />
+          </div>
           <div className="p-6">
-            <p className="text-xs font-semibold tracking-widest text-gray-400 mb-1">RECIPIENT</p>
+            <p className="text-xs font-semibold tracking-widest text-gray-400 mb-1">
+              {formatOccasion(page.template_type).toUpperCase()} CELEBRATION
+            </p>
             <h1 className="text-2xl font-bold mb-2" style={{ color: '#1e3a5f' }}>
-              For {page.recipient_name}&apos;s {formatOccasion(page.template_type)}
+              For {page.recipient_name}
             </h1>
             <p className="text-sm text-gray-500">✨ {contribCount} memories shared so far</p>
           </div>

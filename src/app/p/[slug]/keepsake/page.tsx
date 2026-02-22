@@ -37,6 +37,7 @@ export default function KeepsakePage() {
   const [replies, setReplies] = useState<Reply[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [isCreator, setIsCreator] = useState(false);
 
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyText, setReplyText] = useState('');
@@ -57,6 +58,12 @@ export default function KeepsakePage() {
         return;
       }
       setPage(pageData);
+
+      // Check if logged-in user is the creator
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user && (pageData as any).creator_id === user.id) {
+        setIsCreator(true);
+      }
 
       const { data: contribs } = await supabase
         .from('contributions')
@@ -110,8 +117,10 @@ export default function KeepsakePage() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#faf8f5' }}>
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-900 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-500">Preparing your keepsake...</p>
+          <div className="text-5xl mb-4">🎁</div>
+          <div className="w-10 h-10 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderColor: '#c9a961', borderTopColor: 'transparent' }}></div>
+          <p className="text-lg font-semibold mb-1" style={{ color: '#1e3a5f' }}>Preparing your keepsake...</p>
+          <p className="text-sm text-gray-400">Gathering all the love in one place</p>
         </div>
       </div>
     );
@@ -133,22 +142,30 @@ export default function KeepsakePage() {
 
       {/* Hero Banner */}
       <div
-        className="relative h-72 flex items-center justify-center"
+        className="relative h-72 flex items-center justify-center overflow-hidden"
         style={{
           background: page.hero_image_url
             ? `url(${page.hero_image_url}) center/cover`
-            : 'linear-gradient(135deg, #c9a961 0%, #1e3a5f 100%)',
+            : 'linear-gradient(135deg, #c9a961 0%, #b76e4c 40%, #1e3a5f 100%)',
         }}
       >
-        <div className="absolute inset-0 bg-black/30" />
+        <div className="absolute inset-0 bg-black/20" />
+        {/* Decorative pattern when no image */}
+        {!page.hero_image_url && (
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-6 left-8 text-6xl">✨</div>
+            <div className="absolute bottom-8 right-10 text-5xl">🎉</div>
+            <div className="absolute top-12 right-20 text-4xl">💛</div>
+          </div>
+        )}
         <div className="relative z-10 text-center text-white px-6">
-          <p className="text-sm font-semibold tracking-widest opacity-80 mb-2">
+          <p className="text-sm font-semibold tracking-widest opacity-90 mb-2">
             {formatOccasion(page.template_type).toUpperCase()} CELEBRATION
           </p>
-          <h1 className="text-4xl md:text-5xl font-bold mb-2">
+          <h1 className="text-4xl md:text-5xl font-bold mb-3" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
             For {page.recipient_name}
           </h1>
-          <p className="text-sm opacity-80">
+          <p className="text-sm opacity-90">
             {contributions.length} heartfelt {contributions.length === 1 ? 'message' : 'messages'} from people who care
           </p>
         </div>
@@ -211,76 +228,111 @@ export default function KeepsakePage() {
           </div>
         )}
 
-        {/* Say Thanks Section */}
-        <div className="mt-16 mb-10">
-          <div className="max-w-[600px] mx-auto text-center">
-
-            {/* Existing Replies */}
-            {replies.length > 0 && (
-              <div className="mb-8">
-                <p className="text-xs font-semibold tracking-widest text-gray-400 mb-4">
-                  💛 {page.recipient_name.toUpperCase()}&apos;S REPLY
+        {/* Creator View: Share & Manage */}
+        {isCreator && (
+          <div className="mt-16 mb-10">
+            <div className="max-w-[600px] mx-auto">
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-center">
+                <p className="text-xs font-semibold tracking-widest text-gray-400 mb-3">CREATOR TOOLS</p>
+                <p className="text-sm text-gray-500 mb-4">
+                  Share the contributor link so people can add messages and photos.
                 </p>
-                {replies.map((reply) => (
-                  <div key={reply.id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-4">
-                    <p className="text-gray-700 italic">&ldquo;{reply.reply_text}&rdquo;</p>
-                    <p className="text-sm text-gray-400 mt-2">— {page.recipient_name}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Reply Form */}
-            {!showReplyForm && !replySent && (
-              <button
-                onClick={() => setShowReplyForm(true)}
-                className="px-8 py-3 rounded-full text-white font-semibold shadow-lg transition-all hover:scale-105"
-                style={{ backgroundColor: '#c9a961' }}
-              >
-                💛 Say Thanks to Everyone
-              </button>
-            )}
-
-            {showReplyForm && !replySent && (
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-left">
-                <h3 className="text-lg font-bold mb-4" style={{ color: '#1e3a5f' }}>
-                  Say thanks to everyone
-                </h3>
-                <textarea
-                  value={replyText}
-                  onChange={(e) => setReplyText(e.target.value.slice(0, 500))}
-                  placeholder="Thank you all so much..."
-                  rows={4}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-200 resize-none mb-4"
-                  style={{ backgroundColor: '#faf8f5' }}
-                />
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <button
-                    onClick={() => setShowReplyForm(false)}
-                    className="flex-1 py-2 rounded-lg border border-gray-300 text-gray-600 text-sm font-medium"
+                    onClick={() => {
+                      const url = `${window.location.origin}/p/${slug}`;
+                      navigator.clipboard.writeText(url);
+                    }}
+                    className="flex-1 py-3 rounded-lg text-sm font-semibold border-2 transition-all hover:opacity-90"
+                    style={{ borderColor: '#c9a961', color: '#c9a961' }}
                   >
-                    Cancel
+                    🔗 Copy Contributor Link
                   </button>
                   <button
-                    onClick={handleSendReply}
-                    disabled={submittingReply || !replyText.trim()}
-                    className="flex-1 py-2 rounded-lg text-white text-sm font-semibold disabled:opacity-50"
+                    onClick={() => window.location.href = '/dashboard'}
+                    className="flex-1 py-3 rounded-lg text-white text-sm font-semibold transition-all hover:opacity-90"
                     style={{ backgroundColor: '#1e3a5f' }}
                   >
-                    {submittingReply ? 'Sending...' : 'Send Reply 💛'}
+                    ← Back to Dashboard
                   </button>
                 </div>
               </div>
-            )}
-
-            {replySent && (
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <div className="text-4xl mb-2">💛</div>
-                <p className="font-semibold" style={{ color: '#1e3a5f' }}>Your thanks has been sent!</p>
-              </div>
-            )}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Recipient View: Say Thanks Section */}
+        {!isCreator && (
+          <div className="mt-16 mb-10">
+            <div className="max-w-[600px] mx-auto text-center">
+
+              {/* Existing Replies */}
+              {replies.length > 0 && (
+                <div className="mb-8">
+                  <p className="text-xs font-semibold tracking-widest text-gray-400 mb-4">
+                    💛 {page.recipient_name.toUpperCase()}&apos;S REPLY
+                  </p>
+                  {replies.map((reply) => (
+                    <div key={reply.id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-4">
+                      <p className="text-gray-700 italic">&ldquo;{reply.reply_text}&rdquo;</p>
+                      <p className="text-sm text-gray-400 mt-2">— {page.recipient_name}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Reply Form */}
+              {!showReplyForm && !replySent && (
+                <button
+                  onClick={() => setShowReplyForm(true)}
+                  className="px-8 py-3 rounded-full text-white font-semibold shadow-lg transition-all hover:scale-105"
+                  style={{ backgroundColor: '#c9a961' }}
+                >
+                  💛 Say Thanks to Everyone
+                </button>
+              )}
+
+              {showReplyForm && !replySent && (
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-left">
+                  <h3 className="text-lg font-bold mb-4" style={{ color: '#1e3a5f' }}>
+                    Say thanks to everyone
+                  </h3>
+                  <textarea
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value.slice(0, 500))}
+                    placeholder="Thank you all so much..."
+                    rows={4}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-200 resize-none mb-4"
+                    style={{ backgroundColor: '#faf8f5' }}
+                  />
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowReplyForm(false)}
+                      className="flex-1 py-2 rounded-lg border border-gray-300 text-gray-600 text-sm font-medium"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSendReply}
+                      disabled={submittingReply || !replyText.trim()}
+                      className="flex-1 py-2 rounded-lg text-white text-sm font-semibold disabled:opacity-50"
+                      style={{ backgroundColor: '#1e3a5f' }}
+                    >
+                      {submittingReply ? 'Sending...' : 'Send Reply 💛'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {replySent && (
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                  <div className="text-4xl mb-2">💛</div>
+                  <p className="font-semibold" style={{ color: '#1e3a5f' }}>Your thanks has been sent!</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="text-center py-8 border-t border-gray-200">
