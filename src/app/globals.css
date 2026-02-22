@@ -1,10 +1,27 @@
 @import "tailwindcss";
 
+/* ============================================
+   SENDKINDLY DESIGN SYSTEM — Sammy's Tokens
+   ============================================ */
+
 :root {
-  --background: #faf8f5;
-  --foreground: #1e3a5f;
-  --primary: #1e3a5f;
-  --accent: #c9a961;
+  /* Core Palette */
+  --background: #F6F2EC;       /* Warm Ivory */
+  --foreground: #2A1F1C;       /* Deep Espresso */
+  --primary: #B76E4C;          /* Muted Terracotta — primary CTAs */
+  --accent: #C8A951;           /* Antique Gold — highlights */
+  --espresso: #2A1F1C;         /* Deep Espresso — headings, strong text */
+  --cocoa: #5A4B45;            /* Muted Cocoa — secondary/body text */
+  --terracotta: #B76E4C;       /* Muted Terracotta */
+  --gold: #C8A951;             /* Antique Gold */
+  --ivory: #F6F2EC;            /* Warm Ivory */
+
+  /* Derived */
+  --card-bg: #FFFFFF;
+  --input-bg: #F6F2EC;
+  --glass-bg: rgba(255, 255, 255, 0.4);
+  --glass-border: rgba(183, 110, 76, 0.15);
+  --ring-color: rgba(183, 110, 76, 0.3);
 }
 
 @theme inline {
@@ -12,13 +29,178 @@
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
   --color-accent: var(--accent);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-espresso: var(--espresso);
+  --color-cocoa: var(--cocoa);
+  --color-terracotta: var(--terracotta);
+  --color-gold: var(--gold);
+  --color-ivory: var(--ivory);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-newsreader);
 }
 
 body {
   background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  color: var(--cocoa);
+  font-family: var(--font-sans), 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif), 'Newsreader', Georgia, serif;
+  color: var(--espresso);
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+/* Glassmorphism */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+}
+
+/* iOS-style soft shadow */
+.ios-shadow {
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+}
+
+/* Card base */
+.card {
+  background: var(--card-bg);
+  border-radius: 1.5rem; /* rounded-3xl */
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+}
+
+/* Primary Button — Terracotta */
+.btn-primary {
+  background-color: var(--terracotta);
+  color: white;
+  border-radius: 9999px;
+  min-height: 52px;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 200ms ease-out;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 4px 14px rgba(183, 110, 76, 0.2);
+}
+
+.btn-primary:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Secondary Button — Espresso outline */
+.btn-secondary {
+  background-color: transparent;
+  color: var(--espresso);
+  border: 2px solid var(--espresso);
+  border-radius: 9999px;
+  min-height: 52px;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 200ms ease-out;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background-color: var(--espresso);
+  color: white;
+}
+
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+
+/* Gold accent button */
+.btn-gold {
+  background-color: var(--gold);
+  color: white;
+  border-radius: 9999px;
+  min-height: 52px;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 200ms ease-out;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 4px 14px rgba(200, 169, 81, 0.2);
+}
+
+.btn-gold:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.btn-gold:active {
+  transform: scale(0.98);
+}
+
+/* ============================================
+   FORM ELEMENTS
+   ============================================ */
+
+/* Warm focus rings — replaces all blue focus */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-color);
+}
+
+/* Input base style */
+.input-warm {
+  background-color: var(--input-bg);
+  border: none;
+  border-radius: 1rem; /* rounded-2xl */
+  padding: 0.875rem 1.25rem;
+  font-size: 1rem;
+  color: var(--espresso);
+  transition: box-shadow 200ms ease-out;
+}
+
+.input-warm::placeholder {
+  color: #9B8E85;
+}
+
+.input-warm:focus {
+  box-shadow: 0 0 0 3px var(--ring-color);
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 300ms ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 250ms ease-out forwards;
+}
