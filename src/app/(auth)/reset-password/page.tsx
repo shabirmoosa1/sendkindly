@@ -14,8 +14,6 @@ export default function ResetPasswordPage() {
     const [ready, setReady] = useState(false);
 
     useEffect(() => {
-        // Supabase automatically picks up the token from the URL hash
-        // when the user clicks the reset link in their email
         supabase.auth.onAuthStateChange((event) => {
             if (event === 'PASSWORD_RECOVERY') {
                 setReady(true);
@@ -58,31 +56,31 @@ export default function ResetPasswordPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
-            <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
+            <div className="w-full max-w-md card p-8 animate-fade-in">
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-primary mb-2">SendKindly</h1>
-                    <p className="text-gray-600">Set a new password</p>
+                    <h1 className="text-3xl font-bold text-terracotta mb-2">SendKindly</h1>
+                    <p className="text-cocoa">Set a new password</p>
                 </div>
 
                 {error && (
-                    <div className="bg-red-50 text-red-600 p-3 rounded-md mb-6 text-sm">
+                    <div className="bg-red-50 text-red-600 p-3 rounded-2xl mb-6 text-sm">
                         {error}
                     </div>
                 )}
 
                 {!ready ? (
                     <div className="text-center">
-                        <p className="text-sm text-gray-500 mb-4">
+                        <p className="text-sm text-cocoa mb-4">
                             Loading your reset session... If this takes too long, the link may have expired.
                         </p>
-                        <Link href="/forgot-password" className="text-accent hover:underline font-medium text-sm">
+                        <Link href="/forgot-password" className="text-gold hover:underline font-medium text-sm">
                             Request a new reset link
                         </Link>
                     </div>
                 ) : (
                     <form onSubmit={handleResetPassword} className="space-y-6">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-cocoa mb-1">
                                 New Password
                             </label>
                             <input
@@ -91,13 +89,13 @@ export default function ResetPasswordPage() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                                 minLength={8}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+                                className="w-full input-warm"
                                 placeholder="••••••••"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm font-medium text-cocoa mb-1">
                                 Confirm New Password
                             </label>
                             <input
@@ -106,7 +104,7 @@ export default function ResetPasswordPage() {
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                 required
                                 minLength={8}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+                                className="w-full input-warm"
                                 placeholder="••••••••"
                             />
                         </div>
@@ -114,7 +112,7 @@ export default function ResetPasswordPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-primary text-white py-2 px-4 rounded-md hover:opacity-90 transition duration-200 font-medium disabled:opacity-50"
+                            className="w-full btn-primary"
                         >
                             {loading ? 'Updating...' : 'Update Password'}
                         </button>

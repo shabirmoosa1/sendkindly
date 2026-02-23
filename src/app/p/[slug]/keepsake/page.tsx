@@ -61,7 +61,6 @@ export default function KeepsakePage() {
       }
       setPage(pageData);
 
-      // Check if logged-in user is the creator
       const { data: { user } } = await supabase.auth.getUser();
       if (user && (pageData as any).creator_id === user.id) {
         setIsCreator(true);
@@ -117,12 +116,12 @@ export default function KeepsakePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#faf8f5' }}>
+      <div className="min-h-screen flex items-center justify-center bg-ivory">
         <div className="text-center">
           <div className="text-5xl mb-4">🎁</div>
-          <div className="w-10 h-10 border-4 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderColor: '#c9a961', borderTopColor: 'transparent' }}></div>
-          <p className="text-lg font-semibold mb-1" style={{ color: '#1e3a5f' }}>Preparing your keepsake...</p>
-          <p className="text-sm text-gray-400">Gathering all the love in one place</p>
+          <div className="w-10 h-10 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg font-semibold mb-1 text-espresso">Preparing your keepsake...</p>
+          <p className="text-sm text-cocoa/60">Gathering all the love in one place</p>
         </div>
       </div>
     );
@@ -130,17 +129,17 @@ export default function KeepsakePage() {
 
   if (notFound || !page) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#faf8f5' }}>
+      <div className="min-h-screen flex items-center justify-center bg-ivory">
         <div className="text-center">
           <div className="text-6xl mb-4">😢</div>
-          <h1 className="text-2xl font-bold" style={{ color: '#1e3a5f' }}>Page not found</h1>
+          <h1 className="text-2xl font-bold">Page not found</h1>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#faf8f5' }}>
+    <div className="min-h-screen bg-ivory">
 
       {/* Hero Banner */}
       <div
@@ -148,11 +147,10 @@ export default function KeepsakePage() {
         style={{
           background: page.hero_image_url
             ? `url(${page.hero_image_url}) center/cover`
-            : 'linear-gradient(135deg, #c9a961 0%, #b76e4c 40%, #1e3a5f 100%)',
+            : 'linear-gradient(135deg, var(--gold) 0%, var(--terracotta) 40%, var(--espresso) 100%)',
         }}
       >
         <div className="absolute inset-0 bg-black/20" />
-        {/* Decorative pattern when no image */}
         {!page.hero_image_url && (
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-6 left-8 text-6xl">✨</div>
@@ -164,7 +162,7 @@ export default function KeepsakePage() {
           <p className="text-sm font-semibold tracking-widest opacity-90 mb-2">
             {formatOccasion(page.template_type).toUpperCase()} CELEBRATION
           </p>
-          <h1 className="text-4xl md:text-5xl font-bold mb-3" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+          <h1 className="text-4xl md:text-5xl font-bold mb-3 text-white" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
             For {page.recipient_name}
           </h1>
           <p className="text-sm opacity-90">
@@ -179,10 +177,10 @@ export default function KeepsakePage() {
         {contributions.length === 0 && (
           <div className="text-center py-16">
             <div className="text-5xl mb-4">💌</div>
-            <h2 className="text-xl font-bold mb-2" style={{ color: '#1e3a5f' }}>
+            <h2 className="text-xl font-bold mb-2">
               No contributions yet
             </h2>
-            <p className="text-gray-500">Share the link with friends and family to start collecting messages!</p>
+            <p className="text-cocoa">Share the link with friends and family to start collecting messages!</p>
           </div>
         )}
 
@@ -191,37 +189,30 @@ export default function KeepsakePage() {
             {contributions.map((contrib, i) => (
               <div
                 key={contrib.id}
-                className="break-inside-avoid rounded-xl p-6 shadow-sm border border-gray-100"
+                className="break-inside-avoid rounded-2xl p-6 ios-shadow border border-gray-100"
                 style={{ backgroundColor: bgColors[i % bgColors.length] }}
               >
-                {/* Photo */}
                 {contrib.photo_url && (
-                  <div className="mb-4 rounded-lg overflow-hidden">
+                  <div className="mb-4 rounded-xl overflow-hidden">
                     <img
                       src={contrib.photo_url}
                       alt={`From ${contrib.contributor_name}`}
-                      className="w-full object-cover"
-                      style={{ maxHeight: '300px' }}
+                      className="w-full object-cover max-h-[300px]"
                     />
                   </div>
                 )}
 
-                {/* Message */}
                 {contrib.message_text && (
                   <p className="text-gray-800 leading-relaxed mb-4">
                     &ldquo;{contrib.message_text}&rdquo;
                   </p>
                 )}
 
-                {/* Name */}
                 <div className="flex items-center gap-2">
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold"
-                    style={{ backgroundColor: '#1e3a5f' }}
-                  >
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold bg-espresso">
                     {contrib.contributor_name.charAt(0).toUpperCase()}
                   </div>
-                  <span className="text-sm font-semibold" style={{ color: '#1e3a5f' }}>
+                  <span className="text-sm font-semibold text-espresso">
                     {contrib.contributor_name}
                   </span>
                 </div>
@@ -234,9 +225,9 @@ export default function KeepsakePage() {
         {isCreator && (
           <div className="mt-16 mb-10">
             <div className="max-w-[600px] mx-auto space-y-4">
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-center">
-                <p className="text-xs font-semibold tracking-widest text-gray-400 mb-3">CREATOR TOOLS</p>
-                <p className="text-sm text-gray-500 mb-4">
+              <div className="card p-6 text-center">
+                <p className="text-xs font-semibold tracking-widest text-cocoa/60 mb-3">CREATOR TOOLS</p>
+                <p className="text-sm text-cocoa mb-4">
                   Share links with contributors and the recipient.
                 </p>
                 <div className="flex flex-col gap-3">
@@ -246,8 +237,7 @@ export default function KeepsakePage() {
                         const url = `${window.location.origin}/p/${slug}`;
                         navigator.clipboard.writeText(url);
                       }}
-                      className="flex-1 py-3 rounded-lg text-sm font-semibold border-2 transition-all hover:opacity-90"
-                      style={{ borderColor: '#c9a961', color: '#c9a961' }}
+                      className="flex-1 py-3 rounded-full text-sm font-semibold border-2 border-gold text-gold transition-all hover:opacity-90"
                     >
                       🔗 Copy Contributor Link
                     </button>
@@ -256,8 +246,7 @@ export default function KeepsakePage() {
                         const url = `${window.location.origin}/p/${slug}/keepsake?recipient=true`;
                         navigator.clipboard.writeText(url);
                       }}
-                      className="flex-1 py-3 rounded-lg text-sm font-semibold border-2 transition-all hover:opacity-90"
-                      style={{ borderColor: '#1e3a5f', color: '#1e3a5f' }}
+                      className="flex-1 py-3 rounded-full text-sm font-semibold border-2 border-espresso text-espresso transition-all hover:opacity-90"
                     >
                       🎁 Copy Recipient Link
                     </button>
@@ -265,15 +254,13 @@ export default function KeepsakePage() {
                   <div className="flex flex-col sm:flex-row gap-3">
                     <button
                       onClick={() => window.location.href = `/p/${slug}`}
-                      className="flex-1 py-3 rounded-lg text-sm font-semibold transition-all hover:opacity-90"
-                      style={{ backgroundColor: '#c9a961', color: 'white' }}
+                      className="flex-1 py-3 rounded-full text-sm font-semibold btn-gold"
                     >
                       ✍️ Add Your Contribution
                     </button>
                     <button
                       onClick={() => window.location.href = '/dashboard'}
-                      className="flex-1 py-3 rounded-lg text-white text-sm font-semibold transition-all hover:opacity-90"
-                      style={{ backgroundColor: '#1e3a5f' }}
+                      className="flex-1 py-3 rounded-full text-white text-sm font-semibold bg-terracotta transition-all hover:opacity-90"
                     >
                       ← Back to Dashboard
                     </button>
@@ -288,13 +275,13 @@ export default function KeepsakePage() {
         {replies.length > 0 && !isCreator && (
           <div className="mt-16 mb-4">
             <div className="max-w-[600px] mx-auto text-center">
-              <p className="text-xs font-semibold tracking-widest text-gray-400 mb-4">
+              <p className="text-xs font-semibold tracking-widest text-cocoa/60 mb-4">
                 💛 {page.recipient_name.toUpperCase()}&apos;S REPLY
               </p>
               {replies.map((reply) => (
-                <div key={reply.id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-4">
-                  <p className="text-gray-700 italic">&ldquo;{reply.reply_text}&rdquo;</p>
-                  <p className="text-sm text-gray-400 mt-2">— {page.recipient_name}</p>
+                <div key={reply.id} className="card p-6 mb-4">
+                  <p className="text-cocoa italic">&ldquo;{reply.reply_text}&rdquo;</p>
+                  <p className="text-sm text-cocoa/60 mt-2">— {page.recipient_name}</p>
                 </div>
               ))}
             </div>
@@ -308,16 +295,15 @@ export default function KeepsakePage() {
               {!showReplyForm && !replySent && (
                 <button
                   onClick={() => setShowReplyForm(true)}
-                  className="px-8 py-3 rounded-full text-white font-semibold shadow-lg transition-all hover:scale-105"
-                  style={{ backgroundColor: '#c9a961' }}
+                  className="btn-gold shadow-lg transition-all hover:scale-105"
                 >
                   💛 Say Thanks to Everyone
                 </button>
               )}
 
               {showReplyForm && !replySent && (
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-left">
-                  <h3 className="text-lg font-bold mb-4" style={{ color: '#1e3a5f' }}>
+                <div className="card p-6 text-left animate-fade-in">
+                  <h3 className="text-lg font-bold mb-4">
                     Say thanks to everyone
                   </h3>
                   <textarea
@@ -325,21 +311,19 @@ export default function KeepsakePage() {
                     onChange={(e) => setReplyText(e.target.value.slice(0, 500))}
                     placeholder="Thank you all so much..."
                     rows={4}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-200 resize-none mb-4"
-                    style={{ backgroundColor: '#faf8f5' }}
+                    className="w-full input-warm resize-none mb-4"
                   />
                   <div className="flex gap-3">
                     <button
                       onClick={() => setShowReplyForm(false)}
-                      className="flex-1 py-2 rounded-lg border border-gray-300 text-gray-600 text-sm font-medium"
+                      className="flex-1 py-2 rounded-full border border-gray-300 text-cocoa text-sm font-medium"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleSendReply}
                       disabled={submittingReply || !replyText.trim()}
-                      className="flex-1 py-2 rounded-lg text-white text-sm font-semibold disabled:opacity-50"
-                      style={{ backgroundColor: '#1e3a5f' }}
+                      className="flex-1 py-2 rounded-full text-white text-sm font-semibold bg-terracotta disabled:opacity-50"
                     >
                       {submittingReply ? 'Sending...' : 'Send Reply 💛'}
                     </button>
@@ -348,9 +332,9 @@ export default function KeepsakePage() {
               )}
 
               {replySent && (
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <div className="card p-6 animate-scale-in">
                   <div className="text-4xl mb-2">💛</div>
-                  <p className="font-semibold" style={{ color: '#1e3a5f' }}>Your thanks has been sent!</p>
+                  <p className="font-semibold text-espresso">Your thanks has been sent!</p>
                 </div>
               )}
             </div>
@@ -359,8 +343,8 @@ export default function KeepsakePage() {
 
         {/* Footer */}
         <div className="text-center py-8 border-t border-gray-200">
-          <p className="text-sm text-gray-400">
-            Made with 💛 on <span className="font-semibold" style={{ color: '#1e3a5f' }}>SendKindly</span>
+          <p className="text-sm text-cocoa/60">
+            Made with 💛 on <span className="font-semibold text-espresso">SendKindly</span>
           </p>
         </div>
       </div>

@@ -37,7 +37,6 @@ export default function SignupPage() {
             });
 
             if (error) {
-                // Friendly error messages for common Supabase errors
                 if (error.message.toLowerCase().includes('rate limit')) {
                     setError('Too many signup attempts. Please wait a few minutes and try again, or ask Shabir to create your account from the Supabase dashboard.');
                 } else if (error.message.toLowerCase().includes('already registered')) {
@@ -49,8 +48,6 @@ export default function SignupPage() {
                 return;
             }
 
-            // If email confirmations are enabled and no session returned,
-            // show a check-email message instead of redirecting
             if (data?.user && !data.session) {
                 setError(null);
                 alert('Check your email for a confirmation link, then sign in.');
@@ -67,21 +64,21 @@ export default function SignupPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
-            <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
+            <div className="w-full max-w-md card p-8 animate-fade-in">
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-primary mb-2">SendKindly</h1>
-                    <p className="text-gray-600">Create your account</p>
+                    <h1 className="text-3xl font-bold text-terracotta mb-2">SendKindly</h1>
+                    <p className="text-cocoa">Create your account</p>
                 </div>
 
                 {error && (
-                    <div className="bg-red-50 text-red-600 p-3 rounded-md mb-6 text-sm">
+                    <div className="bg-red-50 text-red-600 p-3 rounded-2xl mb-6 text-sm">
                         {error}
                     </div>
                 )}
 
                 <form onSubmit={handleSignup} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-cocoa mb-1">
                             Email Address
                         </label>
                         <input
@@ -89,13 +86,13 @@ export default function SignupPage() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+                            className="w-full input-warm"
                             placeholder="you@example.com"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-cocoa mb-1">
                             Password
                         </label>
                         <input
@@ -104,13 +101,13 @@ export default function SignupPage() {
                             onChange={(e) => setPassword(e.target.value)}
                             required
                             minLength={8}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+                            className="w-full input-warm"
                             placeholder="••••••••"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-cocoa mb-1">
                             Confirm Password
                         </label>
                         <input
@@ -119,7 +116,7 @@ export default function SignupPage() {
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             required
                             minLength={8}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+                            className="w-full input-warm"
                             placeholder="••••••••"
                         />
                     </div>
@@ -127,15 +124,15 @@ export default function SignupPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-primary text-white py-2 px-4 rounded-md hover:opacity-90 transition duration-200 font-medium disabled:opacity-50"
+                        className="w-full btn-primary"
                     >
                         {loading ? 'Creating Account...' : 'Create Account'}
                     </button>
                 </form>
 
-                <div className="mt-6 text-center text-sm text-gray-600">
+                <div className="mt-6 text-center text-sm text-cocoa">
                     Already have an account?{' '}
-                    <Link href="/login" className="text-accent hover:underline font-medium">
+                    <Link href="/login" className="text-gold hover:underline font-medium">
                         Sign in
                     </Link>
                 </div>

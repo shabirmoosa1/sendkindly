@@ -39,36 +39,36 @@ export default function ForgotPasswordPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
-            <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
+            <div className="w-full max-w-md card p-8 animate-fade-in">
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-primary mb-2">SendKindly</h1>
-                    <p className="text-gray-600">Reset your password</p>
+                    <h1 className="text-3xl font-bold text-terracotta mb-2">SendKindly</h1>
+                    <p className="text-cocoa">Reset your password</p>
                 </div>
 
                 {error && (
-                    <div className="bg-red-50 text-red-600 p-3 rounded-md mb-6 text-sm">
+                    <div className="bg-red-50 text-red-600 p-3 rounded-2xl mb-6 text-sm">
                         {error}
                     </div>
                 )}
 
                 {success ? (
                     <div className="text-center">
-                        <div className="bg-green-50 text-green-700 p-4 rounded-md mb-6 text-sm">
+                        <div className="bg-green-50 text-green-700 p-4 rounded-2xl mb-6 text-sm">
                             Check your email for a password reset link. It may take a minute to arrive.
                         </div>
-                        <Link href="/login" className="text-accent hover:underline font-medium text-sm">
+                        <Link href="/login" className="text-gold hover:underline font-medium text-sm">
                             Back to Sign In
                         </Link>
                     </div>
                 ) : (
                     <>
-                        <p className="text-sm text-gray-500 mb-6">
+                        <p className="text-sm text-cocoa mb-6">
                             Enter your email address and we&apos;ll send you a link to reset your password.
                         </p>
 
                         <form onSubmit={handleReset} className="space-y-6">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-cocoa mb-1">
                                     Email Address
                                 </label>
                                 <input
@@ -76,7 +76,7 @@ export default function ForgotPasswordPage() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+                                    className="w-full input-warm"
                                     placeholder="you@example.com"
                                 />
                             </div>
@@ -84,15 +84,15 @@ export default function ForgotPasswordPage() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-primary text-white py-2 px-4 rounded-md hover:opacity-90 transition duration-200 font-medium disabled:opacity-50"
+                                className="w-full btn-primary"
                             >
                                 {loading ? 'Sending...' : 'Send Reset Link'}
                             </button>
                         </form>
 
-                        <div className="mt-6 text-center text-sm text-gray-600">
+                        <div className="mt-6 text-center text-sm text-cocoa">
                             Remember your password?{' '}
-                            <Link href="/login" className="text-accent hover:underline font-medium">
+                            <Link href="/login" className="text-gold hover:underline font-medium">
                                 Sign in
                             </Link>
                         </div>

@@ -47,21 +47,21 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
-            <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
+            <div className="w-full max-w-md card p-8 animate-fade-in">
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-primary mb-2">SendKindly</h1>
-                    <p className="text-gray-600">Welcome back</p>
+                    <h1 className="text-3xl font-bold text-terracotta mb-2">SendKindly</h1>
+                    <p className="text-cocoa">Welcome back</p>
                 </div>
 
                 {error && (
-                    <div className="bg-red-50 text-red-600 p-3 rounded-md mb-6 text-sm">
+                    <div className="bg-red-50 text-red-600 p-3 rounded-2xl mb-6 text-sm">
                         {error}
                     </div>
                 )}
 
                 <form onSubmit={handleLogin} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-cocoa mb-1">
                             Email Address
                         </label>
                         <input
@@ -69,19 +69,19 @@ export default function LoginPage() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+                            className="w-full input-warm"
                             placeholder="you@example.com"
                         />
                     </div>
 
                     <div>
                         <div className="flex items-center justify-between mb-1">
-                            <label className="block text-sm font-medium text-gray-700">
+                            <label className="block text-sm font-medium text-cocoa">
                                 Password
                             </label>
                             <Link
                                 href="/forgot-password"
-                                className="text-sm text-accent hover:underline"
+                                className="text-sm text-gold hover:underline"
                             >
                                 Forgot password?
                             </Link>
@@ -91,7 +91,7 @@ export default function LoginPage() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+                            className="w-full input-warm"
                             placeholder="••••••••"
                         />
                     </div>
@@ -99,15 +99,15 @@ export default function LoginPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-primary text-white py-2 px-4 rounded-md hover:opacity-90 transition duration-200 font-medium disabled:opacity-50"
+                        className="w-full btn-primary"
                     >
                         {loading ? 'Signing In...' : 'Sign In'}
                     </button>
                 </form>
 
-                <div className="mt-6 text-center text-sm text-gray-600">
-                    Don't have an account?{' '}
-                    <Link href="/signup" className="text-accent hover:underline font-medium">
+                <div className="mt-6 text-center text-sm text-cocoa">
+                    Don&apos;t have an account?{' '}
+                    <Link href="/signup" className="text-gold hover:underline font-medium">
                         Sign up
                     </Link>
                 </div>

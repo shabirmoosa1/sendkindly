@@ -139,19 +139,19 @@ export default function ContributorPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#faf8f5' }}>
-        <div className="w-8 h-8 border-4 border-blue-900 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen flex items-center justify-center bg-ivory">
+        <div className="w-8 h-8 border-4 border-terracotta border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (notFound) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#faf8f5' }}>
+      <div className="min-h-screen flex items-center justify-center bg-ivory">
         <div className="text-center">
           <div className="text-6xl mb-4">😢</div>
-          <h1 className="text-2xl font-bold mb-2" style={{ color: '#1e3a5f' }}>Page not found</h1>
-          <p className="text-gray-500">This celebration doesn&apos;t exist or the link is incorrect.</p>
+          <h1 className="text-2xl font-bold mb-2">Page not found</h1>
+          <p className="text-cocoa">This celebration doesn&apos;t exist or the link is incorrect.</p>
         </div>
       </div>
     );
@@ -160,59 +160,56 @@ export default function ContributorPage() {
   if (!page) return null;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#faf8f5' }}>
+    <div className="min-h-screen bg-ivory">
       {/* Header */}
       <div className="text-center pt-6 pb-2">
-        <span className="text-sm font-bold tracking-widest" style={{ color: '#1e3a5f' }}>SendKindly</span>
+        <span className="text-sm font-bold tracking-widest text-espresso">SendKindly</span>
       </div>
 
       {/* Main Content */}
       <div className="max-w-[700px] mx-auto px-6 py-6">
 
         {/* Hero Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+        <div className="card overflow-hidden mb-8">
           <div
             className="h-48 flex items-end relative overflow-hidden"
             style={{
               background: page.hero_image_url
                 ? `url(${page.hero_image_url}) center/cover`
-                : 'linear-gradient(135deg, #c9a961 0%, #b76e4c 40%, #1e3a5f 100%)',
+                : 'linear-gradient(135deg, var(--gold) 0%, var(--terracotta) 40%, var(--espresso) 100%)',
             }}
           >
-            {/* Decorative elements when no image */}
             {!page.hero_image_url && (
               <div className="absolute inset-0 flex items-center justify-center opacity-15">
                 <span className="text-8xl">🎁</span>
               </div>
             )}
-            {/* Gradient fade at bottom */}
             <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white/30 to-transparent" />
           </div>
           <div className="p-6">
-            <p className="text-xs font-semibold tracking-widest text-gray-400 mb-1">
+            <p className="text-xs font-semibold tracking-widest text-cocoa/60 mb-1">
               {formatOccasion(page.template_type).toUpperCase()} CELEBRATION
             </p>
-            <h1 className="text-2xl font-bold mb-2" style={{ color: '#1e3a5f' }}>
+            <h1 className="text-2xl font-bold mb-2">
               For {page.recipient_name}
             </h1>
-            <p className="text-sm text-gray-500">✨ {contribCount} memories shared so far</p>
+            <p className="text-sm text-cocoa">✨ {contribCount} memories shared so far</p>
           </div>
         </div>
 
         {/* Success State */}
         {submitted && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+          <div className="card p-8 text-center animate-scale-in">
             <div className="text-5xl mb-4">🎉</div>
-            <h2 className="text-xl font-bold mb-2" style={{ color: '#1e3a5f' }}>
+            <h2 className="text-xl font-bold mb-2">
               Your contribution has been added!
             </h2>
-            <p className="text-gray-500 mb-6">
+            <p className="text-cocoa mb-6">
               {page.recipient_name} is going to love it.
             </p>
             <button
               onClick={resetForm}
-              className="px-6 py-2 rounded-lg text-sm font-medium border transition-all"
-              style={{ borderColor: '#1e3a5f', color: '#1e3a5f' }}
+              className="btn-secondary px-6"
             >
               Add Another
             </button>
@@ -222,37 +219,37 @@ export default function ContributorPage() {
         {/* Contribution Selection */}
         {!submitted && !contribType && (
           <>
-            <h2 className="text-xl font-bold mb-4" style={{ color: '#1e3a5f' }}>
+            <h2 className="text-xl font-bold mb-4">
               Add your contribution
             </h2>
             <div className="grid grid-cols-2 gap-4">
               <button
                 onClick={() => setContribType('photo')}
-                className="bg-white rounded-xl p-8 shadow-sm border border-gray-100 hover:shadow-md transition-all text-center"
+                className="card p-8 hover:shadow-md transition-all text-center"
               >
                 <span className="text-4xl block mb-3">📷</span>
-                <span className="font-semibold" style={{ color: '#1e3a5f' }}>Add Photo</span>
+                <span className="font-semibold text-espresso">Add Photo</span>
               </button>
               <button
                 onClick={() => setContribType('note')}
-                className="bg-white rounded-xl p-8 shadow-sm border border-gray-100 hover:shadow-md transition-all text-center"
+                className="card p-8 hover:shadow-md transition-all text-center"
               >
                 <span className="text-4xl block mb-3">✍️</span>
-                <span className="font-semibold" style={{ color: '#1e3a5f' }}>Write Note</span>
+                <span className="font-semibold text-espresso">Write Note</span>
               </button>
               <button
-                className="bg-white rounded-xl p-8 shadow-sm border border-gray-100 text-center opacity-50 cursor-not-allowed"
+                className="card p-8 text-center opacity-50 cursor-not-allowed"
               >
                 <span className="text-4xl block mb-3">🎙️</span>
-                <span className="font-semibold text-gray-400">Voice Note</span>
-                <span className="block text-xs text-gray-400 mt-1">Coming soon</span>
+                <span className="font-semibold text-cocoa/60">Voice Note</span>
+                <span className="block text-xs text-cocoa/60 mt-1">Coming soon</span>
               </button>
               <button
-                className="bg-white rounded-xl p-8 shadow-sm border border-gray-100 text-center opacity-50 cursor-not-allowed"
+                className="card p-8 text-center opacity-50 cursor-not-allowed"
               >
                 <span className="text-4xl block mb-3">🎨</span>
-                <span className="font-semibold text-gray-400">AI Sticker</span>
-                <span className="block text-xs text-gray-400 mt-1">Coming soon</span>
+                <span className="font-semibold text-cocoa/60">AI Sticker</span>
+                <span className="block text-xs text-cocoa/60 mt-1">Coming soon</span>
               </button>
             </div>
           </>
@@ -260,65 +257,62 @@ export default function ContributorPage() {
 
         {/* Contribution Form */}
         {!submitted && contribType && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <div className="card p-6 animate-fade-in">
             <button
               onClick={() => { setContribType(null); setError(''); }}
-              className="text-gray-500 hover:text-gray-700 text-sm mb-4 block"
+              className="text-cocoa hover:text-espresso text-sm mb-4 block"
             >
               ← Back to options
             </button>
 
-            <h2 className="text-xl font-bold mb-6" style={{ color: '#1e3a5f' }}>
+            <h2 className="text-xl font-bold mb-6">
               {contribType === 'photo' ? '📷 Add a Photo' : '✍️ Write a Note'}
             </h2>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Your Name</label>
+              <label className="block text-sm font-medium text-cocoa mb-2">Your Name</label>
               <input
                 type="text"
                 value={contributorName}
                 onChange={(e) => setContributorName(e.target.value)}
                 placeholder="e.g., Aunt Priya"
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                style={{ backgroundColor: '#faf8f5' }}
+                className="w-full input-warm"
               />
             </div>
 
             {contribType === 'note' && (
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Your Message</label>
+                <label className="block text-sm font-medium text-cocoa mb-2">Your Message</label>
                 <textarea
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value.slice(0, 500))}
                   placeholder="Write something heartfelt..."
                   rows={5}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-200 resize-none"
-                  style={{ backgroundColor: '#faf8f5' }}
+                  className="w-full input-warm resize-none"
                 />
-                <p className="text-xs text-gray-400 text-right mt-1">{messageText.length}/500</p>
+                <p className="text-xs text-cocoa/60 text-right mt-1">{messageText.length}/500</p>
               </div>
             )}
 
             {contribType === 'photo' && (
               <>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Choose Photo</label>
+                  <label className="block text-sm font-medium text-cocoa mb-2">Choose Photo</label>
                   <input
                     type="file"
                     accept="image/*"
                     onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
-                    className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    className="w-full text-sm text-cocoa file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-terracotta/10 file:text-terracotta hover:file:bg-terracotta/20"
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Caption (optional)</label>
+                  <label className="block text-sm font-medium text-cocoa mb-2">Caption (optional)</label>
                   <input
                     type="text"
                     value={photoCaption}
                     onChange={(e) => setPhotoCaption(e.target.value)}
                     placeholder="e.g., Summer of '23!"
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                    style={{ backgroundColor: '#faf8f5' }}
+                    className="w-full input-warm"
                   />
                 </div>
               </>
@@ -329,8 +323,7 @@ export default function ContributorPage() {
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="w-full py-3 rounded-lg text-white font-semibold transition-all disabled:opacity-60"
-              style={{ backgroundColor: '#1e3a5f' }}
+              className="w-full btn-primary"
             >
               {submitting ? 'Sending...' : 'Send your love 💛'}
             </button>
