@@ -392,6 +392,48 @@ These serve different purposes and should NOT be confused:
 
 **Commits:** `32fa792` (P1-P7 UX overhaul), `37629a2` (label fixes), `26db2e5` (creator name + redirect), `c6efc07` (future features)
 
+### Session 6: Phase E Visual Upgrade
+
+**Goal:** Apply Sammy's Stitch screen designs across all pages — glassmorphism, italic serif headings, uppercase micro-labels, iOS soft shadows. CSS-only changes, zero logic modifications.
+
+**Reference materials used:**
+- 7 Stitch hero screen PNGs from `SendKindly Group Efforts/2 Build Efforts/Stitch screens/`
+- Master Prompt design doc from Sammy
+- Session Handoff doc with 7-step plan
+
+**Changes made (7 steps across 2 PRs):**
+
+**PR #1 — Auth pages + contributor success state:**
+1. **Login page** — Glass form card (`.glass rounded-3xl ios-shadow`), italic serif heading, uppercase labels, password eye toggle with SVG icons
+2. **Signup page** — Same glass pattern + `EyeIcon` component + "Failed to fetch" network error fix + rate limit hint text
+3. **Forgot/Reset password pages** — Glass card pattern applied consistently
+4. **Contributor success state** — Confetti animation, branded logo with checkmark badge, italic serif heading "Your contribution is safe.", glass panel
+5. **globals.css** — Added confetti keyframes (`.confetti-container`, `.confetti-piece`) + `.luminous-border` gradient class
+
+**PR #2 — Dashboard, create wizard, contributor page, keepsake:**
+6. **Dashboard** — "OWNER STUDIO" micro-label, italic h1, glass celebration cards, glass filter tabs, glass future feature cards, glass "Planning something new?" card
+7. **Create Wizard** — Glass card wrapper, "STEP X OF 3" label, italic headings, uppercase form labels, glass review panel
+8. **Contributor Page** — "A KIND GESTURE" branding label, glass hero card, glass organizer message, "CHOOSE YOUR EXPRESSION" subtitle, glass type picker cards, glass form panels, uppercase form labels
+9. **Keepsake Page** — "A KEEPSAKE" / "SENDKINDLY" banner labels, italic heading, glass organizer message, glass contribution cards, glass creator tools, glass reply sections
+
+**Bug fixes included:**
+- Password eye toggle on login + signup (was missing)
+- "Failed to fetch" network error handling on signup
+- Rate limit hint text for Supabase free-tier signup limits
+
+**Design system ingredients applied consistently:**
+- `.glass` — glassmorphism (blur 12px, semi-transparent white bg, terracotta border)
+- `.ios-shadow` — soft shadow
+- `.rounded-3xl` / `.rounded-2xl` — rounded corners
+- `italic` — Newsreader serif via global CSS `h1-h6` rule
+- `text-xs font-medium tracking-widest` — uppercase micro-labels
+- `text-cocoa/60` — muted secondary text
+
+**Commits:**
+- `5e3a3f8` — Phase E visual upgrade: auth pages glass styling, eye toggle, bug fixes (PR #1)
+- `6503f13` — Phase E visual upgrade: dashboard, create wizard, contributor, keepsake glass styling (PR #2)
+- `cee690f` — Minor polish: italic not-found headings, SENDKINDLY watermark on keepsake banner
+
 ---
 
 ## Current Status (as of 23 Feb 2026)
@@ -404,9 +446,9 @@ These serve different purposes and should NOT be confused:
 | Session 3: Homepage & UX Overhaul | ✅ COMPLETE |
 | Session 4: Demo Polish + OG Images | ✅ COMPLETE |
 | Session 5: UX Overhaul + Creator Experience | ✅ COMPLETE |
-| **Phase E: Final Polish & Testing** | **⬜ NEXT** |
+| **Session 6: Phase E Visual Upgrade** | **✅ COMPLETE** |
 
-### Phase E: Final Polish & Testing — TODO
+### Phase E: Remaining Testing — TODO
 - [ ] End-to-end flow testing (create → contribute → reveal → keepsake → reply)
 - [ ] Mobile responsive testing (all pages, especially contributor page and keepsake)
 - [ ] Test per-contribution replies (recipient flow)
@@ -417,7 +459,6 @@ These serve different purposes and should NOT be confused:
 - [ ] Seed fresh demo data for demo day with creator_name populated
 - [ ] Edge cases: empty states, very long messages, special characters, multiple photos
 - [ ] Performance: loading states, error handling, offline graceful degradation
-- [ ] Sammy's Stitch screen pixel-perfect alignment pass
 - [ ] WhatsApp/iMessage OG preview validation for all page types
 
 ### Future Features (shown as placeholders on dashboard)
@@ -459,6 +500,11 @@ These serve different purposes and should NOT be confused:
 - **Occasion label:** "Other" type shows just "CELEBRATION" (not "OTHER CELEBRATION") — handled with ternary in all display locations
 - **Name display:** No "For" prefix — just the recipient name directly
 - **Creator name display:** `{creator_name}'S MESSAGE` or fallback `A MESSAGE FROM THE ORGANIZER`
+- **Glass card pattern:** All cards now use `glass rounded-3xl ios-shadow` (or `rounded-2xl` for smaller cards) instead of `.card`. The `.card` class (white bg) is no longer used on any page.
+- **Heading pattern:** All main headings use `italic` (Newsreader serif via global CSS). No `font-bold` on headings — the serif italic is the visual weight.
+- **Micro-label pattern:** Section labels use `text-xs font-medium tracking-widest text-cocoa/60` (uppercase in JSX text). Examples: "OWNER STUDIO", "A KIND GESTURE", "CHOOSE YOUR EXPRESSION", "STEP 1 OF 3", "CREATOR TOOLS"
+- **Auth page pattern:** Logo icon (`w-24 h-24 rounded-[2rem] bg-ivory ios-shadow`) + glass form card + `EyeIcon` component for password toggle
+- **Password eye toggle:** `showPassword` / `showConfirm` state + inline SVG `EyeIcon` component (defined per auth page, not shared)
 
 ## Things NOT to Do
 - Don't use Geist font (removed in Phase A)
@@ -474,3 +520,6 @@ These serve different purposes and should NOT be confused:
 - Don't say "THE ORGANIZER'S WISH" — use "{NAME}'S MESSAGE" (from `creator_name` column)
 - Don't put Creator Tools (reveal link, reminder) on keepsake page — those belong on the dashboard
 - Don't instantiate Anthropic client at module level — must be inside handler with env var check
+- Don't use `.card` class for new components — use `glass rounded-3xl ios-shadow` (or `rounded-2xl` for smaller items)
+- Don't use `font-bold` on main headings — use `italic` (Newsreader serif provides visual weight)
+- Don't use `font-semibold` on micro-labels — use `font-medium tracking-widest` for the uppercase label pattern
