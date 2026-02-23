@@ -19,15 +19,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'SendKindly' };
   }
 
-  const occasion = data.template_type.charAt(0).toUpperCase()
+  const rawOccasion = data.template_type.charAt(0).toUpperCase()
     + data.template_type.slice(1).replace(/_/g, ' ');
+  const occasion = data.template_type === 'other' ? '' : rawOccasion + ' ';
 
   return {
     title: `Help celebrate ${data.recipient_name}! | SendKindly`,
-    description: `Add your message to ${data.recipient_name}'s ${occasion} celebration. Share photos, notes, and memories.`,
+    description: `Add your message to ${data.recipient_name}'s ${occasion}celebration. Share photos, notes, and memories.`,
     openGraph: {
       title: `Help celebrate ${data.recipient_name}!`,
-      description: `Add your message to ${data.recipient_name}'s ${occasion} celebration.`,
+      description: `Add your message to ${data.recipient_name}'s ${occasion}celebration.`,
       url: `/p/${slug}`,
       siteName: 'SendKindly',
       type: 'website',
@@ -35,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     twitter: {
       card: 'summary_large_image',
       title: `Help celebrate ${data.recipient_name}!`,
-      description: `Add your message to ${data.recipient_name}'s ${occasion} celebration.`,
+      description: `Add your message to ${data.recipient_name}'s ${occasion}celebration.`,
     },
   };
 }

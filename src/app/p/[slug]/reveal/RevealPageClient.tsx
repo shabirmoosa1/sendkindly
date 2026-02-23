@@ -122,10 +122,10 @@ export default function RevealPage() {
           <div className="absolute left-4 right-4 bottom-6 animate-card-rise">
             <div className="card p-8 text-center">
               <p className="text-xs font-semibold tracking-widest text-cocoa/60 mb-2">
-                {formatOccasion(page.template_type).toUpperCase()} CELEBRATION
+                {page.template_type === 'other' ? 'CELEBRATION' : `${formatOccasion(page.template_type).toUpperCase()} CELEBRATION`}
               </p>
               <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-espresso">
-                For {page.recipient_name}
+                {page.recipient_name}
               </h1>
               <p className="text-sm text-cocoa mb-6">
                 Something special awaits you

@@ -235,10 +235,10 @@ export default function KeepsakePage() {
         )}
         <div className="relative z-10 text-center text-white px-6">
           <p className="text-sm font-semibold tracking-widest opacity-90 mb-2">
-            {formatOccasion(page.template_type).toUpperCase()} CELEBRATION
+            {page.template_type === 'other' ? 'CELEBRATION' : `${formatOccasion(page.template_type).toUpperCase()} CELEBRATION`}
           </p>
           <h1 className="text-4xl md:text-5xl font-bold mb-3 text-white" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
-            For {page.recipient_name}
+            {page.recipient_name}
           </h1>
           <p className="text-sm opacity-90">
             {contributions.length} heartfelt {contributions.length === 1 ? 'message' : 'messages'} from people who care

@@ -19,15 +19,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'SendKindly' };
   }
 
-  const occasion = data.template_type.charAt(0).toUpperCase()
+  const rawOccasion = data.template_type.charAt(0).toUpperCase()
     + data.template_type.slice(1).replace(/_/g, ' ');
+  const occasion = data.template_type === 'other' ? '' : rawOccasion + ' ';
 
   return {
     title: `A keepsake for ${data.recipient_name} | SendKindly`,
-    description: `A collection of messages and memories for ${data.recipient_name}'s ${occasion} celebration.`,
+    description: `A collection of messages and memories for ${data.recipient_name}'s ${occasion}celebration.`,
     openGraph: {
       title: `A keepsake for ${data.recipient_name}`,
-      description: `A collection of messages and memories for ${data.recipient_name}'s ${occasion} celebration.`,
+      description: `A collection of messages and memories for ${data.recipient_name}'s ${occasion}celebration.`,
       url: `/p/${slug}/keepsake`,
       siteName: 'SendKindly',
       type: 'website',
@@ -35,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     twitter: {
       card: 'summary_large_image',
       title: `A keepsake for ${data.recipient_name}`,
-      description: `A collection of messages and memories for ${data.recipient_name}'s ${occasion} celebration.`,
+      description: `A collection of messages and memories for ${data.recipient_name}'s ${occasion}celebration.`,
     },
   };
 }

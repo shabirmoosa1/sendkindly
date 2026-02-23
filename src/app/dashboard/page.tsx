@@ -159,7 +159,7 @@ export default function DashboardPage() {
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <h3 className="text-lg font-bold">{page.recipient_name}</h3>
-                      <p className="text-sm text-cocoa">{formatOccasion(page.template_type)} Celebration</p>
+                      <p className="text-sm text-cocoa">{page.template_type === 'other' ? 'Celebration' : `${formatOccasion(page.template_type)} Celebration`}</p>
                     </div>
                     <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wide ${getStatusStyle(page.status)}`}>{getStatusLabel(page.status)}</span>
                   </div>

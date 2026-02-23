@@ -160,7 +160,7 @@ export default async function Image({
               }}
             >
               <span>{emoji}</span>
-              <span>{occasion} CELEBRATION</span>
+              <span>{data.template_type === 'other' ? 'CELEBRATION' : `${occasion} CELEBRATION`}</span>
             </div>
 
             {/* Recipient name */}
@@ -175,7 +175,7 @@ export default async function Image({
                 lineHeight: 1.1,
               }}
             >
-              For {name}
+              {name}
             </span>
 
             {/* CTA hint */}
@@ -239,7 +239,7 @@ export default async function Image({
             marginTop: 24,
           }}
         >
-          {occasion} CELEBRATION
+          {data.template_type === 'other' ? 'CELEBRATION' : `${occasion} CELEBRATION`}
         </div>
 
         {/* Recipient name */}
@@ -254,7 +254,7 @@ export default async function Image({
             lineHeight: 1.1,
           }}
         >
-          For {name}
+          {name}
         </span>
 
         {/* CTA hint */}

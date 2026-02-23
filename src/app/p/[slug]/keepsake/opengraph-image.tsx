@@ -145,7 +145,7 @@ export default async function Image({
               }}
             >
               <span>{emoji}</span>
-              <span>{occasion}</span>
+              <span>{data.template_type === 'other' ? 'CELEBRATION' : occasion}</span>
             </div>
             <span
               style={{
@@ -215,7 +215,7 @@ export default async function Image({
             marginTop: 24,
           }}
         >
-          {occasion}
+          {data.template_type === 'other' ? 'CELEBRATION' : occasion}
         </div>
         <span
           style={{

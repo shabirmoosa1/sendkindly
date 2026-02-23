@@ -239,10 +239,10 @@ export default function ContributorPage() {
           </div>
           <div className="p-6 sm:p-8">
             <p className="text-xs font-semibold tracking-widest text-cocoa/60 mb-1">
-              {formatOccasion(page.template_type).toUpperCase()} CELEBRATION
+              {page.template_type === 'other' ? 'CELEBRATION' : `${formatOccasion(page.template_type).toUpperCase()} CELEBRATION`}
             </p>
             <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-              For {page.recipient_name}
+              {page.recipient_name}
             </h1>
             <p className="text-sm text-cocoa">✨ {contribCount} memories shared so far</p>
 
