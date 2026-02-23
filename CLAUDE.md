@@ -29,7 +29,7 @@ A collaborative celebration/keepsake platform for the Antigravity accelerator pr
 
 ```
 src/app/
-├── globals.css              ← Design system tokens + utility classes
+├── globals.css              ← Design system tokens + utility classes + envelope animations
 ├── layout.tsx               ← Root layout (Newsreader + Inter fonts)
 ├── page.tsx                 ← Homepage (redirects to /dashboard)
 ├── middleware.ts             ← Auth redirect logic
@@ -38,20 +38,25 @@ src/app/
 │   ├── signup/page.tsx
 │   ├── forgot-password/page.tsx
 │   └── reset-password/page.tsx
+├── api/
+│   └── suggest/route.ts     ← AI message suggestions (Claude Haiku API)
 ├── dashboard/
 │   ├── page.tsx             ← Main dashboard (list celebrations)
-│   └── create/page.tsx      ← 3-step create wizard
+│   └── create/page.tsx      ← 3-step create wizard (+ contribution prompt)
 └── p/[slug]/
-    ├── page.tsx             ← Contributor page (add photo/note)
-    └── keepsake/page.tsx    ← Keepsake view (all contributions)
+    ├── page.tsx             ← Contributor page (photo/note + AI suggestions)
+    ├── keepsake/page.tsx    ← Keepsake view (all contributions)
+    └── reveal/page.tsx      ← Animated envelope reveal for recipients
 ```
 
 ## Database Schema (Supabase)
 
 ```sql
 pages (id, creator_id, slug, template_type, recipient_name, hero_image_url,
-       color_scheme, event_date, status, is_premium, created_at, locked_at)
+       color_scheme, event_date, status, is_premium, contribution_prompt,
+       created_at, locked_at)
   -- status: 'draft' | 'collecting' | 'locked' | 'shared'
+  -- contribution_prompt: optional text shown to contributors (added Phase C)
 
 contributions (id, page_id, contributor_name, message_text, photo_url,
               voice_note_url, ai_sticker_url, created_at)
@@ -96,7 +101,7 @@ Sammy's warm palette applied to `globals.css`:
 
 **Global focus rings:** All `input:focus`, `textarea:focus`, `select:focus` use warm terracotta ring (`rgba(183,110,76,0.3)`), no blue anywhere.
 
-**Animations:** `.animate-fade-in` (300ms), `.animate-scale-in` (250ms)
+**Animations:** `.animate-fade-in` (300ms), `.animate-scale-in` (250ms), `.animate-envelope-appear` (600ms), `.animate-flap-open` (800ms, 1.2s delay), `.animate-card-rise` (700ms, 1.8s delay), `.animate-shimmer` (gold text shimmer)
 
 **Fonts in layout.tsx:**
 - `--font-newsreader` → Newsreader (weights 300-700, normal+italic)
@@ -125,13 +130,14 @@ Full plan at: `~/.claude/plans/zippy-meandering-sonnet.md`
 - Contributor/Keepsake: `.card`, `.btn-primary`, `.btn-secondary`, `.btn-gold`, `bg-ivory`, CSS var gradients
 - Committed: Phase B commit
 
-### Phase C: Tier 1 Features — NEXT
-- C1: Contributor Reminders (copy message to clipboard)
-- C2: Prompt-Based Contributions (new DB column + UI)
-- C3: AI Message Suggestions (Claude API route)
-- C4: Animated Envelope Reveal (new `/p/{slug}/reveal` page)
+### Phase C: Tier 1 Features — COMPLETE ✅
+- C1: "Copy Reminder Message" + "Copy Reveal Link" buttons in Creator Tools
+- C2: Optional `contribution_prompt` field in create wizard, gold callout on contributor page
+- C3: `/api/suggest` route (Claude Haiku) + "Need inspiration?" UI with 3 suggestion chips, rate limited 3/session
+- C4: `/p/{slug}/reveal` animated envelope page with CSS keyframe animations
+- Committed: `ec337cc`
 
-### Phase D: Demo Polish — FINAL
+### Phase D: Demo Polish — NEXT
 - Seed demo data, end-to-end testing, mobile responsive check
 
 ---
@@ -145,6 +151,9 @@ Full plan at: `~/.claude/plans/zippy-meandering-sonnet.md`
 - **Slug-based routing:** `/p/[slug]` for public pages
 - **Storage:** Supabase `contributions` bucket for photos, public URLs via `getPublicUrl()`
 - **Middleware:** Redirects authenticated users away from auth pages, unauthenticated away from dashboard
+- **AI suggestions:** POST `/api/suggest` with `{ recipientName, occasion, prompt? }` → `{ suggestions: string[] }` via Claude Haiku
+- **Rate limiting:** localStorage `sk-suggest-{pageId}` counter, max 3 calls per page per session
+- **Reveal flow:** Creator shares `/p/{slug}/reveal` → envelope animation → redirects to `/p/{slug}/keepsake?recipient=true`
 
 ## Things NOT to do
 - Don't use Geist font (removed in Phase A)
