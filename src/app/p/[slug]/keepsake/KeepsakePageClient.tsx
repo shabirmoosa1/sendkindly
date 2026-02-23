@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { copyToClipboard } from '@/lib/clipboard';
+import { shareOrCopy, openEmailShare } from '@/lib/share';
 import Navbar from '@/components/Navbar';
 
 interface PageData {
@@ -21,6 +21,7 @@ interface Contribution {
   contributor_name: string;
   message_text: string | null;
   photo_url: string | null;
+  recipient_reply: string | null;
   created_at: string;
 }
 
@@ -48,9 +49,11 @@ export default function KeepsakePage() {
   const [replyText, setReplyText] = useState('');
   const [submittingReply, setSubmittingReply] = useState(false);
   const [replySent, setReplySent] = useState(false);
-  const [reminderCopied, setReminderCopied] = useState(false);
-  const [contributorCopied, setContributorCopied] = useState(false);
-  const [revealCopied, setRevealCopied] = useState(false);
+  const [shareFeedback, setShareFeedback] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [replyingToId, setReplyingToId] = useState<string | null>(null);
+  const [inlineReplyText, setInlineReplyText] = useState('');
+  const [savingReply, setSavingReply] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -92,6 +95,25 @@ export default function KeepsakePage() {
     loadData();
   }, [slug]);
 
+  // Detect mobile for share vs copy behavior
+  useEffect(() => {
+    setIsMobile(/Mobi|Android/i.test(navigator.userAgent));
+  }, []);
+
+  const handleShareContributorLink = async () => {
+    if (!page) return;
+    const url = `${window.location.origin}/p/${slug}`;
+    const result = await shareOrCopy({
+      title: `Help celebrate ${page.recipient_name}!`,
+      text: `Add your message to ${page.recipient_name}'s ${formatOccasion(page.template_type)} celebration`,
+      url,
+    });
+    if (result.copied) {
+      setShareFeedback('✅ Link copied!');
+      setTimeout(() => setShareFeedback(null), 2000);
+    }
+  };
+
   const handleSendReply = async () => {
     if (!page || !replyText.trim()) return;
     setSubmittingReply(true);
@@ -116,6 +138,52 @@ export default function KeepsakePage() {
 
   const formatOccasion = (type: string) => {
     return type.charAt(0).toUpperCase() + type.slice(1).replace(/_/g, ' ');
+  };
+
+  const handleDeleteContribution = async (contrib: Contribution) => {
+    if (!confirm(`Delete ${contrib.contributor_name}'s contribution? This cannot be undone.`)) return;
+
+    const { error } = await supabase
+      .from('contributions')
+      .delete()
+      .eq('id', contrib.id);
+
+    if (error) {
+      console.error('Delete error:', error);
+      alert('Failed to delete. Please try again.');
+      return;
+    }
+
+    // Delete photo from storage if exists
+    if (contrib.photo_url) {
+      const urlParts = contrib.photo_url.split('/contributions/');
+      if (urlParts.length > 1) {
+        await supabase.storage.from('contributions').remove([urlParts[1]]);
+      }
+    }
+
+    setContributions((prev) => prev.filter((c) => c.id !== contrib.id));
+  };
+
+  const handleSaveContributionReply = async (contributionId: string) => {
+    if (!inlineReplyText.trim()) return;
+    setSavingReply(true);
+
+    const { error } = await supabase
+      .from('contributions')
+      .update({ recipient_reply: inlineReplyText.trim() })
+      .eq('id', contributionId);
+
+    if (!error) {
+      setContributions((prev) =>
+        prev.map((c) =>
+          c.id === contributionId ? { ...c, recipient_reply: inlineReplyText.trim() } : c
+        )
+      );
+      setReplyingToId(null);
+      setInlineReplyText('');
+    }
+    setSavingReply(false);
   };
 
   const bgColors = ['#fef3c7', '#dbeafe', '#fce7f3', '#d1fae5', '#ede9fe', '#fee2e2', '#e0e7ff', '#ccfbf1'];
@@ -236,28 +304,88 @@ export default function KeepsakePage() {
                   </p>
                 )}
 
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold bg-espresso">
-                    {contrib.contributor_name.charAt(0).toUpperCase()}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold bg-espresso">
+                      {contrib.contributor_name.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-sm font-semibold text-espresso">
+                      {contrib.contributor_name}
+                    </span>
                   </div>
-                  <span className="text-sm font-semibold text-espresso">
-                    {contrib.contributor_name}
-                  </span>
+                  {isCreator && (
+                    <button
+                      onClick={() => handleDeleteContribution(contrib)}
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-cocoa/30 hover:text-red-500 hover:bg-red-50 transition-colors text-xs"
+                      title="Delete contribution"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
+
+                {/* Existing recipient reply */}
+                {contrib.recipient_reply && (
+                  <div className="mt-3 pt-3 border-t border-gray-200/60">
+                    <p className="text-xs font-semibold text-cocoa/50 mb-1">
+                      💛 {page.recipient_name}&apos;s reply
+                    </p>
+                    <p className="text-sm text-gray-700 italic break-words">
+                      &ldquo;{contrib.recipient_reply}&rdquo;
+                    </p>
+                  </div>
+                )}
+
+                {/* Reply form — recipient only, when no reply yet */}
+                {isRecipient && !isCreator && !contrib.recipient_reply && (
+                  <div className="mt-3 pt-3 border-t border-gray-200/60">
+                    {replyingToId === contrib.id ? (
+                      <div className="animate-fade-in">
+                        <textarea
+                          value={inlineReplyText}
+                          onChange={(e) => setInlineReplyText(e.target.value.slice(0, 200))}
+                          placeholder={`Say thanks to ${contrib.contributor_name}...`}
+                          rows={2}
+                          className="w-full input-warm resize-none text-sm mb-2"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => { setReplyingToId(null); setInlineReplyText(''); }}
+                            className="flex-1 py-1.5 rounded-full text-xs border border-gray-300 text-cocoa"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => handleSaveContributionReply(contrib.id)}
+                            disabled={savingReply || !inlineReplyText.trim()}
+                            className="flex-1 py-1.5 rounded-full text-xs bg-terracotta text-white disabled:opacity-50"
+                          >
+                            {savingReply ? 'Saving...' : 'Reply 💛'}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => { setReplyingToId(contrib.id); setInlineReplyText(''); }}
+                        className="text-xs text-terracotta hover:text-terracotta/80 font-medium transition-colors"
+                      >
+                        Reply to {contrib.contributor_name}
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>
         )}
 
-        {/* Creator View: Share & Manage */}
+        {/* Creator View: Simplified tools */}
         {isCreator && (
           <div className="mt-16 mb-10">
-            <div className="max-w-[600px] mx-auto space-y-4">
+            <div className="max-w-[600px] mx-auto">
               <div className="card p-6 text-center">
                 <p className="text-xs font-semibold tracking-widest text-cocoa/60 mb-3">CREATOR TOOLS</p>
-
-                {/* Navigation — primary next steps */}
-                <div className="flex flex-col sm:flex-row gap-3 mb-6">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={() => window.location.href = `/p/${slug}`}
                     className="flex-1 py-3 rounded-full text-sm font-semibold btn-gold"
@@ -265,63 +393,28 @@ export default function KeepsakePage() {
                     ✍️ Add Your Contribution
                   </button>
                   <button
-                    onClick={() => window.location.href = '/dashboard'}
-                    className="flex-1 py-3 rounded-full text-white text-sm font-semibold bg-terracotta transition-all hover:opacity-90"
+                    onClick={handleShareContributorLink}
+                    className="flex-1 py-3 rounded-full text-sm font-semibold border-2 border-gold text-gold transition-all hover:opacity-90"
                   >
-                    ← Back to Dashboard
+                    {shareFeedback || '📨 Ask Others to Contribute'}
                   </button>
                 </div>
-
-                <div className="border-t border-gray-200 pt-5">
-                  <p className="text-sm font-semibold text-espresso mb-4">
-                    Share links
-                  </p>
-                  <div className="flex flex-col gap-3">
-                    <div>
-                      <p className="text-xs text-cocoa/70 mb-1.5">Send this to friends &amp; family so they can add messages and photos</p>
-                      <button
-                        onClick={async () => {
-                          const url = `${window.location.origin}/p/${slug}`;
-                          await copyToClipboard(url);
-                          setContributorCopied(true);
-                          setTimeout(() => setContributorCopied(false), 2000);
-                        }}
-                        className="w-full py-3 rounded-full text-sm font-semibold border-2 border-gold text-gold transition-all hover:opacity-90"
-                      >
-                        {contributorCopied ? '✅ Copied!' : '🔗 Copy Contributor Link'}
-                      </button>
-                    </div>
-                    <div>
-                      <p className="text-xs text-cocoa/70 mb-1.5">Send this to {page.recipient_name} — opens with a surprise envelope animation</p>
-                      <button
-                        onClick={async () => {
-                          const url = `${window.location.origin}/p/${slug}/reveal`;
-                          await copyToClipboard(url);
-                          setRevealCopied(true);
-                          setTimeout(() => setRevealCopied(false), 2000);
-                        }}
-                        className="w-full py-3 rounded-full text-sm font-semibold border-2 border-espresso text-espresso transition-all hover:opacity-90"
-                      >
-                        {revealCopied ? '✅ Copied!' : '🎁 Copy Reveal Link'}
-                      </button>
-                    </div>
-                    <div>
-                      <p className="text-xs text-cocoa/70 mb-1.5">Copy a ready-made reminder to nudge people who haven&apos;t contributed yet</p>
-                      <button
-                        onClick={async () => {
-                          const url = `${window.location.origin}/p/${slug}`;
-                          const message = `Hey! Don't forget to add your message for ${page.recipient_name}'s ${formatOccasion(page.template_type)} celebration: ${url}`;
-                          await copyToClipboard(message);
-                          setReminderCopied(true);
-                          setTimeout(() => setReminderCopied(false), 2000);
-                        }}
-                        className="w-full py-3 rounded-full text-sm font-semibold border-2 border-terracotta text-terracotta transition-all hover:opacity-90"
-                      >
-                        {reminderCopied ? '✅ Copied!' : '📋 Copy Reminder Message'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                {/* Desktop email option */}
+                {!isMobile && (
+                  <button
+                    onClick={() => {
+                      if (!page) return;
+                      const url = `${window.location.origin}/p/${slug}`;
+                      openEmailShare({
+                        subject: `Help celebrate ${page.recipient_name}!`,
+                        body: `Hi!\n\nI'm putting together a special keepsake for ${page.recipient_name}'s ${formatOccasion(page.template_type)} celebration. Would you add a message or photo?\n\nHere's the link: ${url}\n\nThanks!`,
+                      });
+                    }}
+                    className="w-full mt-3 py-2 text-xs text-cocoa/50 hover:text-cocoa transition-colors"
+                  >
+                    ✉️ Or email this link to friends
+                  </button>
+                )}
               </div>
             </div>
           </div>

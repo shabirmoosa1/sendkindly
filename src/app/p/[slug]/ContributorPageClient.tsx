@@ -38,6 +38,9 @@ export default function ContributorPage() {
 
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [contributorEmail, setContributorEmail] = useState('');
+  const [emailSaved, setEmailSaved] = useState(false);
+  const [lastContributionId, setLastContributionId] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadPage() {
@@ -114,14 +117,16 @@ export default function ContributorPage() {
       photoUrl = urlData.publicUrl;
     }
 
-    const { error: insertError } = await supabase
+    const { data: insertData, error: insertError } = await supabase
       .from('contributions')
       .insert({
         page_id: page.id,
         contributor_name: contributorName.trim(),
         message_text: contribType === 'note' ? messageText.trim() : (photoCaption.trim() || null),
         photo_url: photoUrl,
-      });
+      })
+      .select('id')
+      .single();
 
     if (insertError) {
       console.error('Insert error:', insertError);
@@ -130,6 +135,9 @@ export default function ContributorPage() {
       return;
     }
 
+    if (insertData) {
+      setLastContributionId(insertData.id);
+    }
     setSubmitted(true);
     setContribCount((c) => c + 1);
     setSubmitting(false);
@@ -163,13 +171,18 @@ export default function ContributorPage() {
           prompt: page.contribution_prompt || undefined,
         }),
       });
+      if (!res.ok) {
+        console.error('Suggest API returned', res.status);
+        setLoadingSuggestions(false);
+        return;
+      }
       const data = await res.json();
       if (data.suggestions) {
         setSuggestions(data.suggestions);
         localStorage.setItem(storageKey, String(used + 1));
       }
-    } catch {
-      // silently fail — suggestions are optional
+    } catch (err) {
+      console.error('Failed to fetch suggestions:', err);
     }
     setLoadingSuggestions(false);
   };
@@ -267,8 +280,52 @@ export default function ContributorPage() {
             <p className="text-cocoa mb-6">
               {page.recipient_name} is going to love it.
             </p>
+
+            {/* Optional email collection */}
+            {!emailSaved && (
+              <div className="mb-6 p-4 rounded-2xl bg-gold/10 border border-gold/20 text-left">
+                <p className="text-sm font-semibold text-espresso mb-1">
+                  Want to see the final keepsake?
+                </p>
+                <p className="text-xs text-cocoa mb-3">
+                  Leave your email and we&apos;ll let you know when it&apos;s ready.
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    value={contributorEmail}
+                    onChange={(e) => setContributorEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    className="flex-1 input-warm text-sm"
+                  />
+                  <button
+                    onClick={async () => {
+                      if (!contributorEmail.trim() || !lastContributionId) return;
+                      const { error: emailError } = await supabase
+                        .from('contributions')
+                        .update({ contributor_email: contributorEmail.trim() })
+                        .eq('id', lastContributionId);
+                      if (!emailError) {
+                        setEmailSaved(true);
+                      }
+                    }}
+                    disabled={!contributorEmail.trim()}
+                    className="px-4 py-2 rounded-full text-sm font-semibold bg-terracotta text-white disabled:opacity-50 transition-all hover:opacity-90 shrink-0"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {emailSaved && (
+              <div className="mb-6 p-3 rounded-2xl bg-green-50 text-green-700 text-sm">
+                ✅ We&apos;ll notify you when the keepsake is ready!
+              </div>
+            )}
+
             <button
-              onClick={resetForm}
+              onClick={() => { resetForm(); setEmailSaved(false); setContributorEmail(''); setLastContributionId(null); }}
               className="btn-secondary px-6"
             >
               Add Another

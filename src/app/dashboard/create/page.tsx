@@ -20,6 +20,61 @@ const templates = [
   { id: 'memorial', name: 'Memorial', desc: 'Dark and respectful', emoji: '🕊️', color: '#e2e8f0' },
 ];
 
+const OCCASION_PLACEHOLDERS: Record<string, { wish: string; instructions: string }> = {
+  birthday: {
+    wish: 'Happy 80th birthday Grandma! You fill our lives with so much love and laughter.',
+    instructions: 'Share your favorite memory with Grandma or tell her what she means to you!',
+  },
+  wedding: {
+    wish: 'Congratulations on your beautiful wedding! Wishing you a lifetime of love.',
+    instructions: 'Share your favorite moment with the couple or a piece of marriage advice!',
+  },
+  baby_shower: {
+    wish: "So excited to meet your little one! You're going to be amazing parents.",
+    instructions: 'Share your best parenting tip or a sweet wish for the baby!',
+  },
+  graduation: {
+    wish: "Congratulations on your graduation! We're so proud of everything you've achieved.",
+    instructions: 'Share a favorite school memory or words of encouragement for the future!',
+  },
+  farewell: {
+    wish: "We'll miss you so much! Thank you for all the incredible memories.",
+    instructions: 'Tell them what working together meant to you or share a favorite moment!',
+  },
+  memorial: {
+    wish: 'Your light touched so many lives. We carry your memory with love.',
+    instructions: 'Share a cherished memory or what they meant to you.',
+  },
+  thank_you: {
+    wish: 'Thank you for everything you do. You make such a difference in our lives!',
+    instructions: 'Share how they have helped or inspired you!',
+  },
+  work_anniversary: {
+    wish: 'Happy work anniversary! Your dedication and contributions are truly valued.',
+    instructions: 'Share a favorite work memory or what you appreciate about working with them!',
+  },
+  retirement: {
+    wish: 'Happy retirement! Enjoy every moment of this exciting new chapter.',
+    instructions: 'Share a work memory or your wishes for their retirement!',
+  },
+  promotion: {
+    wish: 'Congratulations on your well-deserved promotion! So proud of you.',
+    instructions: 'Share why they deserve this or a favorite work moment together!',
+  },
+  new_job: {
+    wish: "Exciting new beginnings! You're going to do amazing things.",
+    instructions: 'Share your wishes for their new journey or a favorite memory together!',
+  },
+  other: {
+    wish: 'Thinking of you and wishing you all the best!',
+    instructions: 'Share a memory, a wish, or something you appreciate about them!',
+  },
+};
+
+function getPlaceholders(occ: string) {
+  return OCCASION_PLACEHOLDERS[occ] || OCCASION_PLACEHOLDERS['other'];
+}
+
 function generateSlug(): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
   let slug = '';
@@ -176,7 +231,7 @@ export default function CreatePage() {
                 <textarea
                   value={creatorMessage}
                   onChange={(e) => setCreatorMessage(e.target.value.slice(0, 500))}
-                  placeholder="e.g., Happy 80th birthday Grandma! You fill our lives with so much love and laughter."
+                  placeholder={`e.g., ${occasion ? getPlaceholders(occasion).wish : 'Happy birthday! You mean the world to us.'}`}
                   rows={3}
                   className="w-full input-warm resize-none"
                 />
@@ -191,7 +246,7 @@ export default function CreatePage() {
                 <textarea
                   value={contributionPrompt}
                   onChange={(e) => setContributionPrompt(e.target.value.slice(0, 200))}
-                  placeholder="e.g., Share your favorite memory with Grandma or tell her what she means to you!"
+                  placeholder={`e.g., ${occasion ? getPlaceholders(occasion).instructions : 'Share your favorite memory or tell them what they mean to you!'}`}
                   rows={2}
                   className="w-full input-warm resize-none"
                 />

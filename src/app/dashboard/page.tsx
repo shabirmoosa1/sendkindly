@@ -25,6 +25,9 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterTab>('all');
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+  const [revealCopiedSlug, setRevealCopiedSlug] = useState<string | null>(null);
+  const [reminderCopiedSlug, setReminderCopiedSlug] = useState<string | null>(null);
+  const [expandedSlug, setExpandedSlug] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -167,10 +170,52 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <button onClick={() => copyShareLink(page.slug)} className={`flex-1 text-center py-2.5 rounded-full text-sm font-medium border-2 transition-all ${copiedSlug === page.slug ? 'border-green-500 text-green-600' : 'border-gold text-gold'}`}>
-                      {copiedSlug === page.slug ? '✓ Link Copied!' : '🔗 Copy Share Link'}
+                      {copiedSlug === page.slug ? '✅ Copied!' : '🔗 Share Contributor Link'}
                     </button>
                     <button onClick={() => router.push(`/p/${page.slug}/keepsake`)} className="flex-1 text-center py-2.5 rounded-full text-sm font-medium bg-terracotta text-white transition-all hover:opacity-90">View Keepsake</button>
                   </div>
+
+                  {/* Expand/collapse for reveal + reminder links */}
+                  <button
+                    onClick={() => setExpandedSlug(expandedSlug === page.slug ? null : page.slug)}
+                    className="w-full text-center text-xs text-cocoa/50 hover:text-cocoa mt-3 transition-colors"
+                  >
+                    {expandedSlug === page.slug ? 'Hide options ▲' : 'More options ▼'}
+                  </button>
+
+                  {expandedSlug === page.slug && (
+                    <div className="mt-3 pt-3 border-t border-gray-100 flex flex-col gap-3 animate-fade-in">
+                      <div>
+                        <p className="text-xs text-cocoa/60 mb-1.5">Send to {page.recipient_name} — opens with a surprise envelope</p>
+                        <button
+                          onClick={async () => {
+                            const url = `${window.location.origin}/p/${page.slug}/reveal`;
+                            await copyToClipboard(url);
+                            setRevealCopiedSlug(page.slug);
+                            setTimeout(() => setRevealCopiedSlug(null), 2000);
+                          }}
+                          className={`w-full py-2.5 rounded-full text-sm font-medium border-2 transition-all ${revealCopiedSlug === page.slug ? 'border-green-500 text-green-600' : 'border-espresso text-espresso hover:opacity-90'}`}
+                        >
+                          {revealCopiedSlug === page.slug ? '✅ Copied!' : '🎁 Copy Reveal Link'}
+                        </button>
+                      </div>
+                      <div>
+                        <p className="text-xs text-cocoa/60 mb-1.5">Nudge people who haven&apos;t contributed yet</p>
+                        <button
+                          onClick={async () => {
+                            const url = `${window.location.origin}/p/${page.slug}`;
+                            const message = `Hey! Don\u2019t forget to add your message for ${page.recipient_name}\u2019s ${formatOccasion(page.template_type)} celebration: ${url}`;
+                            await copyToClipboard(message);
+                            setReminderCopiedSlug(page.slug);
+                            setTimeout(() => setReminderCopiedSlug(null), 2000);
+                          }}
+                          className={`w-full py-2.5 rounded-full text-sm font-medium border-2 transition-all ${reminderCopiedSlug === page.slug ? 'border-green-500 text-green-600' : 'border-terracotta text-terracotta hover:opacity-90'}`}
+                        >
+                          {reminderCopiedSlug === page.slug ? '✅ Copied!' : '📋 Copy Reminder Message'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

@@ -44,7 +44,7 @@ export default function Navbar() {
                   href="/dashboard"
                   className="text-sm font-medium text-cocoa hover:text-espresso transition-colors no-underline"
                 >
-                  My Celebrations
+                  Dashboard
                 </Link>
                 <span className="text-sm text-cocoa/60 hidden sm:inline truncate max-w-[160px]">
                   {userEmail}

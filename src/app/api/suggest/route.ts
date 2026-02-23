@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
 export async function POST(request: NextRequest) {
   try {
+    // Early check — env var must be set in Vercel dashboard
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.error('ANTHROPIC_API_KEY is not configured');
+      return NextResponse.json(
+        { error: 'AI suggestions are not available — API key not configured' },
+        { status: 503 }
+      );
+    }
+
+    const anthropic = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
+    });
+
     const body = await request.json();
     const { recipientName, occasion, prompt } = body;
 
@@ -33,7 +42,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unexpected response' }, { status: 500 });
     }
 
-    const suggestions: string[] = JSON.parse(content.text);
+    // Parse safely — AI might return non-JSON
+    let suggestions: string[];
+    try {
+      suggestions = JSON.parse(content.text);
+    } catch {
+      console.error('Failed to parse AI response:', content.text);
+      return NextResponse.json(
+        { error: 'Failed to parse suggestions' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ suggestions });
   } catch (error) {
