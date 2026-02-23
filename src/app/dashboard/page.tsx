@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { copyToClipboard } from '@/lib/clipboard';
 import Navbar from '@/components/Navbar';
 
 interface Page {
@@ -65,7 +66,7 @@ export default function DashboardPage() {
 
   const copyShareLink = async (slug: string) => {
     const url = `${window.location.origin}/p/${slug}`;
-    await navigator.clipboard.writeText(url);
+    await copyToClipboard(url);
     setCopiedSlug(slug);
     setTimeout(() => setCopiedSlug(null), 2000);
   };

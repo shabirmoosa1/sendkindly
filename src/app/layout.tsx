@@ -17,8 +17,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://sendkindly-bice.vercel.app'),
   title: "SendKindly — Celebrate Together",
   description: "Create collaborative keepsakes for the people you love. Collect messages, photos, and memories in one beautiful place.",
+  openGraph: {
+    siteName: 'SendKindly',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({

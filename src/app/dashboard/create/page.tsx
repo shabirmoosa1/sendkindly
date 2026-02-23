@@ -37,6 +37,8 @@ export default function CreatePage() {
   const [template, setTemplate] = useState('classic');
   const [creatorMessage, setCreatorMessage] = useState('');
   const [contributionPrompt, setContributionPrompt] = useState('');
+  const [heroFile, setHeroFile] = useState<File | null>(null);
+  const [heroPreview, setHeroPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -55,6 +57,30 @@ export default function CreatePage() {
 
     const slug = generateSlug();
 
+    let heroImageUrl: string | null = null;
+
+    if (heroFile) {
+      const fileExt = heroFile.name.split('.').pop();
+      const fileName = `hero/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('contributions')
+        .upload(fileName, heroFile);
+
+      if (uploadError) {
+        console.error('Hero upload error:', uploadError);
+        setError('Failed to upload cover image. Please try again.');
+        setSubmitting(false);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('contributions')
+        .getPublicUrl(fileName);
+
+      heroImageUrl = urlData.publicUrl;
+    }
+
     const { error: insertError } = await supabase
       .from('pages')
       .insert({
@@ -64,6 +90,7 @@ export default function CreatePage() {
         template_type: occasion,
         creator_message: creatorMessage.trim() || null,
         contribution_prompt: contributionPrompt.trim() || null,
+        hero_image_url: heroImageUrl,
         status: 'collecting',
       });
 
@@ -208,8 +235,49 @@ export default function CreatePage() {
                 ))}
               </div>
 
+              {/* Cover Image Upload */}
+              <div className="mb-8">
+                <label className="block text-sm font-medium text-cocoa mb-1">
+                  Cover Image <span className="text-cocoa/50">(optional)</span>
+                </label>
+                <p className="text-xs text-cocoa/50 mb-3">
+                  Add a photo that represents this celebration
+                </p>
+                {heroPreview ? (
+                  <div className="relative rounded-2xl overflow-hidden mb-3">
+                    <img src={heroPreview} alt="Cover preview" className="w-full h-40 object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => { setHeroFile(null); setHeroPreview(null); }}
+                      className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center text-espresso text-sm font-bold hover:bg-white transition-colors"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ) : (
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      if (file) {
+                        if (file.size > 5 * 1024 * 1024) {
+                          setError('Image must be under 5MB.');
+                          return;
+                        }
+                        setError('');
+                        setHeroFile(file);
+                        setHeroPreview(URL.createObjectURL(file));
+                      }
+                    }}
+                    className="w-full text-sm text-cocoa file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-terracotta/10 file:text-terracotta hover:file:bg-terracotta/20"
+                  />
+                )}
+                {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+              </div>
+
               <button
-                onClick={() => setStep(3)}
+                onClick={() => { setError(''); setStep(3); }}
                 disabled={!canProceedStep2}
                 className="w-full btn-primary"
               >
@@ -248,9 +316,15 @@ export default function CreatePage() {
                   </div>
                 )}
                 {contributionPrompt.trim() && (
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between mb-4">
                     <span className="text-sm text-cocoa shrink-0">Instructions</span>
                     <span className="text-sm text-espresso text-right ml-4">&ldquo;{contributionPrompt.trim()}&rdquo;</span>
+                  </div>
+                )}
+                {heroPreview && (
+                  <div className="flex items-start justify-between">
+                    <span className="text-sm text-cocoa shrink-0">Cover Image</span>
+                    <img src={heroPreview} alt="Cover" className="w-24 h-16 object-cover rounded-lg ml-4" />
                   </div>
                 )}
               </div>
