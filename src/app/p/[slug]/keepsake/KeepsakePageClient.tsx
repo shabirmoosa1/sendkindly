@@ -207,7 +207,7 @@ export default function KeepsakePage() {
       <div className="min-h-screen flex items-center justify-center bg-ivory">
         <div className="text-center">
           <div className="text-6xl mb-4">😢</div>
-          <h1 className="text-2xl font-bold">Page not found</h1>
+          <h1 className="text-2xl italic mb-2">Page not found</h1>
         </div>
       </div>
     );
@@ -235,6 +235,7 @@ export default function KeepsakePage() {
           </div>
         )}
         <div className="relative z-10 text-center text-white px-6">
+          <p className="text-[10px] font-medium tracking-[0.2em] opacity-60 mb-1">SENDKINDLY</p>
           <p className="text-xs font-medium tracking-widest opacity-90 mb-2">
             {page.template_type === 'other' ? 'A KEEPSAKE' : `${formatOccasion(page.template_type).toUpperCase()} KEEPSAKE`}
           </p>

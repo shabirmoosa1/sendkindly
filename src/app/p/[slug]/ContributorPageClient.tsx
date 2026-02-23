@@ -205,7 +205,7 @@ export default function ContributorPage() {
       <div className="min-h-screen flex items-center justify-center bg-ivory">
         <div className="text-center">
           <div className="text-6xl mb-4">😢</div>
-          <h1 className="text-2xl font-bold mb-2">Page not found</h1>
+          <h1 className="text-2xl italic mb-2">Page not found</h1>
           <p className="text-cocoa">This celebration doesn&apos;t exist or the link is incorrect.</p>
         </div>
       </div>
