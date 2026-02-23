@@ -75,6 +75,46 @@ function getPlaceholders(occ: string) {
   return OCCASION_PLACEHOLDERS[occ] || OCCASION_PLACEHOLDERS['other'];
 }
 
+/**
+ * Resize an image file to max 1200px width, returns a compressed JPEG blob.
+ * This prevents oversized hero images from causing slow loads.
+ */
+function resizeImage(file: File, maxWidth = 1200, quality = 0.8): Promise<File> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if (width <= maxWidth) {
+        resolve(file); // already small enough
+        return;
+      }
+      const ratio = maxWidth / width;
+      width = maxWidth;
+      height = Math.round(height * ratio);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' }));
+          } else {
+            resolve(file);
+          }
+        },
+        'image/jpeg',
+        quality
+      );
+    };
+    img.onerror = () => resolve(file);
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 function generateSlug(): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
   let slug = '';
@@ -98,6 +138,62 @@ export default function CreatePage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  // AI suggestion state for message and instructions
+  const [messageSuggestions, setMessageSuggestions] = useState<string[]>([]);
+  const [instructionSuggestions, setInstructionSuggestions] = useState<string[]>([]);
+  const [loadingMessageAI, setLoadingMessageAI] = useState(false);
+  const [loadingInstructionAI, setLoadingInstructionAI] = useState(false);
+
+  const fetchMessageSuggestions = async () => {
+    if (!recipientName.trim() || !occasion) return;
+    setLoadingMessageAI(true);
+    try {
+      const res = await fetch('/api/suggest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientName: recipientName.trim(),
+          occasion,
+          prompt: 'Write 3 short personal messages FROM an organizer TO the recipient for their celebration page. These are the organizer\'s own heartfelt wishes.',
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.suggestions && Array.isArray(data.suggestions)) {
+          setMessageSuggestions(data.suggestions);
+        }
+      }
+    } catch (err) {
+      console.error('AI message suggestion error:', err);
+    }
+    setLoadingMessageAI(false);
+  };
+
+  const fetchInstructionSuggestions = async () => {
+    if (!recipientName.trim() || !occasion) return;
+    setLoadingInstructionAI(true);
+    try {
+      const res = await fetch('/api/suggest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientName: recipientName.trim(),
+          occasion,
+          prompt: 'Write 3 short instruction prompts that an organizer would give to contributors, telling them what kind of messages to write. Each should be 1 sentence, like "Share your favorite memory with them!" or "Tell them what they mean to you!"',
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.suggestions && Array.isArray(data.suggestions)) {
+          setInstructionSuggestions(data.suggestions);
+        }
+      }
+    } catch (err) {
+      console.error('AI instruction suggestion error:', err);
+    }
+    setLoadingInstructionAI(false);
+  };
+
   const canProceedStep1 = recipientName.trim().length > 0 && creatorName.trim().length > 0 && occasion.length > 0;
   const canProceedStep2 = template.length > 0;
 
@@ -116,12 +212,13 @@ export default function CreatePage() {
     let heroImageUrl: string | null = null;
 
     if (heroFile) {
-      const fileExt = heroFile.name.split('.').pop();
+      const resized = await resizeImage(heroFile);
+      const fileExt = resized.name.split('.').pop();
       const fileName = `hero/${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('contributions')
-        .upload(fileName, heroFile);
+        .upload(fileName, resized);
 
       if (uploadError) {
         console.error('Hero upload error:', uploadError);
@@ -251,7 +348,31 @@ export default function CreatePage() {
                   rows={3}
                   className="w-full input-warm resize-none"
                 />
-                <p className="text-xs text-cocoa/50 text-right mt-1">{creatorMessage.length}/500</p>
+                <div className="flex items-center justify-between mt-1">
+                  <button
+                    type="button"
+                    onClick={fetchMessageSuggestions}
+                    disabled={loadingMessageAI || !recipientName.trim() || !occasion}
+                    className="text-xs font-medium text-terracotta hover:text-terracotta/80 disabled:text-cocoa/40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {loadingMessageAI ? 'Thinking...' : 'Need inspiration? ✨'}
+                  </button>
+                  <p className="text-xs text-cocoa/50">{creatorMessage.length}/500</p>
+                </div>
+                {messageSuggestions.length > 0 && (
+                  <div className="mt-2 flex flex-col gap-2">
+                    {messageSuggestions.map((s, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => { setCreatorMessage(s); setMessageSuggestions([]); }}
+                        className="text-left text-sm p-3 rounded-xl bg-gold/10 border border-gold/20 text-espresso hover:bg-gold/20 transition-colors break-words"
+                      >
+                        &ldquo;{s}&rdquo;
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="mb-8">
@@ -266,7 +387,31 @@ export default function CreatePage() {
                   rows={2}
                   className="w-full input-warm resize-none"
                 />
-                <p className="text-xs text-cocoa/50 text-right mt-1">{contributionPrompt.length}/200</p>
+                <div className="flex items-center justify-between mt-1">
+                  <button
+                    type="button"
+                    onClick={fetchInstructionSuggestions}
+                    disabled={loadingInstructionAI || !recipientName.trim() || !occasion}
+                    className="text-xs font-medium text-terracotta hover:text-terracotta/80 disabled:text-cocoa/40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {loadingInstructionAI ? 'Thinking...' : 'Suggest instructions ✨'}
+                  </button>
+                  <p className="text-xs text-cocoa/50">{contributionPrompt.length}/200</p>
+                </div>
+                {instructionSuggestions.length > 0 && (
+                  <div className="mt-2 flex flex-col gap-2">
+                    {instructionSuggestions.map((s, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => { setContributionPrompt(s.slice(0, 200)); setInstructionSuggestions([]); }}
+                        className="text-left text-sm p-3 rounded-xl bg-gold/10 border border-gold/20 text-espresso hover:bg-gold/20 transition-colors break-words"
+                      >
+                        &ldquo;{s}&rdquo;
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <button

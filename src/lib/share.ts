@@ -37,5 +37,5 @@ export async function shareOrCopy(
  */
 export function openEmailShare(options: { subject: string; body: string }) {
   const mailto = `mailto:?subject=${encodeURIComponent(options.subject)}&body=${encodeURIComponent(options.body)}`;
-  window.open(mailto, '_blank');
+  window.location.href = mailto;
 }

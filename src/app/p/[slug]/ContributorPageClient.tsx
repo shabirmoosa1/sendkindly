@@ -5,6 +5,40 @@ import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
 
+function resizeImage(file: File, maxWidth = 1200, quality = 0.8): Promise<File> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if (width <= maxWidth) {
+        resolve(file);
+        return;
+      }
+      const ratio = maxWidth / width;
+      width = maxWidth;
+      height = Math.round(height * ratio);
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' }));
+          } else {
+            resolve(file);
+          }
+        },
+        'image/jpeg',
+        quality
+      );
+    };
+    img.onerror = () => resolve(file);
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 interface PageData {
   id: string;
   slug: string;
@@ -39,6 +73,7 @@ export default function ContributorPage() {
 
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [suggestionError, setSuggestionError] = useState('');
   const [contributorEmail, setContributorEmail] = useState('');
   const [emailSaved, setEmailSaved] = useState(false);
   const [lastContributionId, setLastContributionId] = useState<string | null>(null);
@@ -97,12 +132,13 @@ export default function ContributorPage() {
     let photoUrl: string | null = null;
 
     if (contribType === 'photo' && photoFile) {
-      const fileExt = photoFile.name.split('.').pop();
+      const resized = await resizeImage(photoFile);
+      const fileExt = resized.name.split('.').pop();
       const fileName = `${page.id}/${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('contributions')
-        .upload(fileName, photoFile);
+        .upload(fileName, resized);
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
@@ -162,6 +198,7 @@ export default function ContributorPage() {
     if (used >= 3) return;
 
     setLoadingSuggestions(true);
+    setSuggestionError('');
     try {
       const res = await fetch('/api/suggest', {
         method: 'POST',
@@ -174,16 +211,20 @@ export default function ContributorPage() {
       });
       if (!res.ok) {
         console.error('Suggest API returned', res.status);
+        setSuggestionError(res.status === 503 ? 'AI suggestions are temporarily unavailable.' : 'Could not load suggestions. Please try again.');
         setLoadingSuggestions(false);
         return;
       }
       const data = await res.json();
-      if (data.suggestions) {
+      if (data.suggestions && Array.isArray(data.suggestions)) {
         setSuggestions(data.suggestions);
         localStorage.setItem(storageKey, String(used + 1));
+      } else {
+        setSuggestionError('Could not load suggestions. Please try again.');
       }
     } catch (err) {
       console.error('Failed to fetch suggestions:', err);
+      setSuggestionError('Network error. Please check your connection.');
     }
     setLoadingSuggestions(false);
   };
@@ -248,7 +289,11 @@ export default function ContributorPage() {
             <h1 className="text-3xl sm:text-4xl italic mb-2">
               {page.recipient_name}
             </h1>
-            <p className="text-sm text-cocoa">✨ {contribCount} memories shared so far</p>
+            <p className="text-sm text-cocoa">
+              {contribCount === 0
+                ? '✨ Be the first to share a memory!'
+                : `✨ ${contribCount} ${contribCount === 1 ? 'memory' : 'memories'} shared so far`}
+            </p>
 
             {/* Organizer's Message */}
             {page.creator_message && (
@@ -448,6 +493,10 @@ export default function ContributorPage() {
                   </button>
                   <p className="text-xs text-cocoa/60">{messageText.length}/500</p>
                 </div>
+
+                {suggestionError && (
+                  <p className="mt-2 text-xs text-red-500">{suggestionError}</p>
+                )}
 
                 {suggestions.length > 0 && (
                   <div className="mt-3 flex flex-col gap-2">
