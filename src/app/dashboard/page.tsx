@@ -93,10 +93,10 @@ export default function DashboardPage() {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'collecting': return 'IN PROGRESS';
-      case 'locked': return 'FINALIZING';
-      case 'shared': return 'DELIVERED';
-      case 'draft': return 'DRAFT';
+      case 'collecting': return '● COLLECTING';
+      case 'locked': return '◉ FINALIZING';
+      case 'shared': return '✓ DELIVERED';
+      case 'draft': return '○ DRAFT';
       default: return status.toUpperCase();
     }
   };
@@ -168,32 +168,38 @@ export default function DashboardPage() {
             <p className="text-xs font-semibold tracking-widest text-cocoa/60 mb-4">ACTIVE CELEBRATIONS</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
               {filteredPages.map((page) => (
-                <div key={page.id} className="glass rounded-3xl ios-shadow p-6 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="text-lg font-bold text-espresso">{page.recipient_name}</h3>
-                      <p className="text-sm text-cocoa">{page.template_type === 'other' ? 'Celebration' : `${formatOccasion(page.template_type)} Celebration`}</p>
+                <div key={page.id} className="glass rounded-3xl ios-shadow hover:shadow-md transition-shadow">
+                  {/* Clickable card header — opens keepsake */}
+                  <div
+                    className="p-6 pb-0 cursor-pointer"
+                    onClick={() => router.push(`/p/${page.slug}/keepsake`)}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h3 className="text-lg font-bold text-espresso">{page.recipient_name}</h3>
+                        <p className="text-sm text-cocoa">{page.template_type === 'other' ? 'Celebration' : `${formatOccasion(page.template_type)} Celebration`}</p>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wide ${getStatusStyle(page.status)}`}>{getStatusLabel(page.status)}</span>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wide ${getStatusStyle(page.status)}`}>{getStatusLabel(page.status)}</span>
+                    {/* Progress indicator */}
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between text-xs text-cocoa/60 mb-1.5">
+                        <span>✨ {page.contribution_count || 0} contributions</span>
+                        <span className="text-gold font-semibold">{formatDate(page.created_at)}</span>
+                      </div>
+                      <div className="h-1.5 bg-cocoa/10 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gold rounded-full transition-all"
+                          style={{ width: `${Math.min(((page.contribution_count || 0) / 10) * 100, 100)}%` }}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  {/* Progress indicator */}
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between text-xs text-cocoa/60 mb-1.5">
-                      <span>✨ {page.contribution_count || 0} contributions</span>
-                      <span className="text-gold font-semibold">{formatDate(page.created_at)}</span>
-                    </div>
-                    <div className="h-1.5 bg-cocoa/10 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gold rounded-full transition-all"
-                        style={{ width: `${Math.min(((page.contribution_count || 0) / 10) * 100, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                  <div className="px-6 pb-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <button onClick={() => copyShareLink(page.slug)} className={`flex-1 text-center py-2.5 rounded-full text-sm font-medium border-2 transition-all ${copiedSlug === page.slug ? 'border-green-500 text-green-600' : 'border-gold text-gold'}`}>
-                      {copiedSlug === page.slug ? '✅ Copied!' : '🔗 Share Contributor Link'}
+                      {copiedSlug === page.slug ? '✅ Copied!' : '🔗 Share Link'}
                     </button>
-                    <button onClick={() => router.push(`/p/${page.slug}/keepsake`)} className="flex-1 text-center py-2.5 rounded-full text-sm font-medium bg-terracotta text-white transition-all hover:opacity-90">View Keepsake</button>
+                    <button onClick={() => router.push(`/p/${page.slug}/keepsake`)} className="flex-1 text-center py-2.5 rounded-full text-sm font-medium bg-terracotta text-white transition-all hover:opacity-90">Open Keepsake →</button>
                   </div>
 
                   {/* Expand/collapse for reveal + reminder links */}
@@ -207,7 +213,7 @@ export default function DashboardPage() {
                   {expandedSlug === page.slug && (
                     <div className="mt-3 pt-3 border-t border-gray-100 flex flex-col gap-3 animate-fade-in">
                       <div>
-                        <p className="text-xs text-cocoa/60 mb-1.5">Send to {page.recipient_name} — opens with a surprise envelope</p>
+                        <p className="text-xs text-cocoa/60 mb-1.5">🎁 Share this with {page.recipient_name} — they&apos;ll see a surprise envelope reveal</p>
                         <button
                           onClick={async () => {
                             const url = `${window.location.origin}/p/${page.slug}/reveal`;

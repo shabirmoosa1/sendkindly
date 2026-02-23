@@ -354,10 +354,13 @@ export default function ContributorPage() {
             </div>
 
             <h2 className="text-3xl italic mb-3">
-              Your contribution<br />is safe.
+              You&apos;re amazing! 🎉
             </h2>
-            <p className="text-cocoa mb-8 max-w-[280px] mx-auto leading-relaxed">
-              Thank you for making a difference. {page.recipient_name} is going to love it.
+            <p className="text-cocoa mb-2 max-w-[280px] mx-auto leading-relaxed">
+              Your {contribType === 'photo' ? 'photo' : 'message'} has been added to {page.recipient_name}&apos;s keepsake.
+            </p>
+            <p className="text-sm text-cocoa/60 mb-8 max-w-[280px] mx-auto">
+              They&apos;re going to love it 💛
             </p>
 
             {/* Optional email collection */}
@@ -422,31 +425,19 @@ export default function ContributorPage() {
             <div className="grid grid-cols-2 gap-4">
               <button
                 onClick={() => setContribType('photo')}
-                className="glass rounded-2xl ios-shadow p-6 sm:p-8 hover:shadow-md transition-all text-center"
+                className="glass rounded-2xl ios-shadow p-6 sm:p-8 hover:shadow-md transition-all text-center active:scale-95"
               >
                 <span className="text-4xl block mb-3">📷</span>
                 <span className="font-semibold text-espresso">Add Photo</span>
+                <span className="block text-xs text-cocoa/50 mt-1">Share a memory</span>
               </button>
               <button
                 onClick={() => setContribType('note')}
-                className="glass rounded-2xl ios-shadow p-6 sm:p-8 hover:shadow-md transition-all text-center"
+                className="glass rounded-2xl ios-shadow p-6 sm:p-8 hover:shadow-md transition-all text-center active:scale-95"
               >
                 <span className="text-4xl block mb-3">✍️</span>
                 <span className="font-semibold text-espresso">Write Note</span>
-              </button>
-              <button
-                className="glass rounded-2xl p-6 sm:p-8 text-center opacity-50 cursor-not-allowed"
-              >
-                <span className="text-4xl block mb-3">🎙️</span>
-                <span className="font-semibold text-cocoa/60">Voice Note</span>
-                <span className="block text-xs text-cocoa/60 mt-1">Coming soon</span>
-              </button>
-              <button
-                className="glass rounded-2xl p-6 sm:p-8 text-center opacity-50 cursor-not-allowed"
-              >
-                <span className="text-4xl block mb-3">🎨</span>
-                <span className="font-semibold text-cocoa/60">AI Sticker</span>
-                <span className="block text-xs text-cocoa/60 mt-1">Coming soon</span>
+                <span className="block text-xs text-cocoa/50 mt-1">Send a message</span>
               </button>
             </div>
           </>
