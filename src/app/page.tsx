@@ -14,6 +14,10 @@ const occasions = [
   { emoji: '🕊️', label: 'Memorial' },
   { emoji: '🙏', label: 'Thank You' },
   { emoji: '🎉', label: 'Retirement' },
+  { emoji: '💼', label: 'Work Anniversary' },
+  { emoji: '🚀', label: 'Promotion' },
+  { emoji: '🌟', label: 'New Job' },
+  { emoji: '✨', label: 'Other' },
 ];
 
 const sampleContributions = [

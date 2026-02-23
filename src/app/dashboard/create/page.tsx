@@ -36,7 +36,6 @@ export default function CreatePage() {
   const [occasion, setOccasion] = useState('');
   const [template, setTemplate] = useState('classic');
   const [creatorMessage, setCreatorMessage] = useState('');
-  const [contributionPrompt, setContributionPrompt] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -63,7 +62,6 @@ export default function CreatePage() {
         recipient_name: recipientName.trim(),
         template_type: occasion,
         creator_message: creatorMessage.trim() || null,
-        contribution_prompt: contributionPrompt.trim() || null,
         status: 'collecting',
       });
 
@@ -141,7 +139,7 @@ export default function CreatePage() {
                 </select>
               </div>
 
-              <div className="mb-6">
+              <div className="mb-8">
                 <label className="block text-sm font-medium text-cocoa mb-1">
                   Welcome note for contributors <span className="text-cocoa/50">(optional)</span>
                 </label>
@@ -154,21 +152,6 @@ export default function CreatePage() {
                   className="w-full input-warm resize-none"
                 />
                 <p className="text-xs text-cocoa/50 text-right mt-1">{creatorMessage.length}/500</p>
-              </div>
-
-              <div className="mb-8">
-                <label className="block text-sm font-medium text-cocoa mb-1">
-                  Hint for contributors <span className="text-cocoa/50">(optional)</span>
-                </label>
-                <p className="text-xs text-cocoa/50 mb-2">A short suggestion for what to write about</p>
-                <textarea
-                  value={contributionPrompt}
-                  onChange={(e) => setContributionPrompt(e.target.value.slice(0, 200))}
-                  placeholder="e.g., Share your favorite memory with Sarah"
-                  rows={2}
-                  className="w-full input-warm resize-none"
-                />
-                <p className="text-xs text-cocoa/50 text-right mt-1">{contributionPrompt.length}/200</p>
               </div>
 
               <button
@@ -242,15 +225,9 @@ export default function CreatePage() {
                   </span>
                 </div>
                 {creatorMessage.trim() && (
-                  <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-start justify-between">
                     <span className="text-sm text-cocoa shrink-0">Welcome Note</span>
                     <span className="text-sm text-espresso text-right ml-4 line-clamp-3">&ldquo;{creatorMessage.trim()}&rdquo;</span>
-                  </div>
-                )}
-                {contributionPrompt.trim() && (
-                  <div className="flex items-start justify-between">
-                    <span className="text-sm text-cocoa shrink-0">Hint</span>
-                    <span className="text-sm text-espresso text-right ml-4">&ldquo;{contributionPrompt.trim()}&rdquo;</span>
                   </div>
                 )}
               </div>

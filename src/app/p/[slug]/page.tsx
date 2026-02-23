@@ -241,16 +241,6 @@ export default function ContributorPage() {
           </div>
         </div>
 
-        {/* Contribution Hint */}
-        {page.contribution_prompt && !submitted && (
-          <div className="rounded-2xl p-4 mb-6 bg-gold/10 border border-gold/20">
-            <p className="text-sm text-cocoa flex items-center gap-2">
-              <span className="font-semibold text-gold">Hint:</span>
-              <span>{page.contribution_prompt}</span>
-            </p>
-          </div>
-        )}
-
         {/* Success State */}
         {submitted && (
           <div className="card p-8 text-center animate-scale-in">
