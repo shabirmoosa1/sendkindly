@@ -32,9 +32,10 @@ A collaborative celebration/keepsake platform for the Antigravity accelerator pr
 src/
 ├── middleware.ts                ← Auth redirect logic (dashboard↔auth pages)
 ├── lib/
-│   └── supabase.ts             ← Supabase client singleton
+│   ├── supabase.ts             ← Supabase client singleton
+│   └── share.ts                ← Share utilities (native share + clipboard + email)
 ├── components/
-│   └── Navbar.tsx              ← Shared navigation (auth-aware, sticky)
+│   └── Navbar.tsx              ← Shared navigation (auth-aware, sticky, "Dashboard" link)
 └── app/
     ├── globals.css             ← Design system tokens + utility classes + animations
     ├── layout.tsx              ← Root layout (Newsreader + Inter fonts, metadata)
@@ -45,14 +46,22 @@ src/
     │   ├── forgot-password/page.tsx
     │   └── reset-password/page.tsx
     ├── api/
-    │   └── suggest/route.ts    ← AI message suggestions (Claude Haiku API)
+    │   └── suggest/route.ts    ← AI message suggestions (Claude Haiku API, env var guarded)
     ├── dashboard/
-    │   ├── page.tsx            ← Main dashboard (list/filter celebrations)
-    │   └── create/page.tsx     ← 3-step create wizard
+    │   ├── page.tsx            ← Dashboard (celebrations + share tools + future features)
+    │   └── create/page.tsx     ← 3-step create wizard (with creator name + occasion placeholders)
     └── p/[slug]/
-        ├── page.tsx            ← Contributor page (photo/note + AI suggestions)
-        ├── keepsake/page.tsx   ← Keepsake view (all contributions + creator tools)
-        └── reveal/page.tsx     ← Animated envelope reveal for recipients
+        ├── page.tsx            ← Server wrapper (generateMetadata)
+        ├── ContributorPageClient.tsx  ← Contributor page (photo/note + AI + email collection)
+        ├── opengraph-image.tsx        ← Dynamic OG image (edge runtime)
+        ├── keepsake/
+        │   ├── page.tsx               ← Server wrapper (generateMetadata)
+        │   ├── KeepsakePageClient.tsx  ← Keepsake view (contributions + moderation + replies)
+        │   └── opengraph-image.tsx    ← Dynamic OG image (edge runtime)
+        └── reveal/
+            ├── page.tsx               ← Server wrapper
+            ├── RevealPageClient.tsx    ← Animated envelope reveal
+            └── opengraph-image.tsx    ← Dynamic OG image (edge runtime, intentionally vague)
 ```
 
 ---
@@ -63,6 +72,7 @@ src/
 pages (
   id UUID PRIMARY KEY,
   creator_id UUID REFERENCES auth.users,
+  creator_name TEXT,                -- organizer's display name (added Session 5)
   slug TEXT UNIQUE,
   template_type TEXT,              -- occasion: birthday, wedding, baby_shower, etc.
   recipient_name TEXT,
@@ -71,7 +81,7 @@ pages (
   event_date DATE,
   status TEXT DEFAULT 'collecting', -- 'draft' | 'collecting' | 'locked' | 'shared'
   is_premium BOOLEAN DEFAULT false,
-  creator_message TEXT,            -- organizer's personal wish FOR the recipient (added Session 3)
+  creator_message TEXT,            -- organizer's personal message FOR the recipient (added Session 3)
   contribution_prompt TEXT,        -- instructions for contributors on what to write (added Phase C)
   created_at TIMESTAMPTZ,
   locked_at TIMESTAMPTZ
@@ -85,6 +95,8 @@ contributions (
   photo_url TEXT,
   voice_note_url TEXT,             -- reserved for future use
   ai_sticker_url TEXT,             -- reserved for future use
+  recipient_reply TEXT,            -- per-contribution reply from recipient (added Session 4)
+  contributor_email TEXT,          -- optional email for keepsake notification (added Session 4)
   created_at TIMESTAMPTZ
 )
 
@@ -108,6 +120,9 @@ ai_sticker_usage (
 **DB migrations run manually in Supabase SQL Editor:**
 - `ALTER TABLE pages ADD COLUMN contribution_prompt TEXT;` (Phase C)
 - `ALTER TABLE pages ADD COLUMN creator_message TEXT;` (Session 3)
+- `ALTER TABLE contributions ADD COLUMN recipient_reply TEXT;` (Session 4)
+- `ALTER TABLE contributions ADD COLUMN contributor_email TEXT;` (Session 4)
+- `ALTER TABLE pages ADD COLUMN creator_name TEXT;` (Session 5)
 
 Schema SQL reference: `/Users/shabirmoosa/Documents/0 AI/_Our Group Build/SendKindly Group Efforts/2 Build Efforts/sendkindly_schema.sql`
 
@@ -171,7 +186,7 @@ Applied to `globals.css` in Phase A, used consistently across all pages:
 ### Navbar (`src/components/Navbar.tsx`)
 Shared `'use client'` component used on all pages except auth pages and reveal page:
 - **Left:** 🎁 SendKindly logo (Newsreader serif) → links to `/` (homepage)
-- **Right (logged in):** "My Celebrations" link, user email (hidden on mobile), Sign Out button
+- **Right (logged in):** "Dashboard" link, user email (hidden on mobile), Sign Out button
 - **Right (not logged in):** "Sign In" link
 - Sticky, white bg, `z-20`, `border-b`
 - Sign out redirects to `/` (homepage)
@@ -189,37 +204,42 @@ Full marketing page (was previously just a redirect to dashboard):
 ### Dashboard (`src/app/dashboard/page.tsx`)
 - Filter tabs: All Projects / Active / Completed
 - Card grid showing each celebration: name, occasion, contribution count, date, status badge
-- "Copy Share Link" + "View Keepsake" buttons per card
+- **Primary buttons:** "Share Contributor Link" (native share on mobile / clipboard on desktop) + "View Keepsake"
+- **Expandable "More options":** Copy Reveal Link (for recipient) + Copy Reminder Message (nudge)
 - Empty state with "Create your first celebration!" CTA
-- Dashed "Planning something new?" card at bottom
+- Dashed "Planning something new?" card
+- **"COMING IN FUTURE" section:** 6 placeholder cards (Group Gift Fund, QR Code Sharing, Co-Organizers, Video Messages, Print Keepsake, Notifications)
 
 ### Create Wizard (`src/app/dashboard/create/page.tsx`)
 3-step wizard with progress dots:
-- **Step 1:** Recipient name, occasion dropdown (12 options), "Your wish for {name}" (500 chars, personal message for the recipient), "Instructions for contributors" (200 chars, guidance on what to write)
-- **Step 2:** Template selection (Classic ✨, Playful 🎨, Memorial 🕊️)
+- **Step 1:** Recipient name, **Your name** (creator), occasion dropdown (12 options, **dynamic placeholders** per occasion), "Your message for {name}" (500 chars), "Instructions for contributors" (200 chars)
+- **Step 2:** Template selection (Classic ✨, Playful 🎨, Memorial 🕊️) + optional cover image upload
 - **Step 3:** Review all fields + "Create Celebration 🎉" button
-- Generates 8-char random slug, inserts into `pages` table, redirects to dashboard
+- Generates 8-char random slug, inserts into `pages` table, **redirects to contributor page** (so organizer can immediately contribute photos/notes)
 
-### Contributor Page (`src/app/p/[slug]/page.tsx`)
+### Contributor Page (`src/app/p/[slug]/ContributorPageClient.tsx`)
 What people see when they open a shared link — most important page for engagement:
-- **Hero card:** Tall image area (h-56), occasion label, "For {name}", contribution count
-- **Organizer's wish:** Displayed prominently inside hero card as "THE ORGANIZER'S WISH" with terracotta left-border, italic text
+- **Hero card:** Tall image area (h-56), occasion label, recipient name, contribution count
+- **Organizer's message:** Displayed prominently as "{CREATOR_NAME}'S MESSAGE" with terracotta left-border, italic text (falls back to "A MESSAGE FROM THE ORGANIZER" for older pages)
 - **Contribution prompt:** Gold callout with 💡 below hero card ("Instructions for contributors")
 - **Contribution types:** 2x2 grid (Add Photo, Write Note, Voice Note [coming soon], AI Sticker [coming soon])
 - **Write Note form:** Name input, textarea with 500-char limit, "Need inspiration? ✨" AI suggestion button
 - **Add Photo form:** Name input, file picker, optional caption
-- **Success state:** "Your contribution has been added!" with "Add Another" button
+- **Success state:** "Your contribution has been added!" + optional email collection ("Want to see the final keepsake?") + "Add Another" button
 - **Navigation:** "View Keepsake" link at bottom
+- **Dynamic OG image:** `opengraph-image.tsx` (edge runtime) — shows hero photo or warm gradient, occasion emoji, recipient name
 
-### Keepsake Page (`src/app/p/[slug]/keepsake/page.tsx`)
-- **Hero banner:** Full-width gradient or hero image, occasion label, "For {name}", contribution count
-- **Organizer's wish:** Pinned card at top with terracotta left-border (visible to everyone)
+### Keepsake Page (`src/app/p/[slug]/keepsake/KeepsakePageClient.tsx`)
+- **Hero banner:** Full-width gradient or hero image, occasion label, recipient name, contribution count
+- **Organizer's message:** Pinned card at top — "{CREATOR_NAME}'S MESSAGE" with terracotta left-border (visible to everyone)
 - **Contributions grid:** Masonry-style 3-column layout, pastel background colors cycling
+- **Per-contribution features:**
+  - Creator: delete button (✕) on each card with confirmation
+  - Recipient: reply button per card, inline textarea, saved replies shown with 💛
 - **Creator Tools** (visible only to logged-in creator):
-  - Navigation: "Add Your Contribution" + "Back to Dashboard" buttons at top
-  - Share links section: Copy Contributor Link, Copy Reveal Link, Copy Reminder Message — each with explanatory label
-- **Recipient reply section:** Visible when replies exist (read-only for non-creators)
-- **Say Thanks form:** Only visible with `?recipient=true` URL param
+  - "Add Your Contribution" button + "Ask Others to Contribute" (native share / clipboard + email option)
+- **Recipient reply section:** Global "Say Thanks" form (with `?recipient=true`) + per-contribution inline replies
+- **Dynamic OG image:** `keepsake/opengraph-image.tsx` — "A Keepsake for {name}"
 
 ### Reveal Page (`src/app/p/[slug]/reveal/page.tsx`)
 Immersive animated envelope experience (NO Navbar — intentionally fullscreen):
@@ -242,11 +262,11 @@ These serve different purposes and should NOT be confused:
 
 | Field | DB Column | Purpose | Visible To | Display Style |
 |-------|-----------|---------|------------|---------------|
-| **Organizer's Wish** | `creator_message` | Personal message FROM organizer FOR the recipient | Everyone (contributor page + keepsake) | "THE ORGANIZER'S WISH" — terracotta left-border, italic, prominent |
+| **Organizer's Message** | `creator_message` | Personal message FROM organizer FOR the recipient | Everyone (contributor page + keepsake) | "{CREATOR_NAME}'S MESSAGE" — terracotta left-border, italic, prominent |
 | **Instructions** | `contribution_prompt` | Guidance for contributors on what kind of messages to write | Contributors only (contributor page) | Gold callout with 💡, smaller, below hero |
 
-**Example:** For Grandma's 80th birthday:
-- Organizer's wish: "Happy 80th birthday Grandma! You fill our lives with so much love and laughter."
+**Example:** For Grandma's 80th birthday (organizer: Shabir):
+- Organizer's message: "Happy 80th birthday Grandma! You fill our lives with so much love and laughter." → displays as "SHABIR'S MESSAGE"
 - Instructions: "Share your favorite memory with Grandma or tell her what she means to you!"
 
 ---
@@ -313,6 +333,65 @@ These serve different purposes and should NOT be confused:
 - `18d63db` — Expand occasion grid to 12 cards
 - `17142d6` — Separate organizer's wish from contributor instructions, pin wish to keepsake
 
+### Session 4: Demo Polish + Dynamic OG Images
+
+**Phase D: Demo Polish** — COMPLETE ✅
+- **D1:** Seed demo data — "Grandma Sarah" birthday with 8 contributions (text + photos)
+- **D2:** Error handling + loading states across all pages
+- **D3:** Mobile responsive fixes
+- **D4:** Hero image upload in create wizard (Step 2) with preview + 5MB limit
+- **D5:** Dynamic per-celebration OG images (3 files, edge runtime, Supabase REST API):
+  - `p/[slug]/opengraph-image.tsx` — hero photo or gradient, occasion emoji, name
+  - `p/[slug]/keepsake/opengraph-image.tsx` — "A Keepsake for {name}"
+  - `p/[slug]/reveal/opengraph-image.tsx` — intentionally vague "💌 {name}, you have a surprise!"
+- Occasion emoji mapping for 13 types in OG images
+
+**Commits:** `6ff7b83` (Phase D + OG images)
+
+### Session 5: UX Overhaul + Creator Experience
+
+**Shabir's feedback that drove this session:**
+- "Remove Copy Reveal Link and Copy Reminder Link from keepsake, move to Dashboard"
+- "Remove 'Back to Dashboard' button, rename 'My Celebrations' to 'Dashboard'"
+- "Tips/examples should be occasion-specific, not just birthdays"
+- "AI suggestions don't work" (missing ANTHROPIC_API_KEY in Vercel)
+- "Need review/delete option at organiser end"
+- "Recipient should be able to comment on each post"
+- "Collect emails from contributors to share final keepsake"
+- "'Other Celebration' should just say 'Celebration'"
+- "Remove 'For' from recipient name headings"
+- "Instead of 'THE ORGANIZER'S WISH' it should say '{Name}'s message'"
+- "Organizer should be able to contribute like others"
+- "Add future feature placeholders to show product vision"
+
+**Changes made (7 priorities + polish):**
+
+1. **P1: Creator Tools moved to Dashboard** — Reveal link + reminder message moved to expandable "More options" per card. Keepsake cleaned down to 2 buttons: "Add Your Contribution" + "Ask Others to Contribute"
+2. **P2: AI suggestions fixed** — Moved Anthropic client inside handler, env var check (503), safe JSON parse, client-side error guard. `ANTHROPIC_API_KEY` added to Vercel env vars.
+3. **P3: Dynamic occasion placeholders** — 12-occasion `OCCASION_PLACEHOLDERS` map in create wizard, textarea placeholders change per occasion
+4. **P4: Native share + email** — `src/lib/share.ts` with `shareOrCopy()` (native share on mobile, clipboard on desktop) + `openEmailShare()` via `mailto:`
+5. **P5: Creator moderation** — Delete button (✕) on contribution cards, confirmation dialog, removes from DB + storage
+6. **P6: Per-contribution replies** — Recipients can reply inline to individual contributions, replies saved to `contributions.recipient_reply`
+7. **P7: Contributor email collection** — Optional email input after contributing ("Want to see the final keepsake?"), stored in `contributions.contributor_email`
+8. **Label fixes** — "Other Celebration" → "Celebration", removed "For" prefix from all name headings
+9. **Creator name** — Added "Your Name" field to create wizard, stored as `creator_name` in pages table. Label changed: "THE ORGANIZER'S WISH" → "{NAME}'S MESSAGE"
+10. **Post-creation redirect** — After creating, redirects to contributor page (not dashboard) so organizer can contribute photos/notes
+11. **Future features** — "COMING IN FUTURE" section on dashboard: Group Gift Fund, QR Code Sharing, Co-Organizers, Video Messages, Print Keepsake, Notifications
+12. **Navbar** — "My Celebrations" renamed to "Dashboard"
+
+**DB migrations (all applied):**
+- `ALTER TABLE contributions ADD COLUMN recipient_reply TEXT;`
+- `ALTER TABLE contributions ADD COLUMN contributor_email TEXT;`
+- `ALTER TABLE pages ADD COLUMN creator_name TEXT;`
+
+**New files:**
+- `src/lib/share.ts` — Share utilities
+- `src/app/p/[slug]/opengraph-image.tsx` — Dynamic OG (contributor)
+- `src/app/p/[slug]/keepsake/opengraph-image.tsx` — Dynamic OG (keepsake)
+- `src/app/p/[slug]/reveal/opengraph-image.tsx` — Dynamic OG (reveal)
+
+**Commits:** `32fa792` (P1-P7 UX overhaul), `37629a2` (label fixes), `26db2e5` (creator name + redirect), `c6efc07` (future features)
+
 ---
 
 ## Current Status (as of 23 Feb 2026)
@@ -322,28 +401,39 @@ These serve different purposes and should NOT be confused:
 | Phase A: Design System | ✅ COMPLETE |
 | Phase B: Reskin | ✅ COMPLETE |
 | Phase C: Tier 1 Features | ✅ COMPLETE |
-| Homepage & UX Overhaul | ✅ COMPLETE |
-| **Phase D: Demo Polish** | **⬜ NEXT** |
+| Session 3: Homepage & UX Overhaul | ✅ COMPLETE |
+| Session 4: Demo Polish + OG Images | ✅ COMPLETE |
+| Session 5: UX Overhaul + Creator Experience | ✅ COMPLETE |
+| **Phase E: Final Polish & Testing** | **⬜ NEXT** |
 
-### Phase D: Demo Polish — TODO
-- [ ] Seed demo data (a complete celebration with 5-8 contributions for demo day)
+### Phase E: Final Polish & Testing — TODO
 - [ ] End-to-end flow testing (create → contribute → reveal → keepsake → reply)
 - [ ] Mobile responsive testing (all pages, especially contributor page and keepsake)
-- [ ] Hero image upload support (currently placeholder gradient only)
+- [ ] Test per-contribution replies (recipient flow)
+- [ ] Test contributor email collection
+- [ ] Test AI suggestions with ANTHROPIC_API_KEY in production
+- [ ] Test native share on mobile devices (WhatsApp, iMessage)
+- [ ] Test creator moderation (delete contributions)
+- [ ] Seed fresh demo data for demo day with creator_name populated
 - [ ] Edge cases: empty states, very long messages, special characters, multiple photos
 - [ ] Performance: loading states, error handling, offline graceful degradation
-- [ ] SEO/OG meta tags for shared links (so contributor links preview nicely in WhatsApp/iMessage)
 - [ ] Sammy's Stitch screen pixel-perfect alignment pass
+- [ ] WhatsApp/iMessage OG preview validation for all page types
 
-### Future Features (post-demo, if time allows)
+### Future Features (shown as placeholders on dashboard)
+- 🎁 Group Gift Fund — pool money towards a gift together
+- 📱 QR Code Sharing — scan to contribute at in-person events
+- 👥 Co-Organizers — invite others to help manage the celebration
+- 🎥 Video Messages — record video contributions
+- 🖨️ Print Keepsake — export as a beautiful PDF
+- 🔔 Notifications — get notified when someone contributes
+
+### Other Future Features (not yet shown)
 - Voice notes (UI placeholder exists, backend not built)
 - AI stickers (UI placeholder exists, backend not built)
 - Photo gallery view in keepsake (currently just inline)
-- Hero image upload on create page
 - Profile page for users
 - Premium tier / payment integration
-- Email notifications when contributions are added
-- PDF/print export of keepsake
 
 ---
 
@@ -353,15 +443,22 @@ These serve different purposes and should NOT be confused:
 - **Auth check:** `const { data: { user } } = await supabase.auth.getUser()`
 - **Page load pattern:** `useEffect` + async function + loading/notFound states
 - **No SSR data fetching** — all client-side with `'use client'`
+- **Server/Client split:** `page.tsx` (server, `generateMetadata`) + `*Client.tsx` (client, interactive UI)
 - **Shared Navbar:** `import Navbar from '@/components/Navbar'` — used on all pages EXCEPT auth pages and reveal page
 - **Slug-based routing:** `/p/[slug]` for public pages
 - **Storage:** Supabase `contributions` bucket for photos, public URLs via `getPublicUrl()`
 - **Middleware:** `src/middleware.ts` — redirects authenticated users away from auth pages, unauthenticated away from dashboard
-- **AI suggestions:** POST `/api/suggest` with `{ recipientName, occasion, prompt? }` → `{ suggestions: string[] }` via Claude Haiku
+- **AI suggestions:** POST `/api/suggest` with `{ recipientName, occasion, prompt? }` → `{ suggestions: string[] }` via Claude Haiku. Env var guarded (503 if missing).
 - **Rate limiting:** localStorage `sk-suggest-{pageId}` counter, max 3 calls per page per session
 - **Reveal flow:** Creator shares `/p/{slug}/reveal` → envelope animation → redirect to `/p/{slug}/keepsake?recipient=true`
 - **Creator detection:** Compare `pageData.creator_id === user.id` to show Creator Tools
-- **Two personalization fields:** `creator_message` (wish for recipient) vs `contribution_prompt` (instructions for contributors) — different purposes, different display styles
+- **Two personalization fields:** `creator_message` (message for recipient) vs `contribution_prompt` (instructions for contributors) — different purposes, different display styles
+- **Share utility:** `import { shareOrCopy, openEmailShare } from '@/lib/share'` — native share on mobile, clipboard fallback on desktop
+- **Mobile detection:** `isMobile` state via `useEffect` + `/Mobi|Android/i.test(navigator.userAgent)` to avoid SSR issues
+- **OG images:** Edge runtime, fetch Supabase REST API directly (no cookies needed for public data), `ImageResponse` from `next/og`
+- **Occasion label:** "Other" type shows just "CELEBRATION" (not "OTHER CELEBRATION") — handled with ternary in all display locations
+- **Name display:** No "For" prefix — just the recipient name directly
+- **Creator name display:** `{creator_name}'S MESSAGE` or fallback `A MESSAGE FROM THE ORGANIZER`
 
 ## Things NOT to Do
 - Don't use Geist font (removed in Phase A)
@@ -370,5 +467,10 @@ These serve different purposes and should NOT be confused:
 - Don't add `.env*` files to git (env.local incident was fixed)
 - Don't use `style={{}}` inline styles unless dynamic values (gradients, textShadow, dynamic bg colors) — use Tailwind classes with design tokens
 - Don't add Navbar to auth pages (keep clean) or reveal page (immersive experience)
-- Don't confuse `creator_message` (wish for recipient) with `contribution_prompt` (instructions for contributors)
+- Don't confuse `creator_message` (message for recipient) with `contribution_prompt` (instructions for contributors)
 - Don't require login for contributors or recipients
+- Don't prefix recipient names with "For" — just show the name directly
+- Don't show "OTHER CELEBRATION" — use just "CELEBRATION" for the "other" occasion type
+- Don't say "THE ORGANIZER'S WISH" — use "{NAME}'S MESSAGE" (from `creator_name` column)
+- Don't put Creator Tools (reveal link, reminder) on keepsake page — those belong on the dashboard
+- Don't instantiate Anthropic client at module level — must be inside handler with env var check
