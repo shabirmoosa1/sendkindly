@@ -46,6 +46,8 @@ export default function KeepsakePage() {
   const [submittingReply, setSubmittingReply] = useState(false);
   const [replySent, setReplySent] = useState(false);
   const [reminderCopied, setReminderCopied] = useState(false);
+  const [contributorCopied, setContributorCopied] = useState(false);
+  const [revealCopied, setRevealCopied] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -237,19 +239,23 @@ export default function KeepsakePage() {
                       onClick={() => {
                         const url = `${window.location.origin}/p/${slug}`;
                         navigator.clipboard.writeText(url);
+                        setContributorCopied(true);
+                        setTimeout(() => setContributorCopied(false), 2000);
                       }}
                       className="flex-1 py-3 rounded-full text-sm font-semibold border-2 border-gold text-gold transition-all hover:opacity-90"
                     >
-                      🔗 Copy Contributor Link
+                      {contributorCopied ? '✅ Copied!' : '🔗 Copy Contributor Link'}
                     </button>
                     <button
                       onClick={() => {
                         const url = `${window.location.origin}/p/${slug}/reveal`;
                         navigator.clipboard.writeText(url);
+                        setRevealCopied(true);
+                        setTimeout(() => setRevealCopied(false), 2000);
                       }}
                       className="flex-1 py-3 rounded-full text-sm font-semibold border-2 border-espresso text-espresso transition-all hover:opacity-90"
                     >
-                      🎁 Copy Reveal Link
+                      {revealCopied ? '✅ Copied!' : '🎁 Copy Reveal Link'}
                     </button>
                   </div>
                   <button

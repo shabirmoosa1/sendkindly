@@ -159,7 +159,7 @@ h1, h2, h3, h4, h5, h6 {
    ============================================ */
 
 /* Warm focus rings — replaces all blue focus */
-input:focus, textarea:focus, select:focus {
+input:focus, textarea:focus, select:focus, button:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px var(--ring-color);
 }
