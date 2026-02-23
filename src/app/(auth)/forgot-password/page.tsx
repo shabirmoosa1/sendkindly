@@ -38,13 +38,18 @@ export default function ForgotPasswordPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background p-4">
-            <div className="w-full max-w-md card p-8 animate-fade-in">
-                <div className="text-center mb-8">
-                    <Link href="/" className="no-underline"><h1 className="text-3xl font-bold text-terracotta mb-2">SendKindly</h1></Link>
-                    <p className="text-cocoa">Reset your password</p>
-                </div>
+        <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
+            {/* Logo Icon */}
+            <div className="w-24 h-24 rounded-[2rem] bg-ivory ios-shadow flex items-center justify-center mb-6 border border-white/40">
+                <span className="text-4xl">🌿</span>
+            </div>
 
+            {/* Heading */}
+            <h1 className="text-4xl italic text-espresso mb-2">Reset Password</h1>
+            <p className="text-cocoa text-sm mb-10">We&apos;ll send you a reset link</p>
+
+            {/* Glass Form Card */}
+            <div className="w-full max-w-md glass rounded-3xl ios-shadow p-8 animate-fade-in">
                 {error && (
                     <div className="bg-red-50 text-red-600 p-3 rounded-2xl mb-6 text-sm">
                         {error}
@@ -56,7 +61,7 @@ export default function ForgotPasswordPage() {
                         <div className="bg-green-50 text-green-700 p-4 rounded-2xl mb-6 text-sm">
                             Check your email for a password reset link. It may take a minute to arrive.
                         </div>
-                        <Link href="/login" className="text-gold hover:underline font-medium text-sm">
+                        <Link href="/login" className="text-terracotta font-semibold hover:underline text-sm">
                             Back to Sign In
                         </Link>
                     </div>
@@ -68,7 +73,7 @@ export default function ForgotPasswordPage() {
 
                         <form onSubmit={handleReset} className="space-y-6">
                             <div>
-                                <label className="block text-sm font-medium text-cocoa mb-1">
+                                <label className="block text-xs uppercase tracking-widest text-cocoa font-medium mb-2">
                                     Email Address
                                 </label>
                                 <input
@@ -76,8 +81,8 @@ export default function ForgotPasswordPage() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
-                                    className="w-full input-warm"
-                                    placeholder="you@example.com"
+                                    className="w-full bg-white/50 border-none rounded-2xl px-5 py-4 text-espresso placeholder:text-stone-400 focus:ring-2 focus:ring-terracotta/30 focus:outline-none transition-shadow"
+                                    placeholder="hello@sendkindly.com"
                                 />
                             </div>
 
@@ -92,7 +97,7 @@ export default function ForgotPasswordPage() {
 
                         <div className="mt-6 text-center text-sm text-cocoa">
                             Remember your password?{' '}
-                            <Link href="/login" className="text-gold hover:underline font-medium">
+                            <Link href="/login" className="text-terracotta font-semibold hover:underline">
                                 Sign in
                             </Link>
                         </div>

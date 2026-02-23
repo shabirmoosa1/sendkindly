@@ -273,13 +273,38 @@ export default function ContributorPage() {
 
         {/* Success State */}
         {submitted && (
-          <div className="card p-8 text-center animate-scale-in">
-            <div className="text-5xl mb-4">🎉</div>
-            <h2 className="text-xl font-bold mb-2">
-              Your contribution has been added!
+          <div className="relative glass rounded-3xl ios-shadow p-8 text-center animate-scale-in overflow-hidden">
+            {/* Confetti */}
+            <div className="confetti-container">
+              {Array.from({ length: 24 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="confetti-piece"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    backgroundColor: ['#C8A951', '#E5C467', '#B76E4C', '#FFD700'][i % 4],
+                    animationDuration: `${2 + Math.random() * 2}s`,
+                    animationDelay: `${Math.random() * 0.8}s`,
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Branded Logo with Checkmark */}
+            <div className="relative inline-block mb-6 mt-4">
+              <div className="w-28 h-28 rounded-[2rem] bg-gradient-to-br from-green-500 to-green-600 ios-shadow flex items-center justify-center">
+                <span className="text-5xl">🌿</span>
+              </div>
+              <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-terracotta text-white flex items-center justify-center ios-shadow border-4 border-ivory">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
+
+            <h2 className="text-3xl italic mb-3">
+              Your contribution<br />is safe.
             </h2>
-            <p className="text-cocoa mb-6">
-              {page.recipient_name} is going to love it.
+            <p className="text-cocoa mb-8 max-w-[280px] mx-auto leading-relaxed">
+              Thank you for making a difference. {page.recipient_name} is going to love it.
             </p>
 
             {/* Optional email collection */}
@@ -297,7 +322,7 @@ export default function ContributorPage() {
                     value={contributorEmail}
                     onChange={(e) => setContributorEmail(e.target.value)}
                     placeholder="your@email.com"
-                    className="flex-1 input-warm text-sm"
+                    className="flex-1 bg-white/50 border-none rounded-xl px-4 py-3 text-sm text-espresso placeholder:text-stone-400 focus:ring-2 focus:ring-terracotta/30 focus:outline-none"
                   />
                   <button
                     onClick={async () => {
@@ -321,15 +346,15 @@ export default function ContributorPage() {
 
             {emailSaved && (
               <div className="mb-6 p-3 rounded-2xl bg-green-50 text-green-700 text-sm">
-                ✅ We&apos;ll notify you when the keepsake is ready!
+                We&apos;ll notify you when the keepsake is ready!
               </div>
             )}
 
             <button
               onClick={() => { resetForm(); setEmailSaved(false); setContributorEmail(''); setLastContributionId(null); }}
-              className="btn-secondary px-6"
+              className="w-full btn-primary"
             >
-              Add Another
+              Add Another Contribution
             </button>
           </div>
         )}
