@@ -180,28 +180,31 @@ export default function CreatePage() {
         </button>
 
         {/* Progress Dots */}
-        <div className="flex items-center justify-center gap-2 mb-8">
+        <div className="flex items-center justify-center gap-3 mb-8">
           {[1, 2, 3].map((s) => (
             <div
               key={s}
-              className={`h-2 rounded-full transition-all ${s === step ? 'w-8 bg-terracotta' : 'w-2 bg-gray-300'}`}
+              className={`h-2.5 rounded-full transition-all ${s === step ? 'w-10 bg-terracotta' : s < step ? 'w-2.5 bg-gold' : 'w-2.5 bg-cocoa/20'}`}
             />
           ))}
         </div>
 
+        {/* Step Label */}
+        <p className="text-center text-xs font-medium tracking-widest text-cocoa/50 mb-4">STEP {step} OF 3</p>
+
         {/* Card */}
-        <div className="card p-8">
+        <div className="glass rounded-3xl ios-shadow p-8">
 
           {/* STEP 1 */}
           {step === 1 && (
             <>
-              <h1 className="text-3xl font-bold mb-2">
+              <h1 className="text-3xl italic mb-2">
                 Who are we celebrating?
               </h1>
-              <p className="text-cocoa mb-8">Tell us about the person and the moment.</p>
+              <p className="text-cocoa italic mb-8">Tell us about the person and the moment.</p>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-cocoa mb-2">Recipient Name</label>
+                <label className="block text-xs uppercase tracking-widest text-cocoa font-medium mb-2">Recipient Name</label>
                 <input
                   type="text"
                   value={recipientName}
@@ -212,7 +215,7 @@ export default function CreatePage() {
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-cocoa mb-2">Your Name</label>
+                <label className="block text-xs uppercase tracking-widest text-cocoa font-medium mb-2">Your Name</label>
                 <input
                   type="text"
                   value={creatorName}
@@ -223,7 +226,7 @@ export default function CreatePage() {
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-cocoa mb-2">Occasion</label>
+                <label className="block text-xs uppercase tracking-widest text-cocoa font-medium mb-2">Occasion</label>
                 <select
                   value={occasion}
                   onChange={(e) => setOccasion(e.target.value)}
@@ -279,10 +282,10 @@ export default function CreatePage() {
           {/* STEP 2 */}
           {step === 2 && (
             <>
-              <h1 className="text-3xl font-bold mb-2">
+              <h1 className="text-3xl italic mb-2">
                 Choose a look
               </h1>
-              <p className="text-cocoa mb-8">Pick a style that fits the celebration.</p>
+              <p className="text-cocoa italic mb-8">Pick a style that fits the celebration.</p>
 
               <div className="flex flex-col gap-3 mb-8">
                 {templates.map((t) => (
@@ -357,12 +360,12 @@ export default function CreatePage() {
           {/* STEP 3 */}
           {step === 3 && (
             <>
-              <h1 className="text-3xl font-bold mb-2">
+              <h1 className="text-3xl italic mb-2">
                 Review & Create
               </h1>
-              <p className="text-cocoa mb-8">Everything look good? Let&apos;s launch it!</p>
+              <p className="text-cocoa italic mb-8">Everything look good? Let&apos;s launch it!</p>
 
-              <div className="rounded-2xl p-6 mb-8 bg-ivory">
+              <div className="glass rounded-2xl p-6 mb-8">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-sm text-cocoa">Recipient</span>
                   <span className="font-semibold text-espresso">{recipientName}</span>
