@@ -221,8 +221,11 @@ export default function ContributorPage() {
       {/* Main Content */}
       <div className="max-w-[700px] mx-auto px-6 py-6">
 
+        {/* Kind Gesture Label */}
+        <p className="text-center text-xs font-medium tracking-widest text-terracotta/70 mb-4">A KIND GESTURE</p>
+
         {/* Hero Card */}
-        <div className="card overflow-hidden mb-6">
+        <div className="glass rounded-3xl ios-shadow overflow-hidden mb-6">
           <div
             className="h-56 sm:h-64 flex items-end relative overflow-hidden"
             style={{
@@ -239,18 +242,18 @@ export default function ContributorPage() {
             <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white/40 to-transparent" />
           </div>
           <div className="p-6 sm:p-8">
-            <p className="text-xs font-semibold tracking-widest text-cocoa/60 mb-1">
+            <p className="text-xs font-medium tracking-widest text-cocoa/60 mb-1">
               {page.template_type === 'other' ? 'CELEBRATION' : `${formatOccasion(page.template_type).toUpperCase()} CELEBRATION`}
             </p>
-            <h1 className="text-3xl sm:text-4xl font-bold mb-2">
+            <h1 className="text-3xl sm:text-4xl italic mb-2">
               {page.recipient_name}
             </h1>
             <p className="text-sm text-cocoa">✨ {contribCount} memories shared so far</p>
 
             {/* Organizer's Message */}
             {page.creator_message && (
-              <div className="mt-5 p-5 rounded-2xl bg-ivory border-l-4 border-terracotta">
-                <p className="text-xs font-semibold tracking-widest text-cocoa/60 mb-2">
+              <div className="mt-5 p-5 rounded-2xl glass border-l-4 border-terracotta">
+                <p className="text-xs font-medium tracking-widest text-cocoa/60 mb-2">
                   {page.creator_name ? `${page.creator_name.toUpperCase()}'S MESSAGE` : 'A MESSAGE FROM THE ORGANIZER'}
                 </p>
                 <p className="text-base text-espresso leading-relaxed italic">
@@ -362,33 +365,34 @@ export default function ContributorPage() {
         {/* Contribution Selection */}
         {!submitted && !contribType && (
           <>
-            <h2 className="text-xl font-bold mb-4">
+            <h2 className="text-2xl italic mb-1">
               Add your message for {page.recipient_name}
             </h2>
+            <p className="text-xs font-medium tracking-widest text-cocoa/50 mb-5">CHOOSE YOUR EXPRESSION</p>
             <div className="grid grid-cols-2 gap-4">
               <button
                 onClick={() => setContribType('photo')}
-                className="card p-6 sm:p-8 hover:shadow-md transition-all text-center"
+                className="glass rounded-2xl ios-shadow p-6 sm:p-8 hover:shadow-md transition-all text-center"
               >
                 <span className="text-4xl block mb-3">📷</span>
                 <span className="font-semibold text-espresso">Add Photo</span>
               </button>
               <button
                 onClick={() => setContribType('note')}
-                className="card p-6 sm:p-8 hover:shadow-md transition-all text-center"
+                className="glass rounded-2xl ios-shadow p-6 sm:p-8 hover:shadow-md transition-all text-center"
               >
                 <span className="text-4xl block mb-3">✍️</span>
                 <span className="font-semibold text-espresso">Write Note</span>
               </button>
               <button
-                className="card p-6 sm:p-8 text-center opacity-50 cursor-not-allowed"
+                className="glass rounded-2xl p-6 sm:p-8 text-center opacity-50 cursor-not-allowed"
               >
                 <span className="text-4xl block mb-3">🎙️</span>
                 <span className="font-semibold text-cocoa/60">Voice Note</span>
                 <span className="block text-xs text-cocoa/60 mt-1">Coming soon</span>
               </button>
               <button
-                className="card p-6 sm:p-8 text-center opacity-50 cursor-not-allowed"
+                className="glass rounded-2xl p-6 sm:p-8 text-center opacity-50 cursor-not-allowed"
               >
                 <span className="text-4xl block mb-3">🎨</span>
                 <span className="font-semibold text-cocoa/60">AI Sticker</span>
@@ -400,7 +404,7 @@ export default function ContributorPage() {
 
         {/* Contribution Form */}
         {!submitted && contribType && (
-          <div className="card p-6 animate-fade-in">
+          <div className="glass rounded-3xl ios-shadow p-6 animate-fade-in">
             <button
               onClick={() => { setContribType(null); setError(''); }}
               className="text-cocoa hover:text-espresso text-sm mb-4 block"
@@ -408,12 +412,12 @@ export default function ContributorPage() {
               ← Back to options
             </button>
 
-            <h2 className="text-xl font-bold mb-6">
+            <h2 className="text-xl italic mb-6">
               {contribType === 'photo' ? '📷 Add a Photo' : '✍️ Write a Note'}
             </h2>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-cocoa mb-2">Your Name</label>
+              <label className="block text-xs uppercase tracking-widest text-cocoa font-medium mb-2">Your Name</label>
               <input
                 type="text"
                 value={contributorName}
@@ -425,7 +429,7 @@ export default function ContributorPage() {
 
             {contribType === 'note' && (
               <div className="mb-4">
-                <label className="block text-sm font-medium text-cocoa mb-2">Your Message</label>
+                <label className="block text-xs uppercase tracking-widest text-cocoa font-medium mb-2">Your Message</label>
                 <textarea
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value.slice(0, 500))}
@@ -465,7 +469,7 @@ export default function ContributorPage() {
             {contribType === 'photo' && (
               <>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-cocoa mb-2">Choose Photo</label>
+                  <label className="block text-xs uppercase tracking-widest text-cocoa font-medium mb-2">Choose Photo</label>
                   <input
                     type="file"
                     accept="image/*"
@@ -474,7 +478,7 @@ export default function ContributorPage() {
                   />
                 </div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-cocoa mb-2">Caption (optional)</label>
+                  <label className="block text-xs uppercase tracking-widest text-cocoa font-medium mb-2">Caption (optional)</label>
                   <input
                     type="text"
                     value={photoCaption}

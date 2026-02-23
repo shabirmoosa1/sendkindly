@@ -235,10 +235,10 @@ export default function KeepsakePage() {
           </div>
         )}
         <div className="relative z-10 text-center text-white px-6">
-          <p className="text-sm font-semibold tracking-widest opacity-90 mb-2">
-            {page.template_type === 'other' ? 'CELEBRATION' : `${formatOccasion(page.template_type).toUpperCase()} CELEBRATION`}
+          <p className="text-xs font-medium tracking-widest opacity-90 mb-2">
+            {page.template_type === 'other' ? 'A KEEPSAKE' : `${formatOccasion(page.template_type).toUpperCase()} KEEPSAKE`}
           </p>
-          <h1 className="text-4xl md:text-5xl font-bold mb-3 text-white" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+          <h1 className="text-4xl md:text-5xl italic mb-3 text-white" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
             {page.recipient_name}
           </h1>
           <p className="text-sm opacity-90">
@@ -253,8 +253,8 @@ export default function KeepsakePage() {
         {/* Organizer's Message — pinned at top */}
         {page.creator_message && (
           <div className="max-w-[600px] mx-auto mb-10">
-            <div className="rounded-2xl p-6 ios-shadow border-l-4 border-terracotta bg-white">
-              <p className="text-xs font-semibold tracking-widest text-cocoa/60 mb-3">
+            <div className="glass rounded-2xl p-6 ios-shadow border-l-4 border-terracotta">
+              <p className="text-xs font-medium tracking-widest text-cocoa/60 mb-3">
                 {page.creator_name ? `${page.creator_name.toUpperCase()}'S MESSAGE` : 'A MESSAGE FROM THE ORGANIZER'}
               </p>
               <p className="text-gray-800 leading-relaxed italic text-lg break-words">
@@ -267,7 +267,7 @@ export default function KeepsakePage() {
         {contributions.length === 0 && !page.creator_message && (
           <div className="text-center py-16">
             <div className="text-5xl mb-4">💌</div>
-            <h2 className="text-xl font-bold mb-2">
+            <h2 className="text-xl italic mb-2">
               No contributions yet
             </h2>
             <p className="text-cocoa">Share the link with friends and family to start collecting messages!</p>
@@ -285,7 +285,7 @@ export default function KeepsakePage() {
             {contributions.map((contrib, i) => (
               <div
                 key={contrib.id}
-                className="break-inside-avoid rounded-2xl p-6 ios-shadow border border-gray-100"
+                className="break-inside-avoid glass rounded-2xl p-6 ios-shadow"
                 style={{ backgroundColor: bgColors[i % bgColors.length] }}
               >
                 {contrib.photo_url && (
@@ -384,8 +384,8 @@ export default function KeepsakePage() {
         {isCreator && (
           <div className="mt-16 mb-10">
             <div className="max-w-[600px] mx-auto">
-              <div className="card p-6 text-center">
-                <p className="text-xs font-semibold tracking-widest text-cocoa/60 mb-3">CREATOR TOOLS</p>
+              <div className="glass rounded-3xl ios-shadow p-6 text-center">
+                <p className="text-xs font-medium tracking-widest text-cocoa/60 mb-3">CREATOR TOOLS</p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={() => window.location.href = `/p/${slug}`}
@@ -429,7 +429,7 @@ export default function KeepsakePage() {
                 💛 {page.recipient_name.toUpperCase()}&apos;S REPLY
               </p>
               {replies.map((reply) => (
-                <div key={reply.id} className="card p-6 mb-4">
+                <div key={reply.id} className="glass rounded-2xl ios-shadow p-6 mb-4">
                   <p className="text-cocoa italic break-words">&ldquo;{reply.reply_text}&rdquo;</p>
                   <p className="text-sm text-cocoa/60 mt-2">— {page.recipient_name}</p>
                 </div>
@@ -452,8 +452,8 @@ export default function KeepsakePage() {
               )}
 
               {showReplyForm && !replySent && (
-                <div className="card p-6 text-left animate-fade-in">
-                  <h3 className="text-lg font-bold mb-4">
+                <div className="glass rounded-3xl ios-shadow p-6 text-left animate-fade-in">
+                  <h3 className="text-lg italic mb-4">
                     Say thanks to everyone
                   </h3>
                   <textarea
@@ -482,9 +482,9 @@ export default function KeepsakePage() {
               )}
 
               {replySent && (
-                <div className="card p-6 animate-scale-in">
+                <div className="glass rounded-3xl ios-shadow p-6 animate-scale-in">
                   <div className="text-4xl mb-2">💛</div>
-                  <p className="font-semibold text-espresso">Your thanks has been sent!</p>
+                  <p className="font-semibold text-espresso italic">Your thanks has been sent!</p>
                 </div>
               )}
             </div>
