@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import Navbar from '@/components/Navbar';
 
 interface PageData {
   id: string;
@@ -143,6 +144,7 @@ export default function KeepsakePage() {
 
   return (
     <div className="min-h-screen bg-ivory">
+      <Navbar />
 
       {/* Hero Banner */}
       <div
@@ -230,59 +232,71 @@ export default function KeepsakePage() {
             <div className="max-w-[600px] mx-auto space-y-4">
               <div className="card p-6 text-center">
                 <p className="text-xs font-semibold tracking-widest text-cocoa/60 mb-3">CREATOR TOOLS</p>
-                <p className="text-sm text-cocoa mb-4">
-                  Share links with contributors and the recipient.
-                </p>
-                <div className="flex flex-col gap-3">
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <button
-                      onClick={() => {
-                        const url = `${window.location.origin}/p/${slug}`;
-                        navigator.clipboard.writeText(url);
-                        setContributorCopied(true);
-                        setTimeout(() => setContributorCopied(false), 2000);
-                      }}
-                      className="flex-1 py-3 rounded-full text-sm font-semibold border-2 border-gold text-gold transition-all hover:opacity-90"
-                    >
-                      {contributorCopied ? '✅ Copied!' : '🔗 Copy Contributor Link'}
-                    </button>
-                    <button
-                      onClick={() => {
-                        const url = `${window.location.origin}/p/${slug}/reveal`;
-                        navigator.clipboard.writeText(url);
-                        setRevealCopied(true);
-                        setTimeout(() => setRevealCopied(false), 2000);
-                      }}
-                      className="flex-1 py-3 rounded-full text-sm font-semibold border-2 border-espresso text-espresso transition-all hover:opacity-90"
-                    >
-                      {revealCopied ? '✅ Copied!' : '🎁 Copy Reveal Link'}
-                    </button>
-                  </div>
+
+                {/* Navigation — primary next steps */}
+                <div className="flex flex-col sm:flex-row gap-3 mb-6">
                   <button
-                    onClick={() => {
-                      const url = `${window.location.origin}/p/${slug}`;
-                      const message = `Hey! Don't forget to add your message for ${page.recipient_name}'s ${formatOccasion(page.template_type)} celebration: ${url}`;
-                      navigator.clipboard.writeText(message);
-                      setReminderCopied(true);
-                      setTimeout(() => setReminderCopied(false), 2000);
-                    }}
-                    className="w-full py-3 rounded-full text-sm font-semibold border-2 border-terracotta text-terracotta transition-all hover:opacity-90"
+                    onClick={() => window.location.href = `/p/${slug}`}
+                    className="flex-1 py-3 rounded-full text-sm font-semibold btn-gold"
                   >
-                    {reminderCopied ? '✅ Copied!' : '📋 Copy Reminder Message'}
+                    ✍️ Add Your Contribution
                   </button>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <button
-                      onClick={() => window.location.href = `/p/${slug}`}
-                      className="flex-1 py-3 rounded-full text-sm font-semibold btn-gold"
-                    >
-                      ✍️ Add Your Contribution
-                    </button>
-                    <button
-                      onClick={() => window.location.href = '/dashboard'}
-                      className="flex-1 py-3 rounded-full text-white text-sm font-semibold bg-terracotta transition-all hover:opacity-90"
-                    >
-                      ← Back to Dashboard
-                    </button>
+                  <button
+                    onClick={() => window.location.href = '/dashboard'}
+                    className="flex-1 py-3 rounded-full text-white text-sm font-semibold bg-terracotta transition-all hover:opacity-90"
+                  >
+                    ← Back to Dashboard
+                  </button>
+                </div>
+
+                <div className="border-t border-gray-200 pt-5">
+                  <p className="text-sm font-semibold text-espresso mb-4">
+                    Share links
+                  </p>
+                  <div className="flex flex-col gap-3">
+                    <div>
+                      <p className="text-xs text-cocoa/70 mb-1.5">Send this to friends &amp; family so they can add messages and photos</p>
+                      <button
+                        onClick={() => {
+                          const url = `${window.location.origin}/p/${slug}`;
+                          navigator.clipboard.writeText(url);
+                          setContributorCopied(true);
+                          setTimeout(() => setContributorCopied(false), 2000);
+                        }}
+                        className="w-full py-3 rounded-full text-sm font-semibold border-2 border-gold text-gold transition-all hover:opacity-90"
+                      >
+                        {contributorCopied ? '✅ Copied!' : '🔗 Copy Contributor Link'}
+                      </button>
+                    </div>
+                    <div>
+                      <p className="text-xs text-cocoa/70 mb-1.5">Send this to {page.recipient_name} — opens with a surprise envelope animation</p>
+                      <button
+                        onClick={() => {
+                          const url = `${window.location.origin}/p/${slug}/reveal`;
+                          navigator.clipboard.writeText(url);
+                          setRevealCopied(true);
+                          setTimeout(() => setRevealCopied(false), 2000);
+                        }}
+                        className="w-full py-3 rounded-full text-sm font-semibold border-2 border-espresso text-espresso transition-all hover:opacity-90"
+                      >
+                        {revealCopied ? '✅ Copied!' : '🎁 Copy Reveal Link'}
+                      </button>
+                    </div>
+                    <div>
+                      <p className="text-xs text-cocoa/70 mb-1.5">Copy a ready-made reminder to nudge people who haven&apos;t contributed yet</p>
+                      <button
+                        onClick={() => {
+                          const url = `${window.location.origin}/p/${slug}`;
+                          const message = `Hey! Don't forget to add your message for ${page.recipient_name}'s ${formatOccasion(page.template_type)} celebration: ${url}`;
+                          navigator.clipboard.writeText(message);
+                          setReminderCopied(true);
+                          setTimeout(() => setReminderCopied(false), 2000);
+                        }}
+                        className="w-full py-3 rounded-full text-sm font-semibold border-2 border-terracotta text-terracotta transition-all hover:opacity-90"
+                      >
+                        {reminderCopied ? '✅ Copied!' : '📋 Copy Reminder Message'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

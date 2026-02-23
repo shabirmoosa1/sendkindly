@@ -66,7 +66,7 @@ export default function SignupPage() {
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
             <div className="w-full max-w-md card p-8 animate-fade-in">
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-terracotta mb-2">SendKindly</h1>
+                    <Link href="/" className="no-underline"><h1 className="text-3xl font-bold text-terracotta mb-2">SendKindly</h1></Link>
                     <p className="text-cocoa">Create your account</p>
                 </div>
 

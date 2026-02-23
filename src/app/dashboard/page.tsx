@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import Navbar from '@/components/Navbar';
 
 interface Page {
   id: string;
@@ -21,7 +22,6 @@ export default function DashboardPage() {
   const router = useRouter();
   const [pages, setPages] = useState<Page[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userEmail, setUserEmail] = useState('');
   const [filter, setFilter] = useState<FilterTab>('all');
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
 
@@ -32,8 +32,6 @@ export default function DashboardPage() {
         router.push('/login');
         return;
       }
-      setUserEmail(user.email || '');
-
       const { data: pagesData, error } = await supabase
         .from('pages')
         .select('*')
@@ -64,11 +62,6 @@ export default function DashboardPage() {
     }
     loadData();
   }, [router]);
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
-  };
 
   const copyShareLink = async (slug: string) => {
     const url = `${window.location.origin}/p/${slug}`;
@@ -126,22 +119,11 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-ivory">
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🎁</span>
-            <span className="text-lg sm:text-xl font-bold text-espresso">SendKindly</span>
-          </div>
-          <div className="flex items-center gap-3 sm:gap-4">
-            <span className="text-sm text-cocoa hidden sm:inline truncate max-w-[200px]">{userEmail}</span>
-            <button onClick={handleSignOut} className="text-sm text-cocoa hover:text-espresso transition-colors whitespace-nowrap">Sign Out</button>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="max-w-[1100px] mx-auto px-6 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold">Your Celebrations</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">My Celebrations</h1>
           <button onClick={() => router.push('/dashboard/create')} className="btn-primary flex items-center justify-center gap-2 shrink-0">
             <span className="text-lg">+</span> New Celebration
           </button>

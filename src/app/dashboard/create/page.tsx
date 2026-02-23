@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import Navbar from '@/components/Navbar';
 
 type Step = 1 | 2 | 3;
 
@@ -34,6 +35,7 @@ export default function CreatePage() {
   const [recipientName, setRecipientName] = useState('');
   const [occasion, setOccasion] = useState('');
   const [template, setTemplate] = useState('classic');
+  const [creatorMessage, setCreatorMessage] = useState('');
   const [contributionPrompt, setContributionPrompt] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -60,6 +62,7 @@ export default function CreatePage() {
         slug,
         recipient_name: recipientName.trim(),
         template_type: occasion,
+        creator_message: creatorMessage.trim() || null,
         contribution_prompt: contributionPrompt.trim() || null,
         status: 'collecting',
       });
@@ -79,7 +82,9 @@ export default function CreatePage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-ivory">
+    <div className="min-h-screen bg-ivory">
+      <Navbar />
+      <div className="flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-[560px]">
 
         {/* Back Button */}
@@ -136,10 +141,26 @@ export default function CreatePage() {
                 </select>
               </div>
 
-              <div className="mb-8">
-                <label className="block text-sm font-medium text-cocoa mb-2">
-                  Prompt for contributors <span className="text-cocoa/50">(optional)</span>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-cocoa mb-1">
+                  Welcome note for contributors <span className="text-cocoa/50">(optional)</span>
                 </label>
+                <p className="text-xs text-cocoa/50 mb-2">Help friends understand why this celebration matters</p>
+                <textarea
+                  value={creatorMessage}
+                  onChange={(e) => setCreatorMessage(e.target.value.slice(0, 500))}
+                  placeholder="e.g., Grandma is turning 80 and we want to surprise her with messages from everyone who loves her!"
+                  rows={3}
+                  className="w-full input-warm resize-none"
+                />
+                <p className="text-xs text-cocoa/50 text-right mt-1">{creatorMessage.length}/500</p>
+              </div>
+
+              <div className="mb-8">
+                <label className="block text-sm font-medium text-cocoa mb-1">
+                  Hint for contributors <span className="text-cocoa/50">(optional)</span>
+                </label>
+                <p className="text-xs text-cocoa/50 mb-2">A short suggestion for what to write about</p>
                 <textarea
                   value={contributionPrompt}
                   onChange={(e) => setContributionPrompt(e.target.value.slice(0, 200))}
@@ -220,10 +241,16 @@ export default function CreatePage() {
                     {templates.find(t => t.id === template)?.name || template}
                   </span>
                 </div>
+                {creatorMessage.trim() && (
+                  <div className="flex items-start justify-between mb-4">
+                    <span className="text-sm text-cocoa shrink-0">Welcome Note</span>
+                    <span className="text-sm text-espresso text-right ml-4 line-clamp-3">&ldquo;{creatorMessage.trim()}&rdquo;</span>
+                  </div>
+                )}
                 {contributionPrompt.trim() && (
                   <div className="flex items-start justify-between">
-                    <span className="text-sm text-cocoa shrink-0">Prompt</span>
-                    <span className="font-semibold text-espresso text-right ml-4">&ldquo;{contributionPrompt.trim()}&rdquo;</span>
+                    <span className="text-sm text-cocoa shrink-0">Hint</span>
+                    <span className="text-sm text-espresso text-right ml-4">&ldquo;{contributionPrompt.trim()}&rdquo;</span>
                   </div>
                 )}
               </div>
@@ -242,6 +269,7 @@ export default function CreatePage() {
             </>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

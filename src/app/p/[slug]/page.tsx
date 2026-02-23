@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import Navbar from '@/components/Navbar';
 
 interface PageData {
   id: string;
@@ -10,6 +11,7 @@ interface PageData {
   recipient_name: string;
   template_type: string;
   hero_image_url: string | null;
+  creator_message: string | null;
   contribution_prompt: string | null;
   status: string;
 }
@@ -194,18 +196,15 @@ export default function ContributorPage() {
 
   return (
     <div className="min-h-screen bg-ivory">
-      {/* Header */}
-      <div className="text-center pt-6 pb-2">
-        <span className="text-sm font-bold tracking-widest text-espresso">SendKindly</span>
-      </div>
+      <Navbar />
 
       {/* Main Content */}
       <div className="max-w-[700px] mx-auto px-6 py-6">
 
         {/* Hero Card */}
-        <div className="card overflow-hidden mb-8">
+        <div className="card overflow-hidden mb-6">
           <div
-            className="h-48 flex items-end relative overflow-hidden"
+            className="h-56 sm:h-64 flex items-end relative overflow-hidden"
             style={{
               background: page.hero_image_url
                 ? `url(${page.hero_image_url}) center/cover`
@@ -217,24 +216,37 @@ export default function ContributorPage() {
                 <span className="text-8xl">🎁</span>
               </div>
             )}
-            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white/30 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white/40 to-transparent" />
           </div>
-          <div className="p-6">
+          <div className="p-6 sm:p-8">
             <p className="text-xs font-semibold tracking-widest text-cocoa/60 mb-1">
               {formatOccasion(page.template_type).toUpperCase()} CELEBRATION
             </p>
-            <h1 className="text-2xl font-bold mb-2">
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2">
               For {page.recipient_name}
             </h1>
             <p className="text-sm text-cocoa">✨ {contribCount} memories shared so far</p>
+
+            {/* Creator Welcome Message */}
+            {page.creator_message && (
+              <div className="mt-5 p-5 rounded-2xl bg-ivory border-l-4 border-terracotta">
+                <p className="text-xs font-semibold tracking-widest text-cocoa/60 mb-2">
+                  FROM THE ORGANIZER
+                </p>
+                <p className="text-base text-espresso leading-relaxed italic">
+                  &ldquo;{page.creator_message}&rdquo;
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Contribution Prompt Callout */}
+        {/* Contribution Hint */}
         {page.contribution_prompt && !submitted && (
-          <div className="rounded-2xl p-5 mb-6 bg-gold/10 border-l-4 border-gold">
-            <p className="text-sm font-medium text-espresso">
-              {page.contribution_prompt}
+          <div className="rounded-2xl p-4 mb-6 bg-gold/10 border border-gold/20">
+            <p className="text-sm text-cocoa flex items-center gap-2">
+              <span className="font-semibold text-gold">Hint:</span>
+              <span>{page.contribution_prompt}</span>
             </p>
           </div>
         )}
@@ -262,7 +274,7 @@ export default function ContributorPage() {
         {!submitted && !contribType && (
           <>
             <h2 className="text-xl font-bold mb-4">
-              Add your contribution
+              Add your message for {page.recipient_name}
             </h2>
             <div className="grid grid-cols-2 gap-4">
               <button
@@ -397,19 +409,13 @@ export default function ContributorPage() {
           </div>
         )}
 
-        {/* Navigation Links */}
-        <div className="flex flex-col sm:flex-row gap-3 mt-8 mb-4">
+        {/* Navigation Link */}
+        <div className="mt-8 mb-4">
           <a
             href={`/p/${slug}/keepsake`}
-            className="flex-1 text-center py-3 rounded-full text-sm font-semibold border-2 border-gold text-gold transition-all hover:opacity-90"
+            className="block text-center py-3 rounded-full text-sm font-semibold border-2 border-gold text-gold transition-all hover:opacity-90"
           >
             View Keepsake
-          </a>
-          <a
-            href="/dashboard"
-            className="flex-1 text-center py-3 rounded-full text-sm font-semibold border-2 border-espresso text-espresso transition-all hover:opacity-90"
-          >
-            Back to Dashboard
           </a>
         </div>
       </div>
