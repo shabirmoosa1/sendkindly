@@ -45,6 +45,7 @@ export default function KeepsakePage() {
   const [replyText, setReplyText] = useState('');
   const [submittingReply, setSubmittingReply] = useState(false);
   const [replySent, setReplySent] = useState(false);
+  const [reminderCopied, setReminderCopied] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -243,14 +244,26 @@ export default function KeepsakePage() {
                     </button>
                     <button
                       onClick={() => {
-                        const url = `${window.location.origin}/p/${slug}/keepsake?recipient=true`;
+                        const url = `${window.location.origin}/p/${slug}/reveal`;
                         navigator.clipboard.writeText(url);
                       }}
                       className="flex-1 py-3 rounded-full text-sm font-semibold border-2 border-espresso text-espresso transition-all hover:opacity-90"
                     >
-                      🎁 Copy Recipient Link
+                      🎁 Copy Reveal Link
                     </button>
                   </div>
+                  <button
+                    onClick={() => {
+                      const url = `${window.location.origin}/p/${slug}`;
+                      const message = `Hey! Don't forget to add your message for ${page.recipient_name}'s ${formatOccasion(page.template_type)} celebration: ${url}`;
+                      navigator.clipboard.writeText(message);
+                      setReminderCopied(true);
+                      setTimeout(() => setReminderCopied(false), 2000);
+                    }}
+                    className="w-full py-3 rounded-full text-sm font-semibold border-2 border-terracotta text-terracotta transition-all hover:opacity-90"
+                  >
+                    {reminderCopied ? '✅ Copied!' : '📋 Copy Reminder Message'}
+                  </button>
                   <div className="flex flex-col sm:flex-row gap-3">
                     <button
                       onClick={() => window.location.href = `/p/${slug}`}

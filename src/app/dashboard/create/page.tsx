@@ -34,6 +34,7 @@ export default function CreatePage() {
   const [recipientName, setRecipientName] = useState('');
   const [occasion, setOccasion] = useState('');
   const [template, setTemplate] = useState('classic');
+  const [contributionPrompt, setContributionPrompt] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -59,6 +60,7 @@ export default function CreatePage() {
         slug,
         recipient_name: recipientName.trim(),
         template_type: occasion,
+        contribution_prompt: contributionPrompt.trim() || null,
         status: 'collecting',
       });
 
@@ -120,7 +122,7 @@ export default function CreatePage() {
                 />
               </div>
 
-              <div className="mb-8">
+              <div className="mb-6">
                 <label className="block text-sm font-medium text-cocoa mb-2">Occasion</label>
                 <select
                   value={occasion}
@@ -134,9 +136,19 @@ export default function CreatePage() {
                 </select>
               </div>
 
-              <p className="text-center text-xs tracking-widest text-cocoa/50 mb-6">
-                ✨ SENDKINDLY REFINED SETUP ✨
-              </p>
+              <div className="mb-8">
+                <label className="block text-sm font-medium text-cocoa mb-2">
+                  Prompt for contributors <span className="text-cocoa/50">(optional)</span>
+                </label>
+                <textarea
+                  value={contributionPrompt}
+                  onChange={(e) => setContributionPrompt(e.target.value.slice(0, 200))}
+                  placeholder="e.g., Share your favorite memory with Sarah"
+                  rows={2}
+                  className="w-full input-warm resize-none"
+                />
+                <p className="text-xs text-cocoa/50 text-right mt-1">{contributionPrompt.length}/200</p>
+              </div>
 
               <button
                 onClick={() => setStep(2)}
@@ -202,12 +214,18 @@ export default function CreatePage() {
                   <span className="text-sm text-cocoa">Occasion</span>
                   <span className="font-semibold text-espresso">{formatOccasion(occasion)}</span>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-4">
                   <span className="text-sm text-cocoa">Style</span>
                   <span className="font-semibold text-espresso">
                     {templates.find(t => t.id === template)?.name || template}
                   </span>
                 </div>
+                {contributionPrompt.trim() && (
+                  <div className="flex items-start justify-between">
+                    <span className="text-sm text-cocoa shrink-0">Prompt</span>
+                    <span className="font-semibold text-espresso text-right ml-4">&ldquo;{contributionPrompt.trim()}&rdquo;</span>
+                  </div>
+                )}
               </div>
 
               {error && (

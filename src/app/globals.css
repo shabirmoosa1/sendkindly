@@ -204,3 +204,50 @@ input:focus, textarea:focus, select:focus {
 .animate-scale-in {
   animation: scaleIn 250ms ease-out forwards;
 }
+
+/* ============================================
+   ENVELOPE REVEAL ANIMATIONS
+   ============================================ */
+
+@keyframes envelopeAppear {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes flapOpen {
+  from { transform: rotateX(0deg); }
+  to { transform: rotateX(180deg); }
+}
+
+@keyframes cardRise {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(-20px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.animate-envelope-appear {
+  animation: envelopeAppear 600ms ease-out forwards;
+}
+
+.animate-flap-open {
+  transform-origin: top center;
+  animation: flapOpen 800ms ease-in-out 1.2s forwards;
+}
+
+.animate-card-rise {
+  opacity: 0;
+  animation: cardRise 700ms ease-out 1.8s forwards;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, var(--gold) 0%, #E8D490 50%, var(--gold) 100%);
+  background-size: 200% auto;
+  animation: shimmer 2s linear infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

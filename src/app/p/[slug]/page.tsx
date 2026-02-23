@@ -10,6 +10,7 @@ interface PageData {
   recipient_name: string;
   template_type: string;
   hero_image_url: string | null;
+  contribution_prompt: string | null;
   status: string;
 }
 
@@ -32,6 +33,9 @@ export default function ContributorPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   useEffect(() => {
     async function loadPage() {
@@ -133,6 +137,35 @@ export default function ContributorPage() {
     setError('');
   };
 
+  const fetchSuggestions = async () => {
+    if (!page) return;
+
+    const storageKey = `sk-suggest-${page.id}`;
+    const used = parseInt(localStorage.getItem(storageKey) || '0', 10);
+    if (used >= 3) return;
+
+    setLoadingSuggestions(true);
+    try {
+      const res = await fetch('/api/suggest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientName: page.recipient_name,
+          occasion: page.template_type,
+          prompt: page.contribution_prompt || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (data.suggestions) {
+        setSuggestions(data.suggestions);
+        localStorage.setItem(storageKey, String(used + 1));
+      }
+    } catch {
+      // silently fail — suggestions are optional
+    }
+    setLoadingSuggestions(false);
+  };
+
   const formatOccasion = (type: string) => {
     return type.charAt(0).toUpperCase() + type.slice(1).replace(/_/g, ' ');
   };
@@ -196,6 +229,15 @@ export default function ContributorPage() {
             <p className="text-sm text-cocoa">✨ {contribCount} memories shared so far</p>
           </div>
         </div>
+
+        {/* Contribution Prompt Callout */}
+        {page.contribution_prompt && !submitted && (
+          <div className="rounded-2xl p-5 mb-6 bg-gold/10 border-l-4 border-gold">
+            <p className="text-sm font-medium text-espresso">
+              {page.contribution_prompt}
+            </p>
+          </div>
+        )}
 
         {/* Success State */}
         {submitted && (
@@ -290,7 +332,32 @@ export default function ContributorPage() {
                   rows={5}
                   className="w-full input-warm resize-none"
                 />
-                <p className="text-xs text-cocoa/60 text-right mt-1">{messageText.length}/500</p>
+                <div className="flex items-center justify-between mt-1">
+                  <button
+                    type="button"
+                    onClick={fetchSuggestions}
+                    disabled={loadingSuggestions || parseInt(localStorage.getItem(`sk-suggest-${page.id}`) || '0', 10) >= 3}
+                    className="text-xs font-medium text-terracotta hover:text-terracotta/80 disabled:text-cocoa/40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {loadingSuggestions ? 'Thinking...' : 'Need inspiration? ✨'}
+                  </button>
+                  <p className="text-xs text-cocoa/60">{messageText.length}/500</p>
+                </div>
+
+                {suggestions.length > 0 && (
+                  <div className="mt-3 flex flex-col gap-2">
+                    {suggestions.map((s, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => { setMessageText(s); setSuggestions([]); }}
+                        className="text-left text-sm p-3 rounded-xl bg-gold/10 border border-gold/20 text-espresso hover:bg-gold/20 transition-colors"
+                      >
+                        &ldquo;{s}&rdquo;
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
