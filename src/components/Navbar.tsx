@@ -42,7 +42,7 @@ export default function Navbar() {
               <>
                 <Link
                   href="/dashboard"
-                  className="text-sm font-medium text-cocoa hover:text-espresso transition-colors no-underline"
+                  className="text-sm font-medium text-cocoa hover:text-terracotta transition-colors no-underline relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[2px] after:bg-terracotta after:transition-all hover:after:w-full"
                 >
                   Dashboard
                 </Link>
@@ -51,7 +51,7 @@ export default function Navbar() {
                 </span>
                 <button
                   onClick={handleSignOut}
-                  className="text-sm text-cocoa hover:text-espresso transition-colors whitespace-nowrap"
+                  className="text-sm font-medium text-cocoa hover:text-terracotta transition-colors whitespace-nowrap relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[2px] after:bg-terracotta after:transition-all hover:after:w-full"
                 >
                   Sign Out
                 </button>
@@ -59,7 +59,7 @@ export default function Navbar() {
             ) : (
               <Link
                 href="/login"
-                className="text-sm font-medium text-terracotta hover:text-terracotta/80 transition-colors no-underline"
+                className="text-sm font-medium text-cocoa hover:text-terracotta transition-colors no-underline relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[2px] after:bg-terracotta after:transition-all hover:after:w-full"
               >
                 Sign In
               </Link>

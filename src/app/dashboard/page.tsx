@@ -205,13 +205,13 @@ export default function DashboardPage() {
                   {/* Expand/collapse for reveal + reminder links */}
                   <button
                     onClick={() => setExpandedSlug(expandedSlug === page.slug ? null : page.slug)}
-                    className="w-full text-center text-xs text-cocoa/50 hover:text-cocoa mt-3 transition-colors"
+                    className="w-full text-center text-xs text-cocoa/50 hover:text-cocoa py-3 transition-colors"
                   >
                     {expandedSlug === page.slug ? 'Hide options ▲' : 'More options ▼'}
                   </button>
 
                   {expandedSlug === page.slug && (
-                    <div className="mt-3 pt-3 border-t border-gray-100 flex flex-col gap-3 animate-fade-in">
+                    <div className="mx-6 mb-6 pt-3 border-t border-gray-100 flex flex-col gap-3 animate-fade-in">
                       <div>
                         <p className="text-xs text-cocoa/60 mb-1.5">🎁 Share this with {page.recipient_name} — they&apos;ll see a surprise envelope reveal</p>
                         <button

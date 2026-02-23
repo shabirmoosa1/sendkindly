@@ -57,29 +57,39 @@ h1, h2, h3, h4, h5, h6 {
    UTILITY CLASSES
    ============================================ */
 
-/* Glassmorphism */
+/* Glassmorphism — enhanced depth */
 .glass {
   background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-border);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.03),
+    0 8px 24px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
-/* iOS-style soft shadow */
+/* iOS-style soft shadow — layered for depth */
 .ios-shadow {
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    0 8px 24px rgba(0, 0, 0, 0.06),
+    0 16px 40px rgba(0, 0, 0, 0.03);
 }
 
-/* Card base */
+/* Card base — deeper layered shadow */
 .card {
   background: var(--card-bg);
   border-radius: 1.5rem; /* rounded-3xl */
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    0 8px 24px rgba(0, 0, 0, 0.06),
+    0 16px 40px rgba(0, 0, 0, 0.03);
 }
 
-/* Primary Button — Terracotta */
+/* Primary Button — Terracotta with depth */
 .btn-primary {
-  background-color: var(--terracotta);
+  background: linear-gradient(180deg, #c47d5a 0%, var(--terracotta) 100%);
   color: white;
   border-radius: 9999px;
   min-height: 52px;
@@ -89,25 +99,35 @@ h1, h2, h3, h4, h5, h6 {
   transition: all 200ms ease-out;
   cursor: pointer;
   border: none;
-  box-shadow: 0 4px 14px rgba(183, 110, 76, 0.2);
+  box-shadow:
+    0 2px 4px rgba(183, 110, 76, 0.2),
+    0 6px 16px rgba(183, 110, 76, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .btn-primary:hover {
-  opacity: 0.92;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow:
+    0 4px 8px rgba(183, 110, 76, 0.2),
+    0 10px 24px rgba(183, 110, 76, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .btn-primary:active {
-  transform: scale(0.98);
+  transform: translateY(0) scale(0.98);
+  box-shadow:
+    0 1px 4px rgba(183, 110, 76, 0.2),
+    inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .btn-primary:disabled {
   opacity: 0.45;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
-/* Secondary Button — Espresso outline */
+/* Secondary Button — Espresso outline with depth */
 .btn-secondary {
   background-color: transparent;
   color: var(--espresso);
@@ -119,20 +139,26 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.95rem;
   transition: all 200ms ease-out;
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(42, 31, 28, 0.08);
 }
 
 .btn-secondary:hover {
   background-color: var(--espresso);
   color: white;
+  transform: translateY(-2px);
+  box-shadow:
+    0 4px 12px rgba(42, 31, 28, 0.15),
+    0 8px 24px rgba(42, 31, 28, 0.1);
 }
 
 .btn-secondary:active {
-  transform: scale(0.98);
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 1px 4px rgba(42, 31, 28, 0.1);
 }
 
-/* Gold accent button */
+/* Gold accent button with depth */
 .btn-gold {
-  background-color: var(--gold);
+  background: linear-gradient(180deg, #d4b85e 0%, var(--gold) 100%);
   color: white;
   border-radius: 9999px;
   min-height: 52px;
@@ -142,16 +168,25 @@ h1, h2, h3, h4, h5, h6 {
   transition: all 200ms ease-out;
   cursor: pointer;
   border: none;
-  box-shadow: 0 4px 14px rgba(200, 169, 81, 0.2);
+  box-shadow:
+    0 2px 4px rgba(200, 169, 81, 0.2),
+    0 6px 16px rgba(200, 169, 81, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .btn-gold:hover {
-  opacity: 0.92;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow:
+    0 4px 8px rgba(200, 169, 81, 0.2),
+    0 10px 24px rgba(200, 169, 81, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .btn-gold:active {
-  transform: scale(0.98);
+  transform: translateY(0) scale(0.98);
+  box-shadow:
+    0 1px 4px rgba(200, 169, 81, 0.2),
+    inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* ============================================
@@ -164,15 +199,16 @@ input:focus, textarea:focus, select:focus, button:focus-visible {
   box-shadow: 0 0 0 3px var(--ring-color);
 }
 
-/* Input base style */
+/* Input base style — with subtle inner depth */
 .input-warm {
   background-color: var(--input-bg);
-  border: none;
+  border: 1px solid rgba(90, 75, 69, 0.08);
   border-radius: 1rem; /* rounded-2xl */
   padding: 0.875rem 1.25rem;
   font-size: 1rem;
   color: var(--espresso);
-  transition: box-shadow 200ms ease-out;
+  transition: all 200ms ease-out;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .input-warm::placeholder {
@@ -180,7 +216,8 @@ input:focus, textarea:focus, select:focus, button:focus-visible {
 }
 
 .input-warm:focus {
-  box-shadow: 0 0 0 3px var(--ring-color);
+  box-shadow: 0 0 0 3px var(--ring-color), inset 0 1px 3px rgba(0, 0, 0, 0.04);
+  border-color: rgba(183, 110, 76, 0.2);
 }
 
 /* ============================================

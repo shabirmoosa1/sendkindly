@@ -425,7 +425,7 @@ export default function ContributorPage() {
             <div className="grid grid-cols-2 gap-4">
               <button
                 onClick={() => setContribType('photo')}
-                className="glass rounded-2xl ios-shadow p-6 sm:p-8 hover:shadow-md transition-all text-center active:scale-95"
+                className="glass rounded-2xl ios-shadow p-6 sm:p-8 hover:shadow-lg hover:-translate-y-1 transition-all text-center active:scale-95"
               >
                 <span className="text-4xl block mb-3">📷</span>
                 <span className="font-semibold text-espresso">Add Photo</span>
@@ -433,12 +433,22 @@ export default function ContributorPage() {
               </button>
               <button
                 onClick={() => setContribType('note')}
-                className="glass rounded-2xl ios-shadow p-6 sm:p-8 hover:shadow-md transition-all text-center active:scale-95"
+                className="glass rounded-2xl ios-shadow p-6 sm:p-8 hover:shadow-lg hover:-translate-y-1 transition-all text-center active:scale-95"
               >
                 <span className="text-4xl block mb-3">✍️</span>
                 <span className="font-semibold text-espresso">Write Note</span>
                 <span className="block text-xs text-cocoa/50 mt-1">Send a message</span>
               </button>
+              <div className="glass rounded-2xl p-6 sm:p-8 text-center opacity-50 relative">
+                <span className="text-4xl block mb-3">🎤</span>
+                <span className="font-semibold text-espresso">Voice Note</span>
+                <span className="block text-xs text-cocoa/50 mt-1">Coming soon</span>
+              </div>
+              <div className="glass rounded-2xl p-6 sm:p-8 text-center opacity-50 relative">
+                <span className="text-4xl block mb-3">🎨</span>
+                <span className="font-semibold text-espresso">AI Sticker</span>
+                <span className="block text-xs text-cocoa/50 mt-1">Coming soon</span>
+              </div>
             </div>
           </>
         )}

@@ -6,18 +6,18 @@ import { supabase } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
 
 const occasions = [
-  { emoji: '🎂', label: 'Birthday' },
-  { emoji: '💒', label: 'Wedding' },
-  { emoji: '👶', label: 'Baby Shower' },
-  { emoji: '🎓', label: 'Graduation' },
-  { emoji: '👋', label: 'Farewell' },
-  { emoji: '🕊️', label: 'Memorial' },
-  { emoji: '🙏', label: 'Thank You' },
-  { emoji: '🎉', label: 'Retirement' },
-  { emoji: '💼', label: 'Work Anniversary' },
-  { emoji: '🚀', label: 'Promotion' },
-  { emoji: '🌟', label: 'New Job' },
-  { emoji: '✨', label: 'Other' },
+  { emoji: '🎂', label: 'Birthday', value: 'birthday' },
+  { emoji: '💒', label: 'Wedding', value: 'wedding' },
+  { emoji: '👶', label: 'Baby Shower', value: 'baby_shower' },
+  { emoji: '🎓', label: 'Graduation', value: 'graduation' },
+  { emoji: '👋', label: 'Farewell', value: 'farewell' },
+  { emoji: '🕊️', label: 'Memorial', value: 'memorial' },
+  { emoji: '🙏', label: 'Thank You', value: 'thank_you' },
+  { emoji: '🎉', label: 'Retirement', value: 'retirement' },
+  { emoji: '💼', label: 'Work Anniversary', value: 'work_anniversary' },
+  { emoji: '🚀', label: 'Promotion', value: 'promotion' },
+  { emoji: '🌟', label: 'New Job', value: 'new_job' },
+  { emoji: '✨', label: 'Other', value: 'other' },
 ];
 
 const sampleContributions = [
@@ -68,19 +68,12 @@ export default function HomePage() {
         <p className="text-lg sm:text-xl text-cocoa mt-6 max-w-[620px] mx-auto leading-relaxed">
           Collect heartfelt messages, photos, and memories from friends and family — all in one beautiful keepsake.
         </p>
-        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="mt-10 flex items-center justify-center">
           <Link href={ctaHref}>
             <button className="btn-primary text-lg px-10">
               Start a Celebration
             </button>
           </Link>
-          {authChecked && user && (
-            <Link href="/dashboard">
-              <button className="btn-secondary px-8">
-                My Celebrations
-              </button>
-            </Link>
-          )}
         </div>
       </section>
 
@@ -136,13 +129,16 @@ export default function HomePage() {
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {occasions.map((o) => (
-            <div
+            <Link
               key={o.label}
-              className="card p-6 text-center hover:shadow-md transition-shadow cursor-default"
+              href={user ? `/dashboard/create?occasion=${o.value}` : `/signup?occasion=${o.value}`}
+              className="no-underline"
             >
-              <span className="text-3xl block mb-2">{o.emoji}</span>
-              <span className="text-sm font-semibold text-espresso">{o.label}</span>
-            </div>
+              <div className="card p-6 text-center hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer">
+                <span className="text-3xl block mb-2">{o.emoji}</span>
+                <span className="text-sm font-semibold text-espresso">{o.label}</span>
+              </div>
+            </Link>
           ))}
         </div>
       </section>
@@ -161,9 +157,9 @@ export default function HomePage() {
             {sampleContributions.map((c, i) => (
               <div
                 key={i}
-                className={`card p-5 text-left ${i === 2 ? 'sm:col-span-2' : ''}`}
+                className={`glass rounded-2xl ios-shadow p-5 text-left ${i === 2 ? 'sm:col-span-2' : ''}`}
               >
-                <p className="text-sm text-gray-800 italic leading-relaxed mb-3">
+                <p className="text-sm text-espresso/80 italic leading-relaxed mb-3">
                   &ldquo;{c.message}&rdquo;
                 </p>
                 <div className="flex items-center gap-2">
@@ -196,6 +192,22 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-gray-200 py-8">
         <div className="max-w-[1100px] mx-auto px-6 text-center">
+          {authChecked && user && (
+            <p className="text-sm text-cocoa mb-3">
+              Already creating?{' '}
+              <Link href="/dashboard" className="text-terracotta font-semibold hover:text-terracotta/80 transition-colors no-underline">
+                Go to your Dashboard →
+              </Link>
+            </p>
+          )}
+          {authChecked && !user && (
+            <p className="text-sm text-cocoa mb-3">
+              Already have an account?{' '}
+              <Link href="/login" className="text-terracotta font-semibold hover:text-terracotta/80 transition-colors no-underline">
+                Sign in to your Dashboard →
+              </Link>
+            </p>
+          )}
           <p className="text-sm text-cocoa/60">
             Made with 💛 by the <span className="font-semibold text-espresso">SendKindly</span> team
           </p>

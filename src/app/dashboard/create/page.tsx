@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
 
@@ -20,52 +20,64 @@ const templates = [
   { id: 'memorial', name: 'Memorial', desc: 'Dark and respectful', emoji: '🕊️', color: '#e2e8f0' },
 ];
 
-const OCCASION_PLACEHOLDERS: Record<string, { wish: string; instructions: string }> = {
+const OCCASION_PLACEHOLDERS: Record<string, { name: string; wish: string; instructions: string }> = {
   birthday: {
+    name: 'e.g., Grandma Sarah',
     wish: 'Happy 80th birthday Grandma! You fill our lives with so much love and laughter.',
     instructions: 'Share your favorite memory with Grandma or tell her what she means to you!',
   },
   wedding: {
+    name: 'e.g., Priya & Rahul',
     wish: 'Congratulations on your beautiful wedding! Wishing you a lifetime of love.',
     instructions: 'Share your favorite moment with the couple or a piece of marriage advice!',
   },
   baby_shower: {
+    name: 'e.g., Anita',
     wish: "So excited to meet your little one! You're going to be amazing parents.",
     instructions: 'Share your best parenting tip or a sweet wish for the baby!',
   },
   graduation: {
+    name: 'e.g., Rohan',
     wish: "Congratulations on your graduation! We're so proud of everything you've achieved.",
     instructions: 'Share a favorite school memory or words of encouragement for the future!',
   },
   farewell: {
+    name: 'e.g., Coach Mike',
     wish: "We'll miss you so much! Thank you for all the incredible memories.",
     instructions: 'Tell them what working together meant to you or share a favorite moment!',
   },
   memorial: {
+    name: 'e.g., Uncle Dev',
     wish: 'Your light touched so many lives. We carry your memory with love.',
     instructions: 'Share a cherished memory or what they meant to you.',
   },
   thank_you: {
+    name: 'e.g., Mrs. Patel',
     wish: 'Thank you for everything you do. You make such a difference in our lives!',
     instructions: 'Share how they have helped or inspired you!',
   },
   work_anniversary: {
+    name: 'e.g., Sunita',
     wish: 'Happy work anniversary! Your dedication and contributions are truly valued.',
     instructions: 'Share a favorite work memory or what you appreciate about working with them!',
   },
   retirement: {
+    name: 'e.g., Mr. Sharma',
     wish: 'Happy retirement! Enjoy every moment of this exciting new chapter.',
     instructions: 'Share a work memory or your wishes for their retirement!',
   },
   promotion: {
+    name: 'e.g., Amir',
     wish: 'Congratulations on your well-deserved promotion! So proud of you.',
     instructions: 'Share why they deserve this or a favorite work moment together!',
   },
   new_job: {
+    name: 'e.g., Leela',
     wish: "Exciting new beginnings! You're going to do amazing things.",
     instructions: 'Share your wishes for their new journey or a favorite memory together!',
   },
   other: {
+    name: 'e.g., a friend, a colleague',
     wish: 'Thinking of you and wishing you all the best!',
     instructions: 'Share a memory, a wish, or something you appreciate about them!',
   },
@@ -124,12 +136,37 @@ function generateSlug(): string {
   return slug;
 }
 
-export default function CreatePage() {
+export default function CreatePageWrapper() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-ivory">
+        <div className="text-center">
+          <div className="text-5xl mb-4">✨</div>
+          <div className="w-10 h-10 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg font-semibold text-espresso">Loading...</p>
+        </div>
+      </div>
+    }>
+      <CreatePage />
+    </Suspense>
+  );
+}
+
+function CreatePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [step, setStep] = useState<Step>(1);
   const [recipientName, setRecipientName] = useState('');
   const [creatorName, setCreatorName] = useState('');
   const [occasion, setOccasion] = useState('');
+
+  // Pre-fill occasion from URL parameter (from homepage occasion cards)
+  useEffect(() => {
+    const occ = searchParams.get('occasion');
+    if (occ && occasions.includes(occ)) {
+      setOccasion(occ);
+    }
+  }, [searchParams]);
   const [template, setTemplate] = useState('classic');
   const [creatorMessage, setCreatorMessage] = useState('');
   const [contributionPrompt, setContributionPrompt] = useState('');
@@ -306,7 +343,7 @@ export default function CreatePage() {
                   type="text"
                   value={recipientName}
                   onChange={(e) => setRecipientName(e.target.value)}
-                  placeholder="e.g., Grandma Sarah"
+                  placeholder={occasion ? getPlaceholders(occasion).name : 'e.g., Grandma Sarah'}
                   className="w-full input-warm"
                 />
               </div>
