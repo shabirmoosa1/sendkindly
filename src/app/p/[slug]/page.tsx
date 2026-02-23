@@ -396,6 +396,22 @@ export default function ContributorPage() {
             </button>
           </div>
         )}
+
+        {/* Navigation Links */}
+        <div className="flex flex-col sm:flex-row gap-3 mt-8 mb-4">
+          <a
+            href={`/p/${slug}/keepsake`}
+            className="flex-1 text-center py-3 rounded-full text-sm font-semibold border-2 border-gold text-gold transition-all hover:opacity-90"
+          >
+            View Keepsake
+          </a>
+          <a
+            href="/dashboard"
+            className="flex-1 text-center py-3 rounded-full text-sm font-semibold border-2 border-espresso text-espresso transition-all hover:opacity-90"
+          >
+            Back to Dashboard
+          </a>
+        </div>
       </div>
     </div>
   );
