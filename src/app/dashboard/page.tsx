@@ -227,6 +227,27 @@ export default function DashboardPage() {
           <p className="text-lg font-semibold text-espresso">Planning something new?</p>
           <p className="text-sm text-cocoa">Start a collaborative gift in seconds</p>
         </div>
+
+        {/* Coming Soon Features */}
+        <div className="mt-12 mb-4">
+          <p className="text-xs font-semibold tracking-widest text-cocoa/60 mb-4">COMING IN FUTURE</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {[
+              { icon: '🎁', title: 'Group Gift Fund', desc: 'Pool money towards a gift together' },
+              { icon: '📱', title: 'QR Code Sharing', desc: 'Scan to contribute at events' },
+              { icon: '👥', title: 'Co-Organizers', desc: 'Invite others to help manage' },
+              { icon: '🎥', title: 'Video Messages', desc: 'Record video contributions' },
+              { icon: '🖨️', title: 'Print Keepsake', desc: 'Export as a beautiful PDF' },
+              { icon: '🔔', title: 'Notifications', desc: 'Get notified of new messages' },
+            ].map((feature) => (
+              <div key={feature.title} className="rounded-2xl p-4 bg-white/60 border border-cocoa/10 text-center opacity-60">
+                <span className="text-2xl block mb-2">{feature.icon}</span>
+                <p className="text-sm font-semibold text-espresso">{feature.title}</p>
+                <p className="text-xs text-cocoa/60 mt-0.5">{feature.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </main>
     </div>
   );
