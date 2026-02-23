@@ -265,19 +265,31 @@ export default function KeepsakePage() {
           </div>
         )}
 
-        {contributions.length === 0 && !page.creator_message && (
-          <div className="text-center py-16">
-            <div className="text-5xl mb-4">💌</div>
-            <h2 className="text-xl italic mb-2">
-              No contributions yet
-            </h2>
-            <p className="text-cocoa">Share the link with friends and family to start collecting messages!</p>
-          </div>
-        )}
-
-        {contributions.length === 0 && page.creator_message && (
-          <div className="text-center py-8">
-            <p className="text-cocoa">Share the link with friends and family to start collecting messages!</p>
+        {contributions.length === 0 && (
+          <div className="text-center py-12">
+            {!page.creator_message && (
+              <>
+                <div className="text-5xl mb-4">💌</div>
+                <h2 className="text-xl italic mb-2">No contributions yet</h2>
+              </>
+            )}
+            <p className="text-cocoa mb-6">Share the link with friends and family to start collecting messages!</p>
+            {isCreator && (
+              <div className="flex flex-col sm:flex-row gap-3 max-w-[400px] mx-auto">
+                <button
+                  onClick={() => window.location.href = `/p/${slug}`}
+                  className="flex-1 btn-primary"
+                >
+                  ✍️ Add Your Contribution
+                </button>
+                <button
+                  onClick={handleShareContributorLink}
+                  className="flex-1 py-3 rounded-full text-sm font-semibold border-2 border-gold text-gold transition-all hover:opacity-90"
+                >
+                  {shareFeedback || '📨 Share Link'}
+                </button>
+              </div>
+            )}
           </div>
         )}
 

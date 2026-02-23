@@ -48,21 +48,29 @@ export default function DashboardPage() {
         return;
       }
 
+      // Show pages immediately (with 0 counts) for fast load
+      const pagesWithZero = (pagesData || []).map((p) => ({ ...p, contribution_count: 0 }));
+      setPages(pagesWithZero);
+      setLoading(false);
+
+      // Then load counts in parallel (non-blocking)
       if (pagesData && pagesData.length > 0) {
-        const pagesWithCounts = await Promise.all(
+        const counts = await Promise.all(
           pagesData.map(async (page) => {
             const { count } = await supabase
               .from('contributions')
               .select('*', { count: 'exact', head: true })
               .eq('page_id', page.id);
-            return { ...page, contribution_count: count || 0 };
+            return { id: page.id, count: count || 0 };
           })
         );
-        setPages(pagesWithCounts);
-      } else {
-        setPages([]);
+        setPages((prev) =>
+          prev.map((p) => {
+            const found = counts.find((c) => c.id === p.id);
+            return found ? { ...p, contribution_count: found.count } : p;
+          })
+        );
       }
-      setLoading(false);
     }
     loadData();
   }, [router]);
@@ -114,8 +122,10 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-ivory">
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-terracotta border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-cocoa">Loading your celebrations...</p>
+          <div className="text-5xl mb-4">🎁</div>
+          <div className="w-10 h-10 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg font-semibold text-espresso mb-1">Loading your celebrations...</p>
+          <p className="text-sm text-cocoa/60">Getting everything ready</p>
         </div>
       </div>
     );

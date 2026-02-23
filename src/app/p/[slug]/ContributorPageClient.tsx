@@ -236,7 +236,12 @@ export default function ContributorPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-ivory">
-        <div className="w-8 h-8 border-4 border-terracotta border-t-transparent rounded-full animate-spin"></div>
+        <div className="text-center">
+          <div className="text-5xl mb-4">✨</div>
+          <div className="w-10 h-10 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg font-semibold text-espresso mb-1">Loading celebration...</p>
+          <p className="text-sm text-cocoa/60">Just a moment</p>
+        </div>
       </div>
     );
   }
