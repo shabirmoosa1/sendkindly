@@ -12,6 +12,7 @@ interface PageData {
   template_type: string;
   hero_image_url: string | null;
   creator_message: string | null;
+  creator_name: string | null;
   contribution_prompt: string | null;
   status: string;
 }
@@ -246,11 +247,11 @@ export default function ContributorPage() {
             </h1>
             <p className="text-sm text-cocoa">✨ {contribCount} memories shared so far</p>
 
-            {/* Organizer's Wish */}
+            {/* Organizer's Message */}
             {page.creator_message && (
               <div className="mt-5 p-5 rounded-2xl bg-ivory border-l-4 border-terracotta">
                 <p className="text-xs font-semibold tracking-widest text-cocoa/60 mb-2">
-                  THE ORGANIZER&apos;S WISH
+                  {page.creator_name ? `${page.creator_name.toUpperCase()}'S MESSAGE` : 'A MESSAGE FROM THE ORGANIZER'}
                 </p>
                 <p className="text-base text-espresso leading-relaxed italic">
                   &ldquo;{page.creator_message}&rdquo;

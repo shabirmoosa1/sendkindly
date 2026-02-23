@@ -88,6 +88,7 @@ export default function CreatePage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>(1);
   const [recipientName, setRecipientName] = useState('');
+  const [creatorName, setCreatorName] = useState('');
   const [occasion, setOccasion] = useState('');
   const [template, setTemplate] = useState('classic');
   const [creatorMessage, setCreatorMessage] = useState('');
@@ -97,7 +98,7 @@ export default function CreatePage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const canProceedStep1 = recipientName.trim().length > 0 && occasion.length > 0;
+  const canProceedStep1 = recipientName.trim().length > 0 && creatorName.trim().length > 0 && occasion.length > 0;
   const canProceedStep2 = template.length > 0;
 
   const handleCreate = async () => {
@@ -140,6 +141,7 @@ export default function CreatePage() {
       .from('pages')
       .insert({
         creator_id: user.id,
+        creator_name: creatorName.trim(),
         slug,
         recipient_name: recipientName.trim(),
         template_type: occasion,
@@ -156,7 +158,7 @@ export default function CreatePage() {
       return;
     }
 
-    router.push('/dashboard');
+    router.push(`/p/${slug}`);
   };
 
   const formatOccasion = (occ: string) => {
@@ -210,6 +212,17 @@ export default function CreatePage() {
               </div>
 
               <div className="mb-6">
+                <label className="block text-sm font-medium text-cocoa mb-2">Your Name</label>
+                <input
+                  type="text"
+                  value={creatorName}
+                  onChange={(e) => setCreatorName(e.target.value)}
+                  placeholder="e.g., Shabir"
+                  className="w-full input-warm"
+                />
+              </div>
+
+              <div className="mb-6">
                 <label className="block text-sm font-medium text-cocoa mb-2">Occasion</label>
                 <select
                   value={occasion}
@@ -225,9 +238,9 @@ export default function CreatePage() {
 
               <div className="mb-6">
                 <label className="block text-sm font-medium text-cocoa mb-1">
-                  Your wish for {recipientName || 'them'} <span className="text-cocoa/50">(optional)</span>
+                  Your message for {recipientName || 'them'} <span className="text-cocoa/50">(optional)</span>
                 </label>
-                <p className="text-xs text-cocoa/50 mb-2">Your personal message — shown to contributors and in the keepsake</p>
+                <p className="text-xs text-cocoa/50 mb-2">A personal message — shown to contributors and in the keepsake</p>
                 <textarea
                   value={creatorMessage}
                   onChange={(e) => setCreatorMessage(e.target.value.slice(0, 500))}
@@ -355,6 +368,10 @@ export default function CreatePage() {
                   <span className="font-semibold text-espresso">{recipientName}</span>
                 </div>
                 <div className="flex items-center justify-between mb-4">
+                  <span className="text-sm text-cocoa">Your Name</span>
+                  <span className="font-semibold text-espresso">{creatorName}</span>
+                </div>
+                <div className="flex items-center justify-between mb-4">
                   <span className="text-sm text-cocoa">Occasion</span>
                   <span className="font-semibold text-espresso">{formatOccasion(occasion)}</span>
                 </div>
@@ -366,7 +383,7 @@ export default function CreatePage() {
                 </div>
                 {creatorMessage.trim() && (
                   <div className="flex items-start justify-between mb-4">
-                    <span className="text-sm text-cocoa shrink-0">Your Wish</span>
+                    <span className="text-sm text-cocoa shrink-0">Your Message</span>
                     <span className="text-sm text-espresso text-right ml-4 line-clamp-3">&ldquo;{creatorMessage.trim()}&rdquo;</span>
                   </div>
                 )}

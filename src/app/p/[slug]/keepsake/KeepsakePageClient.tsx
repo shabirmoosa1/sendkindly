@@ -13,6 +13,7 @@ interface PageData {
   template_type: string;
   hero_image_url: string | null;
   creator_message: string | null;
+  creator_name: string | null;
   status: string;
 }
 
@@ -249,12 +250,12 @@ export default function KeepsakePage() {
       {/* Contributions Grid */}
       <div className="max-w-[1100px] mx-auto px-6 py-10">
 
-        {/* Organizer's Wish — pinned at top */}
+        {/* Organizer's Message — pinned at top */}
         {page.creator_message && (
           <div className="max-w-[600px] mx-auto mb-10">
             <div className="rounded-2xl p-6 ios-shadow border-l-4 border-terracotta bg-white">
               <p className="text-xs font-semibold tracking-widest text-cocoa/60 mb-3">
-                THE ORGANIZER&apos;S WISH
+                {page.creator_name ? `${page.creator_name.toUpperCase()}'S MESSAGE` : 'A MESSAGE FROM THE ORGANIZER'}
               </p>
               <p className="text-gray-800 leading-relaxed italic text-lg break-words">
                 &ldquo;{page.creator_message}&rdquo;
