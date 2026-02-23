@@ -227,11 +227,11 @@ export default function ContributorPage() {
             </h1>
             <p className="text-sm text-cocoa">✨ {contribCount} memories shared so far</p>
 
-            {/* Creator Welcome Message */}
+            {/* Organizer's Wish */}
             {page.creator_message && (
               <div className="mt-5 p-5 rounded-2xl bg-ivory border-l-4 border-terracotta">
                 <p className="text-xs font-semibold tracking-widest text-cocoa/60 mb-2">
-                  FROM THE ORGANIZER
+                  THE ORGANIZER&apos;S WISH
                 </p>
                 <p className="text-base text-espresso leading-relaxed italic">
                   &ldquo;{page.creator_message}&rdquo;
@@ -240,6 +240,16 @@ export default function ContributorPage() {
             )}
           </div>
         </div>
+
+        {/* Instructions for contributors */}
+        {page.contribution_prompt && !submitted && (
+          <div className="rounded-2xl p-4 mb-6 bg-gold/10 border border-gold/20">
+            <p className="text-sm text-cocoa">
+              <span className="font-semibold text-gold">💡 </span>
+              {page.contribution_prompt}
+            </p>
+          </div>
+        )}
 
         {/* Success State */}
         {submitted && (

@@ -36,6 +36,7 @@ export default function CreatePage() {
   const [occasion, setOccasion] = useState('');
   const [template, setTemplate] = useState('classic');
   const [creatorMessage, setCreatorMessage] = useState('');
+  const [contributionPrompt, setContributionPrompt] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -62,6 +63,7 @@ export default function CreatePage() {
         recipient_name: recipientName.trim(),
         template_type: occasion,
         creator_message: creatorMessage.trim() || null,
+        contribution_prompt: contributionPrompt.trim() || null,
         status: 'collecting',
       });
 
@@ -139,19 +141,34 @@ export default function CreatePage() {
                 </select>
               </div>
 
-              <div className="mb-8">
+              <div className="mb-6">
                 <label className="block text-sm font-medium text-cocoa mb-1">
-                  Welcome note for contributors <span className="text-cocoa/50">(optional)</span>
+                  Your wish for {recipientName || 'them'} <span className="text-cocoa/50">(optional)</span>
                 </label>
-                <p className="text-xs text-cocoa/50 mb-2">Help friends understand why this celebration matters</p>
+                <p className="text-xs text-cocoa/50 mb-2">Your personal message — shown to contributors and in the keepsake</p>
                 <textarea
                   value={creatorMessage}
                   onChange={(e) => setCreatorMessage(e.target.value.slice(0, 500))}
-                  placeholder="e.g., Grandma is turning 80 and we want to surprise her with messages from everyone who loves her!"
+                  placeholder="e.g., Happy 80th birthday Grandma! You fill our lives with so much love and laughter."
                   rows={3}
                   className="w-full input-warm resize-none"
                 />
                 <p className="text-xs text-cocoa/50 text-right mt-1">{creatorMessage.length}/500</p>
+              </div>
+
+              <div className="mb-8">
+                <label className="block text-sm font-medium text-cocoa mb-1">
+                  Instructions for contributors <span className="text-cocoa/50">(optional)</span>
+                </label>
+                <p className="text-xs text-cocoa/50 mb-2">Tell friends what kind of messages to write</p>
+                <textarea
+                  value={contributionPrompt}
+                  onChange={(e) => setContributionPrompt(e.target.value.slice(0, 200))}
+                  placeholder="e.g., Share your favorite memory with Grandma or tell her what she means to you!"
+                  rows={2}
+                  className="w-full input-warm resize-none"
+                />
+                <p className="text-xs text-cocoa/50 text-right mt-1">{contributionPrompt.length}/200</p>
               </div>
 
               <button
@@ -225,9 +242,15 @@ export default function CreatePage() {
                   </span>
                 </div>
                 {creatorMessage.trim() && (
-                  <div className="flex items-start justify-between">
-                    <span className="text-sm text-cocoa shrink-0">Welcome Note</span>
+                  <div className="flex items-start justify-between mb-4">
+                    <span className="text-sm text-cocoa shrink-0">Your Wish</span>
                     <span className="text-sm text-espresso text-right ml-4 line-clamp-3">&ldquo;{creatorMessage.trim()}&rdquo;</span>
+                  </div>
+                )}
+                {contributionPrompt.trim() && (
+                  <div className="flex items-start justify-between">
+                    <span className="text-sm text-cocoa shrink-0">Instructions</span>
+                    <span className="text-sm text-espresso text-right ml-4">&ldquo;{contributionPrompt.trim()}&rdquo;</span>
                   </div>
                 )}
               </div>

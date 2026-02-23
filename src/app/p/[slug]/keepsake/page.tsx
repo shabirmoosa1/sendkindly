@@ -11,6 +11,7 @@ interface PageData {
   recipient_name: string;
   template_type: string;
   hero_image_url: string | null;
+  creator_message: string | null;
   status: string;
 }
 
@@ -179,12 +180,32 @@ export default function KeepsakePage() {
       {/* Contributions Grid */}
       <div className="max-w-[1100px] mx-auto px-6 py-10">
 
-        {contributions.length === 0 && (
+        {/* Organizer's Wish — pinned at top */}
+        {page.creator_message && (
+          <div className="max-w-[600px] mx-auto mb-10">
+            <div className="rounded-2xl p-6 ios-shadow border-l-4 border-terracotta bg-white">
+              <p className="text-xs font-semibold tracking-widest text-cocoa/60 mb-3">
+                THE ORGANIZER&apos;S WISH
+              </p>
+              <p className="text-gray-800 leading-relaxed italic text-lg">
+                &ldquo;{page.creator_message}&rdquo;
+              </p>
+            </div>
+          </div>
+        )}
+
+        {contributions.length === 0 && !page.creator_message && (
           <div className="text-center py-16">
             <div className="text-5xl mb-4">💌</div>
             <h2 className="text-xl font-bold mb-2">
               No contributions yet
             </h2>
+            <p className="text-cocoa">Share the link with friends and family to start collecting messages!</p>
+          </div>
+        )}
+
+        {contributions.length === 0 && page.creator_message && (
+          <div className="text-center py-8">
             <p className="text-cocoa">Share the link with friends and family to start collecting messages!</p>
           </div>
         )}
