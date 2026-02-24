@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Newsreader, Inter } from "next/font/google";
+import { Newsreader, Inter, Caveat } from "next/font/google";
 import "./globals.css";
 
 const newsreader = Newsreader({
@@ -14,6 +14,13 @@ const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
+});
+
+const caveat = Caveat({
+  variable: "--font-caveat",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -34,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${newsreader.variable} ${inter.variable} antialiased`}
+        className={`${newsreader.variable} ${inter.variable} ${caveat.variable} antialiased`}
       >
         {children}
       </body>

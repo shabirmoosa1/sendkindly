@@ -506,6 +506,14 @@ export default function KeepsakePage() {
 
         {/* Footer */}
         <div className="text-center py-8 border-t border-gray-200">
+          {contributions.length > 0 && (
+            <a
+              href={`/p/${slug}/keepsake/print`}
+              className="inline-flex items-center gap-2 mb-4 px-5 py-2.5 rounded-full text-sm font-medium text-cocoa border border-cocoa/20 hover:bg-cocoa/5 transition-colors"
+            >
+              🖨️ Print Keepsake
+            </a>
+          )}
           <p className="text-sm text-cocoa/60">
             Made with 💛 on <span className="font-semibold text-espresso">SendKindly</span>
           </p>

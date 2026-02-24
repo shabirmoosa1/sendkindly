@@ -36,6 +36,7 @@
   --color-ivory: var(--ivory);
   --font-sans: var(--font-inter);
   --font-serif: var(--font-newsreader);
+  --font-caveat: var(--font-caveat);
 }
 
 body {
@@ -324,4 +325,123 @@ input:focus, textarea:focus, select:focus, button:focus-visible {
   background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.4) 100%);
   border-radius: 9999px;
   box-shadow: 0 8px 32px rgba(183, 110, 76, 0.15);
+}
+
+/* ============================================
+   PRINTABLE KEEPSAKE
+   ============================================ */
+
+/* Caveat handwriting font for captions */
+.font-caveat {
+  font-family: var(--font-caveat), 'Caveat', cursive;
+}
+
+/* A4 page wrapper — fluid on screen, fixed on print */
+.keepsake-page {
+  max-width: 800px;
+  margin: 1.5rem auto;
+  min-height: 600px;
+  background: #F6F2EC;
+  border-radius: 1rem;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    0 8px 24px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Gold decorative rule */
+.gold-rule {
+  width: 80px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--gold) 30%, var(--gold) 70%, transparent 100%);
+}
+
+/* Polaroid-style photo card */
+.polaroid {
+  background: white;
+  padding: 12px 12px 16px;
+  border-radius: 4px;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+/* Polaroid rotation — subtle alternating tilt */
+.polaroid:nth-child(odd) {
+  transform: rotate(-1.5deg);
+}
+
+.polaroid:nth-child(even) {
+  transform: rotate(1.2deg);
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  /* Hide non-print elements */
+  .no-print,
+  .emoji-reactions {
+    display: none !important;
+  }
+
+  /* A4 sizing for print */
+  .keepsake-page {
+    width: 210mm;
+    max-width: 210mm;
+    min-height: 297mm;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    page-break-after: always;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .keepsake-page:last-child {
+    page-break-after: auto;
+  }
+
+  /* Ensure background colors print */
+  body, .keepsake-print-view {
+    background: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .keepsake-page {
+    background: #F6F2EC !important;
+  }
+
+  /* Remove polaroid rotation on print (cleaner) */
+  .polaroid:nth-child(odd),
+  .polaroid:nth-child(even) {
+    transform: none;
+  }
+
+  /* Page margins */
+  @page {
+    size: A4;
+    margin: 0;
+  }
+}
+
+/* ============================================
+   PRINTABLE KEEPSAKE — MOBILE (<600px)
+   ============================================ */
+
+@media (max-width: 600px) {
+  .keepsake-page {
+    margin: 0.75rem auto;
+    min-height: auto;
+    border-radius: 0.75rem;
+  }
+
+  /* Remove polaroid rotation on mobile */
+  .polaroid:nth-child(odd),
+  .polaroid:nth-child(even) {
+    transform: none;
+  }
 }

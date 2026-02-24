@@ -33,7 +33,8 @@ src/
 ├── middleware.ts                ← Auth redirect logic (dashboard↔auth pages)
 ├── lib/
 │   ├── supabase.ts             ← Supabase client singleton
-│   └── share.ts                ← Share utilities (native share + clipboard + email)
+│   ├── share.ts                ← Share utilities (native share + clipboard + email)
+│   └── clipboard.ts            ← Clipboard copy utility (used by dashboard)
 ├── components/
 │   └── Navbar.tsx              ← Shared navigation (auth-aware, sticky, "Dashboard" link)
 └── app/
@@ -156,14 +157,14 @@ Applied to `globals.css` in Phase A, used consistently across all pages:
 
 **Derived tokens:** `--card-bg` (#FFFFFF), `--input-bg` (#F6F2EC), `--glass-bg`, `--glass-border`, `--ring-color`
 
-**Utility classes in globals.css:**
-- `.glass` — glassmorphism (blur 12px, semi-transparent white, terracotta border)
-- `.ios-shadow` — soft shadow (`0 4px 30px rgba(0,0,0,0.05)`)
-- `.card` — white bg, rounded-3xl, ios-shadow
-- `.btn-primary` — terracotta, rounded-full, min-h 52px, hover lift, active scale
-- `.btn-secondary` — espresso outline, rounded-full, hover fill
-- `.btn-gold` — gold, rounded-full, min-h 52px
-- `.input-warm` — ivory bg, borderless, rounded-2xl, warm placeholder
+**Utility classes in globals.css (upgraded Session 8 with layered depth):**
+- `.glass` — glassmorphism (blur 16px, semi-transparent white, terracotta border, layered shadow + inner top highlight)
+- `.ios-shadow` — layered 3-shadow system (near + mid-range + ambient) for realistic depth
+- `.card` — white bg, rounded-3xl, layered 3-shadow (same as ios-shadow)
+- `.btn-primary` — terracotta gradient (lighter top → terracotta bottom), rounded-full, min-h 52px, layered shadow + inset highlight, hover lifts 2px, active presses with inset shadow
+- `.btn-secondary` — espresso outline, rounded-full, resting shadow, hover fills + lifts
+- `.btn-gold` — gold gradient (lighter top → gold bottom), rounded-full, min-h 52px, layered shadow + inset highlight
+- `.input-warm` — ivory bg, subtle border + inset shadow (recessed feel), rounded-2xl, warm placeholder, focus shows warm ring + inset shadow
 
 **Global focus rings:** All `input:focus`, `textarea:focus`, `select:focus`, `button:focus-visible` use warm terracotta ring (`rgba(183,110,76,0.3)`). No blue anywhere.
 
@@ -191,41 +192,50 @@ Shared `'use client'` component used on all pages except auth pages and reveal p
 - Sticky, white bg, `z-20`, `border-b`
 - Sign out redirects to `/` (homepage)
 - Auth pages don't use Navbar — instead the "SendKindly" heading in each auth card is a `<Link href="/">`
+- **Hover pattern (Session 8):** All nav links (Dashboard, Sign In, Sign Out) have consistent hover: text turns terracotta + animated underline slides in from left (`after:` pseudo-element)
 
 ### Landing Page (`src/app/page.tsx`)
 Full marketing page (was previously just a redirect to dashboard):
-- **Hero:** "Celebrate the people who matter most" + CTA (→ `/signup` or `/dashboard/create`)
+- **Hero:** "Celebrate the people who matter most" + single CTA button (→ `/signup` or `/dashboard/create`). "My Celebrations" button removed in Session 8.
 - **How It Works:** 3-step (Create → Collect → Share) with numbered circles
-- **Occasion Types:** 4x3 grid of 12 occasions with emojis
-- **Keepsake Preview:** 3 sample contribution cards showing what messages look like
+- **Occasion Types:** 4x3 grid of 12 occasions with emojis — **each card is clickable** (Session 8), links to `/dashboard/create?occasion={value}` (logged in) or `/signup?occasion={value}` (not logged in), with hover lift effect
+- **Keepsake Preview:** 3 sample contribution cards (glass rounded-2xl ios-shadow)
 - **Final CTA:** "Ready to make someone's day?"
-- **Footer:** "Made with 💛 by the SendKindly team"
+- **Footer:** "Made with 💛 by the SendKindly team" + dashboard link ("Already creating? Go to your Dashboard →" if logged in, "Already have an account? Sign in to your Dashboard →" if not)
 
 ### Dashboard (`src/app/dashboard/page.tsx`)
-- Filter tabs: All Projects / Active / Completed
-- Card grid showing each celebration: name, occasion, contribution count, date, status badge
-- **Primary buttons:** "Share Contributor Link" (native share on mobile / clipboard on desktop) + "View Keepsake"
-- **Expandable "More options":** Copy Reveal Link (for recipient) + Copy Reminder Message (nudge)
+- "OWNER STUDIO" micro-label, italic h1 "My Celebrations"
+- Filter tabs: All Projects / Active / Completed (glass styled)
+- Card grid showing each celebration with glass cards:
+  - **Clickable card header** (Session 7) — clicking name/occasion area opens keepsake directly
+  - Name, occasion, contribution count, date, status badge (● COLLECTING, ○ DRAFT, ◉ FINALIZING, ✓ DELIVERED)
+  - Progress bar showing contributions out of 10
+- **Primary buttons:** "🔗 Share Link" (clipboard) + "Open Keepsake →" (terracotta)
+- **Expandable "More options"** (with proper padding): Copy Reveal Link (for recipient) + Copy Reminder Message (nudge)
+- **Async loading** (Session 7): Pages appear immediately with 0 counts, then counts load in background via `Promise.all`
+- **Warm loading state**: 🎁 emoji, gold spinner, "Loading your celebrations..."
 - Empty state with "Create your first celebration!" CTA
 - Dashed "Planning something new?" card
-- **"COMING IN FUTURE" section:** 6 placeholder cards (Group Gift Fund, QR Code Sharing, Co-Organizers, Video Messages, Print Keepsake, Notifications)
+- **"COMING IN FUTURE" section:** 6 glass placeholder cards at 60% opacity (Group Gift Fund, QR Code Sharing, Co-Organizers, Video Messages, Print Keepsake, Notifications)
 
 ### Create Wizard (`src/app/dashboard/create/page.tsx`)
-3-step wizard with progress dots:
-- **Step 1:** Recipient name, **Your name** (creator), occasion dropdown (12 options, **dynamic placeholders** per occasion), "Your message for {name}" (500 chars), "Instructions for contributors" (200 chars)
-- **Step 2:** Template selection (Classic ✨, Playful 🎨, Memorial 🕊️) + optional cover image upload
-- **Step 3:** Review all fields + "Create Celebration 🎉" button
+3-step wizard with progress dots, wrapped in `<Suspense>` boundary (required for `useSearchParams`):
+- **URL param pre-fill** (Session 8): reads `?occasion=` from URL (set by homepage occasion cards) and pre-fills the dropdown
+- **Step 1:** Recipient name (with **occasion-specific placeholder** — e.g., "Priya & Rahul" for wedding, "Coach Mike" for farewell), **Your name** (creator), occasion dropdown (12 options), **dynamic textarea placeholders** per occasion, "Your message for {name}" (500 chars), "Instructions for contributors" (200 chars)
+- **AI suggestions** (Session 7): "Need inspiration? ✨" button below message textarea + "Suggest instructions" button below instructions textarea — both show 3 clickable suggestion chips from Claude Haiku
+- **Step 2:** Template selection (Classic ✨, Playful 🎨, Memorial 🕊️) + optional cover image upload (with client-side compression: max 1200px, JPEG 0.8)
+- **Step 3:** Review all fields in glass panel + "Create Celebration 🎉" button
 - Generates 8-char random slug, inserts into `pages` table, **redirects to contributor page** (so organizer can immediately contribute photos/notes)
 
 ### Contributor Page (`src/app/p/[slug]/ContributorPageClient.tsx`)
 What people see when they open a shared link — most important page for engagement:
-- **Hero card:** Tall image area (h-56), occasion label, recipient name, contribution count
-- **Organizer's message:** Displayed prominently as "{CREATOR_NAME}'S MESSAGE" with terracotta left-border, italic text (falls back to "A MESSAGE FROM THE ORGANIZER" for older pages)
+- **Hero card:** Tall glass image area (h-56), "A KIND GESTURE" micro-label, occasion label, recipient name, contribution count (with "Be the first to share a memory!" when zero)
+- **Organizer's message:** Glass panel displayed prominently as "{CREATOR_NAME}'S MESSAGE" with terracotta left-border, italic text (falls back to "A MESSAGE FROM THE ORGANIZER" for older pages)
 - **Contribution prompt:** Gold callout with 💡 below hero card ("Instructions for contributors")
-- **Contribution types:** 2x2 grid (Add Photo, Write Note, Voice Note [coming soon], AI Sticker [coming soon])
-- **Write Note form:** Name input, textarea with 500-char limit, "Need inspiration? ✨" AI suggestion button
-- **Add Photo form:** Name input, file picker, optional caption
-- **Success state:** "Your contribution has been added!" + optional email collection ("Want to see the final keepsake?") + "Add Another" button
+- **Contribution types:** "CHOOSE YOUR EXPRESSION" subtitle + 2x2 grid — Add Photo (active, hover lift), Write Note (active, hover lift), Voice Note (coming soon, 50% opacity), AI Sticker (coming soon, 50% opacity)
+- **Write Note form:** Glass panel, uppercase form labels, name input, textarea with 500-char limit, "Need inspiration? ✨" AI suggestion button with 3 chips
+- **Add Photo form:** Glass panel, name input, file picker with client-side compression (max 1200px, JPEG 0.8), optional caption
+- **Success state:** Confetti animation, branded logo with checkmark badge, "Your contribution is safe." italic heading, glass panel with optional email collection ("Want to see the final keepsake?") + "Add Another" button
 - **Navigation:** "View Keepsake" link at bottom
 - **Dynamic OG image:** `opengraph-image.tsx` (edge runtime) — shows hero photo or warm gradient, occasion emoji, recipient name
 
@@ -434,6 +444,57 @@ These serve different purposes and should NOT be confused:
 - `6503f13` — Phase E visual upgrade: dashboard, create wizard, contributor, keepsake glass styling (PR #2)
 - `cee690f` — Minor polish: italic not-found headings, SENDKINDLY watermark on keepsake banner
 
+### Session 7: Bug Fixes from Sammy's Testing
+
+**Trigger:** Sammy tested on Android Brave after Phase E deployment, sent 3 rounds of feedback via WhatsApp. All issues fixed across 3 commits.
+
+**Round 1 — Bug fixes:**
+1. **Email share broken** — `window.open()` for mailto: opened blank tab → changed to `window.location.href`
+2. **Hero image too large** — Added client-side image compression (Canvas API, max 1200px, JPEG 0.8 quality) in both create wizard and contributor page
+3. **AI suggestions not working** — `ANTHROPIC_API_KEY` was missing from `.env.local` and Vercel env vars → now set in both. Also added visible error feedback when AI call fails.
+4. **AI suggestions in Create Wizard** — "Need inspiration?" and "Suggest instructions" buttons with 3 clickable suggestion chips from Claude Haiku
+5. **"0 memories shared so far" confusing** — Now shows "Be the first to share a memory!" when count is zero, with singular/plural handling after that
+
+**Round 2 — UX feedback:**
+6. **Bland loading screens** — Upgraded to warm Phase E styled loaders with emoji, gold spinner, descriptive text
+7. **Dashboard loading slowly** — Pages appear immediately with 0 counts, counts load async in background
+8. **Creator can't find tools on empty keepsake** — Creator Tools now appear inline within the empty state
+9. **Voice Note + AI Sticker tiles confusing** — Removed in Round 2, then restored in Session 8 as clearly greyed-out "Coming soon" tiles (50% opacity)
+10. **Clickable cards + better labels** — Card header area opens keepsake directly, "View Keepsake" → "Open Keepsake →", improved status badges (● COLLECTING, ○ DRAFT, ◉ FINALIZING, ✓ DELIVERED), "You're amazing!" confetti success state
+
+**Commits:**
+- `ab0accd` — Fix 5 bugs: email share, image resize, AI suggestions, zero-count display
+- `a25367b` — Fix Sammy's feedback: loading screens, creator tools, dashboard perf
+- `fdef552` — Sammy feedback round 2: cleaner UX, clickable cards, better success state
+
+### Session 8: Design Depth + UX Polish
+
+**Shabir's feedback that drove this session:**
+- "More depth, roundedness and shadows to boxes and buttons across the website"
+- "Why can't the boxes on the front page link to the appropriate 'start a celebration' page?"
+- "Grandma Sara appears in all the instances of occasion" — placeholders don't vary
+- "Not sure why home page has 'My celebrations' next to 'Start a celebration'"
+- "Sign In and Sign Out don't have the same hyperlink change as Dashboard when you hover over"
+
+**Changes made:**
+
+1. **Design depth across entire site** — All utility classes in `globals.css` upgraded:
+   - `.glass`: blur 12→16px, layered 3-shadow + inner top highlight for "raised glass" feel
+   - `.ios-shadow` / `.card`: now use 3-layer shadow system (near + mid-range + ambient)
+   - `.btn-primary` / `.btn-gold`: subtle top-to-bottom gradient + inset highlight, hover lifts 2px, active presses with inset shadow
+   - `.btn-secondary`: added resting shadow + hover lift
+   - `.input-warm`: inset shadow + faint border for recessed feel
+2. **Navbar hover consistency** — Dashboard, Sign In, Sign Out all share identical hover: text turns terracotta + animated underline slides in from left (`after:` pseudo-element)
+3. **Homepage occasion cards clickable** — Each occasion tile links to create wizard with `?occasion={value}` pre-filled (or signup with occasion preserved if not logged in)
+4. **Homepage cleanup** — Removed "My Celebrations" button from hero. Added dashboard link to footer ("Already creating? Go to your Dashboard →")
+5. **Create wizard reads URL params** — `useSearchParams()` reads `?occasion=` and pre-fills dropdown. Wrapped in `<Suspense>` boundary (required by Next.js App Router)
+6. **Recipient name placeholders vary by occasion** — Wedding → "e.g., Priya & Rahul", Farewell → "e.g., Coach Mike", Memorial → "e.g., Uncle Dev", Graduation → "e.g., Rohan", etc. (12 unique names)
+7. **Voice Note + AI Sticker restored** — Coming soon tiles back on contributor page as clearly greyed-out (50% opacity) to show product vision without misleading
+8. **Dashboard padding fix** — "More options" expandable section has proper padding
+
+**Commits:**
+- `4c60542` — Design depth + UX polish: layered shadows, clickable occasion cards, navbar hover, varied placeholders
+
 ---
 
 ## Current Status (as of 23 Feb 2026)
@@ -446,16 +507,19 @@ These serve different purposes and should NOT be confused:
 | Session 3: Homepage & UX Overhaul | ✅ COMPLETE |
 | Session 4: Demo Polish + OG Images | ✅ COMPLETE |
 | Session 5: UX Overhaul + Creator Experience | ✅ COMPLETE |
-| **Session 6: Phase E Visual Upgrade** | **✅ COMPLETE** |
+| Session 6: Phase E Visual Upgrade | ✅ COMPLETE |
+| Session 7: Bug Fixes from Sammy's Testing | ✅ COMPLETE |
+| **Session 8: Design Depth + UX Polish** | **✅ COMPLETE** |
 
-### Phase E: Remaining Testing — TODO
+### Pre-Saturday Testing — TODO
 - [ ] End-to-end flow testing (create → contribute → reveal → keepsake → reply)
-- [ ] Mobile responsive testing (all pages, especially contributor page and keepsake)
-- [ ] Test per-contribution replies (recipient flow)
+- [ ] Mobile responsive testing (Android Brave, iPhone Safari, WhatsApp in-app browser)
+- [ ] Test per-contribution replies (recipient flow via reveal link)
 - [ ] Test contributor email collection
-- [ ] Test AI suggestions with ANTHROPIC_API_KEY in production
-- [ ] Test native share on mobile devices (WhatsApp, iMessage)
+- [ ] Test AI suggestions (API key now set — should work in production)
+- [ ] Test native share on mobile devices (WhatsApp, iMessage sharing flow)
 - [ ] Test creator moderation (delete contributions)
+- [ ] Test homepage occasion cards → create wizard pre-fill flow
 - [ ] Seed fresh demo data for demo day with creator_name populated
 - [ ] Edge cases: empty states, very long messages, special characters, multiple photos
 - [ ] Performance: loading states, error handling, offline graceful degradation
@@ -505,6 +569,14 @@ These serve different purposes and should NOT be confused:
 - **Micro-label pattern:** Section labels use `text-xs font-medium tracking-widest text-cocoa/60` (uppercase in JSX text). Examples: "OWNER STUDIO", "A KIND GESTURE", "CHOOSE YOUR EXPRESSION", "STEP 1 OF 3", "CREATOR TOOLS"
 - **Auth page pattern:** Logo icon (`w-24 h-24 rounded-[2rem] bg-ivory ios-shadow`) + glass form card + `EyeIcon` component for password toggle
 - **Password eye toggle:** `showPassword` / `showConfirm` state + inline SVG `EyeIcon` component (defined per auth page, not shared)
+- **Image compression:** Client-side via Canvas API — `max 1200px` width/height, JPEG 0.8 quality. Applied in both create wizard (hero image) and contributor page (photo upload). Converts to Blob before Supabase storage upload.
+- **Suspense for useSearchParams:** Create wizard uses `useSearchParams()` which requires `<Suspense>` boundary in Next.js App Router. Wrapped via `CreatePageWrapper` default export.
+- **URL param passing:** Homepage occasion cards link to `/dashboard/create?occasion={value}` (or `/signup?occasion={value}`). Create wizard reads param in `useEffect` to pre-fill dropdown.
+- **Navbar hover pattern:** All nav links use `after:` pseudo-element for animated underline — `after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[2px] after:bg-terracotta after:transition-all hover:after:w-full`
+- **Layered shadow system:** 3-shadow pattern (near `0 1px 3px`, mid-range `0 4px 12px`, ambient `0 8px 30px`) used by `.ios-shadow`, `.glass`, `.card`, buttons. Creates realistic depth vs flat single shadow.
+- **Async dashboard loading:** Pages render immediately with `contribution_count: 0`, then counts load in background via `Promise.all` of parallel Supabase queries. Prevents blocking on slow count queries.
+- **Zero-count handling:** Shows "Be the first to share a memory!" when `contribution_count === 0`, singular "1 memory shared" for 1, plural "{n} memories shared" for 2+
+- **Status badges:** Dashboard cards show status with Unicode indicators: `● COLLECTING`, `○ DRAFT`, `◉ FINALIZING`, `✓ DELIVERED`
 
 ## Things NOT to Do
 - Don't use Geist font (removed in Phase A)
@@ -523,3 +595,10 @@ These serve different purposes and should NOT be confused:
 - Don't use `.card` class for new components — use `glass rounded-3xl ios-shadow` (or `rounded-2xl` for smaller items)
 - Don't use `font-bold` on main headings — use `italic` (Newsreader serif provides visual weight)
 - Don't use `font-semibold` on micro-labels — use `font-medium tracking-widest` for the uppercase label pattern
+- Don't use `window.open()` for mailto: links — use `window.location.href` (window.open opens blank tab in some browsers)
+- Don't upload uncompressed images — always compress client-side first (Canvas API, max 1200px, JPEG 0.8)
+- Don't use `useSearchParams()` without wrapping in `<Suspense>` — Next.js App Router requires it
+- Don't use flat single shadows — use the layered 3-shadow system for realistic depth
+- Don't use "Grandma Sarah" as the only placeholder — use occasion-specific names from `OCCASION_PLACEHOLDERS`
+- Don't remove Voice Note / AI Sticker tiles — keep them as greyed-out "Coming soon" (50% opacity) to show product vision
+- Don't block page render on contribution counts — show pages immediately, load counts async
