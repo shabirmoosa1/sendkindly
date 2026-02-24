@@ -6,7 +6,6 @@ import { supabase } from '@/lib/supabase';
 import type { PageData, Contribution } from '@/components/keepsake/types';
 import A4Page from '@/components/keepsake/A4Page';
 import CoverPage from '@/components/keepsake/CoverPage';
-import FullPageFeature from '@/components/keepsake/FullPageFeature';
 import TextNote from '@/components/keepsake/TextNote';
 import PhotoUnit from '@/components/keepsake/PhotoUnit';
 import BackPage from '@/components/keepsake/BackPage';
@@ -26,15 +25,18 @@ function layoutScore(c: Contribution): number {
 }
 
 function layoutWeight(c: Contribution): number {
-  if (c.photo_url) return 0.35;
-  if (wordCount(c.message_text) > 120) return 0.38;
-  return 0.25;
+  if (c.photo_url) return 0.20;
+  const wc = wordCount(c.message_text);
+  if (wc > 120) return 0.24;
+  if (wc > 60) return 0.18;
+  return 0.13;
 }
 
 // --- Page grouping ---
 
 interface ContentPage {
   contributions: Contribution[];
+  weight: number;
 }
 
 function groupIntoPages(contributions: Contribution[]): ContentPage[] {
@@ -44,8 +46,8 @@ function groupIntoPages(contributions: Contribution[]): ContentPage[] {
 
   for (const c of contributions) {
     const w = layoutWeight(c);
-    if (weight + w > 0.92 && current.length > 0) {
-      pages.push({ contributions: current });
+    if (weight + w > 0.90 && current.length >= 3) {
+      pages.push({ contributions: current, weight });
       current = [c];
       weight = w;
     } else {
@@ -55,7 +57,7 @@ function groupIntoPages(contributions: Contribution[]): ContentPage[] {
   }
 
   if (current.length > 0) {
-    pages.push({ contributions: current });
+    pages.push({ contributions: current, weight });
   }
 
   return pages;
@@ -72,7 +74,6 @@ export default function PrintableKeepsakeClient() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
-  // Load page data and contributions
   useEffect(() => {
     async function load() {
       const { data: pageData, error: pageError } = await supabase
@@ -126,11 +127,15 @@ export default function PrintableKeepsakeClient() {
     );
   }
 
-  // Sort by layout score (photos & long messages first)
+  // Sort by layout score — top one goes on cover, rest into content pages
   const sorted = [...contributions].sort((a, b) => layoutScore(b) - layoutScore(a));
-  const featured = sorted[0] || null;
-  const remaining = sorted.slice(1);
+  const featured = sorted.length > 0 && layoutScore(sorted[0]) > 0 ? sorted[0] : null;
+  const remaining = featured ? sorted.slice(1) : sorted;
   const contentPages = groupIntoPages(remaining);
+
+  // Decide whether back page is inline on last content page or separate
+  const lastPage = contentPages[contentPages.length - 1];
+  const backPageInline = lastPage && lastPage.weight <= 0.80;
 
   return (
     <div className="keepsake-print-view bg-ivory min-h-screen pb-20 print:pb-0 print:bg-white">
@@ -154,44 +159,38 @@ export default function PrintableKeepsakeClient() {
 
       {/* Cover Page */}
       <A4Page>
-        <CoverPage page={page} contributionCount={contributions.length} />
+        <CoverPage page={page} contributionCount={contributions.length} featured={featured} />
       </A4Page>
-
-      {/* Featured contribution (full page) */}
-      {featured && (
-        <A4Page>
-          <FullPageFeature contribution={featured} />
-        </A4Page>
-      )}
 
       {/* Content pages */}
       {contentPages.length > 0 ? (
-        contentPages.map((cp, pageIndex) => (
-          <A4Page key={pageIndex}>
-            <div className="px-6 py-8 sm:px-10 sm:py-10">
-              <div className="columns-1 sm:columns-2 gap-5">
-                {cp.contributions.map((c) => {
-                  if (c.photo_url) {
-                    return (
-                      <PhotoUnit
-                        key={c.id}
-                        contribution={c}
-                      />
-                    );
-                  }
-                  return (
-                    <TextNote
-                      key={c.id}
-                      contribution={c}
-                    />
-                  );
-                })}
+        contentPages.map((cp, pageIndex) => {
+          const isLast = pageIndex === contentPages.length - 1;
+          return (
+            <A4Page key={pageIndex}>
+              <div className="px-6 py-6 sm:px-10 sm:py-8">
+                <div className="columns-1 sm:columns-2 gap-4">
+                  {cp.contributions.map((c) => {
+                    if (c.photo_url) {
+                      return <PhotoUnit key={c.id} contribution={c} />;
+                    }
+                    return <TextNote key={c.id} contribution={c} />;
+                  })}
+                </div>
+
+                {/* Inline back matter on last page if room */}
+                {isLast && backPageInline && (
+                  <>
+                    <hr style={{ width: '60px', margin: '32px auto', border: 'none', borderTop: '1px solid #C8A951' }} />
+                    <BackPage page={page} contributions={contributions} />
+                  </>
+                )}
               </div>
-            </div>
-          </A4Page>
-        ))
+            </A4Page>
+          );
+        })
       ) : (
-        /* No contributions beyond the featured one */
+        /* No contributions at all */
         contributions.length === 0 && (
           <A4Page>
             <div className="flex items-center justify-center h-full">
@@ -204,10 +203,14 @@ export default function PrintableKeepsakeClient() {
         )
       )}
 
-      {/* Back Page */}
-      <A4Page>
-        <BackPage page={page} contributions={contributions} />
-      </A4Page>
+      {/* Separate back page if last content page was too full, or no content pages */}
+      {(contentPages.length === 0 || !backPageInline) && contributions.length > 0 && (
+        <A4Page>
+          <div className="flex flex-col items-center justify-center h-full px-8 py-12">
+            <BackPage page={page} contributions={contributions} />
+          </div>
+        </A4Page>
+      )}
     </div>
   );
 }

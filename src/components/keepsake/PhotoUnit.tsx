@@ -7,34 +7,34 @@ interface PhotoUnitProps {
 
 export default function PhotoUnit({ contribution }: PhotoUnitProps) {
   return (
-    <div className="polaroid break-inside-avoid mb-4">
+    <div className="polaroid break-inside-avoid" style={{ marginBottom: '10px', maxHeight: '200px', overflow: 'hidden' }}>
       <img
         src={contribution.photo_url!}
         alt={`From ${contribution.contributor_name}`}
-        className="w-full max-h-[280px] object-cover rounded-lg"
+        style={{ height: '140px', width: '100%', objectFit: 'cover', objectPosition: 'center top', display: 'block', borderRadius: '6px 6px 0 0' }}
       />
 
       {/* Caption or message */}
       {contribution.message_text && (
-        <p className="mt-3 text-sm text-cocoa/70 font-caveat leading-relaxed">
+        <p className="mt-2 text-cocoa/70 font-caveat" style={{ fontSize: '12px', lineHeight: 1.4 }}>
           {contribution.message_text}
         </p>
       )}
 
-      <div className="mt-2 flex items-center gap-2">
-        <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold bg-espresso/80">
+      <div className="mt-1.5 flex items-center gap-1.5">
+        <div className="w-5 h-5 rounded-full flex items-center justify-center text-white font-bold bg-espresso/80" style={{ fontSize: '9px' }}>
           {contribution.contributor_name.charAt(0).toUpperCase()}
         </div>
-        <span className="text-xs font-medium text-cocoa">
+        <span className="font-medium text-cocoa" style={{ fontSize: '11px' }}>
           {contribution.contributor_name}
         </span>
       </div>
 
       {/* Recipient reply */}
       {contribution.recipient_reply && (
-        <div className="mt-2 pt-2 border-t border-gray-100">
-          <p className="text-xs text-gold font-medium mb-1">Reply:</p>
-          <p className="text-xs text-cocoa italic break-words">
+        <div className="mt-1.5 pt-1.5 border-t border-gray-100">
+          <p className="text-gold font-medium mb-0.5" style={{ fontSize: '10px' }}>Reply:</p>
+          <p className="text-cocoa italic break-words" style={{ fontSize: '11px' }}>
             &ldquo;{contribution.recipient_reply}&rdquo;
           </p>
         </div>
