@@ -415,6 +415,12 @@ input:focus, textarea:focus, select:focus, button:focus-visible {
     background: #F6F2EC !important;
   }
 
+  /* Constrain photo height on print */
+  .polaroid img {
+    max-height: 200px;
+    object-fit: cover;
+  }
+
   /* Remove polaroid rotation on print (cleaner) */
   .polaroid:nth-child(odd),
   .polaroid:nth-child(even) {

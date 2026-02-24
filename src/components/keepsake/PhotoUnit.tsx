@@ -1,19 +1,17 @@
-import type { Contribution, ReactionCount } from './types';
+import type { Contribution } from './types';
 import EmojiReactions from './EmojiReactions';
 
 interface PhotoUnitProps {
   contribution: Contribution;
-  reactions: ReactionCount[];
-  onReact: (contributionId: string, emoji: string) => void;
 }
 
-export default function PhotoUnit({ contribution, reactions, onReact }: PhotoUnitProps) {
+export default function PhotoUnit({ contribution }: PhotoUnitProps) {
   return (
     <div className="polaroid break-inside-avoid mb-4">
       <img
         src={contribution.photo_url!}
         alt={`From ${contribution.contributor_name}`}
-        className="w-full rounded-sm"
+        className="w-full max-h-[280px] object-cover rounded-lg"
       />
 
       {/* Caption or message */}
@@ -43,11 +41,7 @@ export default function PhotoUnit({ contribution, reactions, onReact }: PhotoUni
       )}
 
       {/* Emoji reactions */}
-      <EmojiReactions
-        contributionId={contribution.id}
-        reactions={reactions}
-        onReact={onReact}
-      />
+      <EmojiReactions contributionId={contribution.id} />
     </div>
   );
 }

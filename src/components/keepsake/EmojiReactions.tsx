@@ -1,38 +1,47 @@
 'use client';
 
-import type { ReactionCount } from './types';
+import { useState } from 'react';
 
-const REACTION_EMOJIS = ['❤️', '😂', '🥹', '🙌', '💛', '🔥'];
+const REACTION_EMOJIS = ['❤️', '😂', '😢', '🙌', '✨', '🎉'];
 
 interface EmojiReactionsProps {
   contributionId: string;
-  reactions: ReactionCount[];
-  onReact: (contributionId: string, emoji: string) => void;
 }
 
-export default function EmojiReactions({ contributionId, reactions, onReact }: EmojiReactionsProps) {
+export default function EmojiReactions({ contributionId }: EmojiReactionsProps) {
+  const [counts, setCounts] = useState<Record<string, number>>({});
+
+  const handleClick = (emoji: string) => {
+    setCounts(prev => ({
+      ...prev,
+      [emoji]: (prev[emoji] || 0) + 1,
+    }));
+  };
+
   return (
-    <div className="emoji-reactions flex flex-wrap gap-1.5 mt-3">
+    <div className="emoji-reactions flex flex-wrap mt-3" style={{ gap: '6px' }}>
       {REACTION_EMOJIS.map((emoji) => {
-        const reaction = reactions.find(r => r.emoji === emoji);
-        const count = reaction?.count || 0;
-        const reacted = reaction?.reacted || false;
+        const count = counts[emoji] || 0;
 
         return (
           <button
-            key={emoji}
-            onClick={() => onReact(contributionId, emoji)}
-            className={`
-              inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all
-              ${reacted
-                ? 'bg-terracotta/10 border border-terracotta/30'
-                : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
-              }
-            `}
+            key={`${contributionId}-${emoji}`}
+            onClick={() => handleClick(emoji)}
+            className="inline-flex items-center rounded-full transition-all"
+            style={{
+              height: '28px',
+              padding: '0 8px',
+              gap: '4px',
+              background: 'rgba(183,110,76,0.08)',
+              border: '1px solid rgba(183,110,76,0.2)',
+              cursor: 'pointer',
+              fontSize: '14px',
+              lineHeight: 1,
+            }}
           >
             <span>{emoji}</span>
             {count > 0 && (
-              <span className={`text-[10px] ${reacted ? 'text-terracotta' : 'text-cocoa/50'}`}>
+              <span style={{ fontSize: '11px', color: 'var(--cocoa)' }}>
                 {count}
               </span>
             )}

@@ -1,13 +1,11 @@
-import type { Contribution, ReactionCount } from './types';
+import type { Contribution } from './types';
 import EmojiReactions from './EmojiReactions';
 
 interface TextNoteProps {
   contribution: Contribution;
-  reactions: ReactionCount[];
-  onReact: (contributionId: string, emoji: string) => void;
 }
 
-export default function TextNote({ contribution, reactions, onReact }: TextNoteProps) {
+export default function TextNote({ contribution }: TextNoteProps) {
   return (
     <div className="bg-white rounded-2xl p-5 border-t-3 border-terracotta/60 shadow-sm break-inside-avoid mb-4">
       <p className="text-base text-espresso leading-relaxed mb-3 break-words">
@@ -36,11 +34,7 @@ export default function TextNote({ contribution, reactions, onReact }: TextNoteP
       )}
 
       {/* Emoji reactions */}
-      <EmojiReactions
-        contributionId={contribution.id}
-        reactions={reactions}
-        onReact={onReact}
-      />
+      <EmojiReactions contributionId={contribution.id} />
     </div>
   );
 }

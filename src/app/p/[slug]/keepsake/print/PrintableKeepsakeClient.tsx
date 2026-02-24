@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import type { PageData, Contribution, Reaction, ReactionCount } from '@/components/keepsake/types';
+import type { PageData, Contribution } from '@/components/keepsake/types';
 import A4Page from '@/components/keepsake/A4Page';
 import CoverPage from '@/components/keepsake/CoverPage';
 import FullPageFeature from '@/components/keepsake/FullPageFeature';
@@ -26,9 +26,9 @@ function layoutScore(c: Contribution): number {
 }
 
 function layoutWeight(c: Contribution): number {
-  if (c.photo_url) return 0.5;
-  if (wordCount(c.message_text) > 120) return 0.45;
-  return 0.28;
+  if (c.photo_url) return 0.35;
+  if (wordCount(c.message_text) > 120) return 0.38;
+  return 0.25;
 }
 
 // --- Page grouping ---
@@ -61,18 +61,6 @@ function groupIntoPages(contributions: Contribution[]): ContentPage[] {
   return pages;
 }
 
-// --- Visitor ID for reactions ---
-
-function getVisitorId(): string {
-  const key = 'sk-visitor-id';
-  let id = localStorage.getItem(key);
-  if (!id) {
-    id = crypto.randomUUID();
-    localStorage.setItem(key, id);
-  }
-  return id;
-}
-
 // --- Component ---
 
 export default function PrintableKeepsakeClient() {
@@ -81,7 +69,6 @@ export default function PrintableKeepsakeClient() {
 
   const [page, setPage] = useState<PageData | null>(null);
   const [contributions, setContributions] = useState<Contribution[]>([]);
-  const [reactions, setReactions] = useState<Record<string, ReactionCount[]>>({});
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -108,118 +95,12 @@ export default function PrintableKeepsakeClient() {
         .eq('page_id', pageData.id)
         .order('created_at', { ascending: true });
 
-      const sortedContribs = (contribs || []);
-      setContributions(sortedContribs);
-
-      // Load reactions (gracefully fail if table doesn't exist)
-      try {
-        const contribIds = sortedContribs.map(c => c.id);
-        if (contribIds.length > 0) {
-          const { data: reactionData } = await supabase
-            .from('contribution_reactions')
-            .select('*')
-            .in('contribution_id', contribIds);
-
-          if (reactionData) {
-            const visitorId = getVisitorId();
-            const grouped: Record<string, ReactionCount[]> = {};
-
-            for (const contrib of sortedContribs) {
-              const contribReactions = (reactionData as Reaction[]).filter(
-                r => r.contribution_id === contrib.id
-              );
-
-              const emojiMap = new Map<string, { count: number; reacted: boolean }>();
-              for (const r of contribReactions) {
-                const existing = emojiMap.get(r.emoji) || { count: 0, reacted: false };
-                existing.count++;
-                if (r.reactor_name === visitorId) existing.reacted = true;
-                emojiMap.set(r.emoji, existing);
-              }
-
-              grouped[contrib.id] = Array.from(emojiMap.entries()).map(([emoji, data]) => ({
-                emoji,
-                count: data.count,
-                reacted: data.reacted,
-              }));
-            }
-
-            setReactions(grouped);
-          }
-        }
-      } catch {
-        // Table may not exist yet — reactions will just be empty
-      }
-
+      setContributions(contribs || []);
       setLoading(false);
     }
 
     load();
   }, [slug]);
-
-  // Handle emoji reaction
-  const handleReact = useCallback(async (contributionId: string, emoji: string) => {
-    const visitorId = getVisitorId();
-
-    // Optimistic update
-    setReactions(prev => {
-      const current = prev[contributionId] || [];
-      const existing = current.find(r => r.emoji === emoji);
-
-      if (existing?.reacted) {
-        // Already reacted — remove
-        return {
-          ...prev,
-          [contributionId]: current.map(r =>
-            r.emoji === emoji ? { ...r, count: Math.max(0, r.count - 1), reacted: false } : r
-          ).filter(r => r.count > 0 || r.emoji === emoji),
-        };
-      }
-
-      // Add reaction
-      if (existing) {
-        return {
-          ...prev,
-          [contributionId]: current.map(r =>
-            r.emoji === emoji ? { ...r, count: r.count + 1, reacted: true } : r
-          ),
-        };
-      }
-
-      return {
-        ...prev,
-        [contributionId]: [...current, { emoji, count: 1, reacted: true }],
-      };
-    });
-
-    // Persist to DB
-    try {
-      const existingReaction = (reactions[contributionId] || []).find(
-        r => r.emoji === emoji && r.reacted
-      );
-
-      if (existingReaction) {
-        // Remove reaction
-        await supabase
-          .from('contribution_reactions')
-          .delete()
-          .eq('contribution_id', contributionId)
-          .eq('emoji', emoji)
-          .eq('reactor_name', visitorId);
-      } else {
-        // Add reaction
-        await supabase
-          .from('contribution_reactions')
-          .insert({
-            contribution_id: contributionId,
-            reactor_name: visitorId,
-            emoji,
-          });
-      }
-    } catch {
-      // Silently fail if table doesn't exist
-    }
-  }, [reactions]);
 
   if (loading) {
     return (
@@ -295,8 +176,6 @@ export default function PrintableKeepsakeClient() {
                       <PhotoUnit
                         key={c.id}
                         contribution={c}
-                        reactions={reactions[c.id] || []}
-                        onReact={handleReact}
                       />
                     );
                   }
@@ -304,8 +183,6 @@ export default function PrintableKeepsakeClient() {
                     <TextNote
                       key={c.id}
                       contribution={c}
-                      reactions={reactions[c.id] || []}
-                      onReact={handleReact}
                     />
                   );
                 })}
