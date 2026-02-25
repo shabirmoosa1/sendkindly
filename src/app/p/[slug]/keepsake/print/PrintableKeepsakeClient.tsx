@@ -8,6 +8,7 @@ import A4Page from '@/components/keepsake/A4Page';
 import CoverPage from '@/components/keepsake/CoverPage';
 import TextNote from '@/components/keepsake/TextNote';
 import PhotoUnit from '@/components/keepsake/PhotoUnit';
+import StickerUnit from '@/components/keepsake/StickerUnit';
 import BackPage from '@/components/keepsake/BackPage';
 
 // --- Layout scoring ---
@@ -19,13 +20,14 @@ function wordCount(text: string | null): number {
 
 function layoutScore(c: Contribution): number {
   let score = 0;
-  if (c.photo_url) score += 100;
+  if (c.photo_url || c.ai_sticker_url) score += 100;
   score += wordCount(c.message_text);
   return score;
 }
 
 function layoutWeight(c: Contribution): number {
   if (c.photo_url) return 0.20;
+  if (c.ai_sticker_url) return 0.18; // stickers are slightly smaller than photos
   const wc = wordCount(c.message_text);
   if (wc > 120) return 0.24;
   if (wc > 60) return 0.18;
@@ -171,6 +173,9 @@ export default function PrintableKeepsakeClient() {
               <div className="px-6 py-6 sm:px-10 sm:py-8">
                 <div className="columns-1 sm:columns-2 gap-4">
                   {cp.contributions.map((c) => {
+                    if (c.ai_sticker_url) {
+                      return <StickerUnit key={c.id} contribution={c} />;
+                    }
                     if (c.photo_url) {
                       return <PhotoUnit key={c.id} contribution={c} />;
                     }

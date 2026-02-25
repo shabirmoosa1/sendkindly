@@ -16,6 +16,7 @@ export interface Contribution {
   contributor_name: string;
   message_text: string | null;
   photo_url: string | null;
+  ai_sticker_url: string | null;
   recipient_reply: string | null;
   created_at: string;
 }
