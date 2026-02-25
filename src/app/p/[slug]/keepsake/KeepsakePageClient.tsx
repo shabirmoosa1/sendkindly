@@ -547,8 +547,30 @@ export default function KeepsakePage() {
           <div className="mt-12 mb-10">
             <div className="max-w-[600px] mx-auto text-center" style={{ position: 'relative', overflow: 'hidden' }}>
               <div className="confetti-container">
-                {Array.from({ length: 20 }).map((_, i) => (
-                  <div key={i} className="confetti-piece" />
+                {[
+                  { left: '10%', color: '#C9A961', delay: '0s' },
+                  { left: '20%', color: '#B76E4C', delay: '0.1s' },
+                  { left: '30%', color: '#C9A961', delay: '0.2s' },
+                  { left: '40%', color: '#1E3A5F', delay: '0s' },
+                  { left: '50%', color: '#B76E4C', delay: '0.3s' },
+                  { left: '60%', color: '#C9A961', delay: '0.1s' },
+                  { left: '70%', color: '#1E3A5F', delay: '0.2s' },
+                  { left: '80%', color: '#B76E4C', delay: '0s' },
+                  { left: '90%', color: '#C9A961', delay: '0.3s' },
+                  { left: '15%', color: '#1E3A5F', delay: '0.15s' },
+                  { left: '45%', color: '#B76E4C', delay: '0.25s' },
+                  { left: '75%', color: '#C9A961', delay: '0.05s' },
+                ].map((p, i) => (
+                  <div
+                    key={i}
+                    className="confetti-piece"
+                    style={{
+                      left: p.left,
+                      backgroundColor: p.color,
+                      animationDelay: p.delay,
+                      animationDuration: `${1.2 + (i % 3) * 0.3}s`,
+                    }}
+                  />
                 ))}
               </div>
               <div className="glass rounded-3xl ios-shadow p-8 animate-scale-in">
