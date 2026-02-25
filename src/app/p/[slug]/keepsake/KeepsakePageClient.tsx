@@ -48,10 +48,6 @@ export default function KeepsakePage() {
   const [notFound, setNotFound] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
 
-  const [showReplyForm, setShowReplyForm] = useState(false);
-  const [replyText, setReplyText] = useState('');
-  const [submittingReply, setSubmittingReply] = useState(false);
-  const [replySent, setReplySent] = useState(false);
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
   const [thanksMessage, setThanksMessage] = useState('');
   const [submittingThanks, setSubmittingThanks] = useState(false);
@@ -138,37 +134,6 @@ export default function KeepsakePage() {
       setShareFeedback('✅ Link copied!');
       setTimeout(() => setShareFeedback(null), 2000);
     }
-  };
-
-  const handleSendReply = async () => {
-    if (!page || !replyText.trim()) return;
-    setSubmittingReply(true);
-
-    const { error } = await supabase
-      .from('recipient_replies')
-      .insert({
-        page_id: page.id,
-        reply_text: replyText.trim(),
-      });
-
-    if (!error) {
-      setReplySent(true);
-      setReplies((prev) => [
-        { id: Date.now().toString(), reply_text: replyText.trim(), reply_photo_url: null, created_at: new Date().toISOString() },
-        ...prev,
-      ]);
-      setReplyText('');
-
-      // Transition status to 'thanked' if currently 'revealed'
-      if (page.status === 'revealed') {
-        await supabase
-          .from('pages')
-          .update({ status: 'thanked', thanked_at: new Date().toISOString() })
-          .eq('id', page.id);
-        setPage((prev) => prev ? { ...prev, status: 'thanked' } : prev);
-      }
-    }
-    setSubmittingReply(false);
   };
 
   const handleSendThanks = async () => {
@@ -864,59 +829,6 @@ export default function KeepsakePage() {
                   <p className="text-sm text-cocoa/60 mt-2">— {page.recipient_name}</p>
                 </div>
               ))}
-            </div>
-          </div>
-        )}
-
-        {/* Recipient-Only: Say Thanks Form (only shows with ?recipient=true) */}
-        {isRecipient && !isCreator && (
-          <div className="mt-8 mb-10">
-            <div className="max-w-[600px] mx-auto text-center">
-              {!showReplyForm && !replySent && (
-                <button
-                  onClick={() => setShowReplyForm(true)}
-                  className="btn-gold shadow-lg transition-all hover:scale-105"
-                >
-                  💛 Say Thanks to Everyone
-                </button>
-              )}
-
-              {showReplyForm && !replySent && (
-                <div className="glass rounded-3xl ios-shadow p-6 text-left animate-fade-in">
-                  <h3 className="text-lg italic mb-4">
-                    Say thanks to everyone
-                  </h3>
-                  <textarea
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value.slice(0, 500))}
-                    placeholder="Thank you all so much..."
-                    rows={4}
-                    className="w-full input-warm resize-none mb-4"
-                  />
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => setShowReplyForm(false)}
-                      className="flex-1 py-2 rounded-full border border-gray-300 text-cocoa text-sm font-medium"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleSendReply}
-                      disabled={submittingReply || !replyText.trim()}
-                      className="flex-1 py-2 rounded-full text-white text-sm font-semibold bg-terracotta disabled:opacity-50"
-                    >
-                      {submittingReply ? 'Sending...' : 'Send Reply 💛'}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {replySent && (
-                <div className="glass rounded-3xl ios-shadow p-6 animate-scale-in">
-                  <div className="text-4xl mb-2">💛</div>
-                  <p className="font-semibold text-espresso italic">Your thanks has been sent!</p>
-                </div>
-              )}
             </div>
           </div>
         )}
