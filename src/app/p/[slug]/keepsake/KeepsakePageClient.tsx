@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { shareOrCopy, openEmailShare } from '@/lib/share';
@@ -58,6 +58,9 @@ export default function KeepsakePage() {
   const [inlineReplyText, setInlineReplyText] = useState('');
   const [savingReply, setSavingReply] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const [pdfGenerating, setPdfGenerating] = useState(false);
+  const [pdfToast, setPdfToast] = useState<string | null>(null);
+  const contributionsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -200,6 +203,200 @@ export default function KeepsakePage() {
 
   const bgColors = ['#fef3c7', '#dbeafe', '#fce7f3', '#d1fae5', '#ede9fe', '#fee2e2', '#e0e7ff', '#ccfbf1'];
 
+  const OCCASION_EMOJIS: Record<string, string> = {
+    birthday: '🎂', wedding: '💒', baby_shower: '👶', graduation: '🎓',
+    anniversary: '💕', farewell: '👋', get_well: '💐', thank_you: '🙏',
+    work_anniversary: '🏆', retirement: '🌅', promotion: '🚀', new_job: '💼',
+    memorial: '🕊️', other: '🎉',
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!page) return;
+    setPdfGenerating(true);
+    setPdfToast('Preparing your keepsake PDF...');
+
+    try {
+      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+        import('jspdf'),
+        import('html2canvas'),
+      ]);
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = 210;
+      const pageHeight = 297;
+
+      // --- COVER PAGE ---
+      // Background
+      pdf.setFillColor(246, 242, 236); // ivory
+      pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+
+      // Decorative top band
+      pdf.setFillColor(183, 110, 76); // terracotta
+      pdf.rect(0, 0, pageWidth, 6, 'F');
+
+      // Gold accent line
+      pdf.setFillColor(200, 169, 81); // gold
+      pdf.rect(0, 6, pageWidth, 2, 'F');
+
+      // Gift emoji
+      pdf.setFontSize(60);
+      pdf.text('🎁', pageWidth / 2, 80, { align: 'center' });
+
+      // Occasion emoji
+      const emoji = OCCASION_EMOJIS[page.template_type] || '🎉';
+      pdf.setFontSize(28);
+      pdf.text(emoji, pageWidth / 2, 100, { align: 'center' });
+
+      // Recipient name
+      pdf.setFontSize(36);
+      pdf.setTextColor(42, 31, 28); // espresso
+      pdf.setFont('helvetica', 'bold');
+      const nameLines = pdf.splitTextToSize(page.recipient_name, pageWidth - 40);
+      pdf.text(nameLines, pageWidth / 2, 125, { align: 'center' });
+
+      // Occasion type
+      const occasionLabel = page.template_type === 'other'
+        ? 'Celebration'
+        : formatOccasion(page.template_type);
+      pdf.setFontSize(16);
+      pdf.setTextColor(183, 110, 76); // terracotta
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(occasionLabel, pageWidth / 2, 125 + nameLines.length * 14 + 8, { align: 'center' });
+
+      // Date
+      const createdDate = new Date().toLocaleDateString('en-GB', {
+        day: 'numeric', month: 'long', year: 'numeric',
+      });
+      pdf.setFontSize(11);
+      pdf.setTextColor(90, 75, 69); // cocoa
+      pdf.text(createdDate, pageWidth / 2, 125 + nameLines.length * 14 + 22, { align: 'center' });
+
+      // Contribution count
+      pdf.setFontSize(11);
+      pdf.setTextColor(200, 169, 81); // gold
+      const countText = `${contributions.length} heartfelt ${contributions.length === 1 ? 'message' : 'messages'}`;
+      pdf.text(countText, pageWidth / 2, 125 + nameLines.length * 14 + 34, { align: 'center' });
+
+      // Tagline
+      pdf.setFontSize(10);
+      pdf.setTextColor(90, 75, 69); // cocoa
+      pdf.text('A keepsake created with love on SendKindly', pageWidth / 2, pageHeight - 40, { align: 'center' });
+
+      // Decorative bottom band
+      pdf.setFillColor(200, 169, 81); // gold
+      pdf.rect(0, pageHeight - 8, pageWidth, 2, 'F');
+      pdf.setFillColor(183, 110, 76); // terracotta
+      pdf.rect(0, pageHeight - 6, pageWidth, 6, 'F');
+
+      // --- CONTENT PAGES ---
+      if (contributionsRef.current) {
+        setPdfToast('Capturing contributions...');
+
+        const canvas = await html2canvas(contributionsRef.current, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#F6F2EC',
+          logging: false,
+          onclone: (doc) => {
+            // Hide delete buttons and reply forms in the clone
+            doc.querySelectorAll('[data-pdf-hide]').forEach((el) => {
+              (el as HTMLElement).style.display = 'none';
+            });
+          },
+        });
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.92);
+        const imgWidth = pageWidth - 20; // 10mm margin each side
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        // Content area per page (with margins)
+        const contentTop = 15;
+        const contentBottom = pageHeight - 15;
+        const contentHeight = contentBottom - contentTop;
+
+        let remainingHeight = imgHeight;
+        let sourceY = 0;
+
+        while (remainingHeight > 0) {
+          pdf.addPage();
+          pdf.setFillColor(246, 242, 236); // ivory background
+          pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+
+          const sliceHeight = Math.min(remainingHeight, contentHeight);
+          // Calculate source dimensions in the original canvas pixel space
+          const sourcePixelY = (sourceY / imgHeight) * canvas.height;
+          const sourcePixelHeight = (sliceHeight / imgHeight) * canvas.height;
+
+          // Create a temporary canvas for this slice
+          const sliceCanvas = document.createElement('canvas');
+          sliceCanvas.width = canvas.width;
+          sliceCanvas.height = sourcePixelHeight;
+          const ctx = sliceCanvas.getContext('2d');
+          if (ctx) {
+            ctx.fillStyle = '#F6F2EC';
+            ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+            ctx.drawImage(
+              canvas,
+              0, sourcePixelY, canvas.width, sourcePixelHeight,
+              0, 0, sliceCanvas.width, sourcePixelHeight,
+            );
+            const sliceData = sliceCanvas.toDataURL('image/jpeg', 0.92);
+            pdf.addImage(sliceData, 'JPEG', 10, contentTop, imgWidth, sliceHeight);
+          }
+
+          sourceY += sliceHeight;
+          remainingHeight -= sliceHeight;
+        }
+      }
+
+      // --- BACK PAGE ---
+      pdf.addPage();
+      pdf.setFillColor(246, 242, 236); // ivory
+      pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+
+      // Top band
+      pdf.setFillColor(183, 110, 76);
+      pdf.rect(0, 0, pageWidth, 6, 'F');
+      pdf.setFillColor(200, 169, 81);
+      pdf.rect(0, 6, pageWidth, 2, 'F');
+
+      // Heart
+      pdf.setFontSize(40);
+      pdf.text('💛', pageWidth / 2, pageHeight / 2 - 10, { align: 'center' });
+
+      // Back page text
+      pdf.setFontSize(14);
+      pdf.setTextColor(90, 75, 69); // cocoa
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Made with love using SendKindly', pageWidth / 2, pageHeight / 2 + 10, { align: 'center' });
+
+      pdf.setFontSize(11);
+      pdf.setTextColor(183, 110, 76); // terracotta
+      pdf.text('sendkindly.com', pageWidth / 2, pageHeight / 2 + 22, { align: 'center' });
+
+      // Bottom band
+      pdf.setFillColor(200, 169, 81);
+      pdf.rect(0, pageHeight - 8, pageWidth, 2, 'F');
+      pdf.setFillColor(183, 110, 76);
+      pdf.rect(0, pageHeight - 6, pageWidth, 6, 'F');
+
+      // --- SAVE ---
+      const safeName = page.recipient_name.replace(/[^a-zA-Z0-9]/g, '_');
+      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      pdf.save(`SendKindly_${safeName}_${dateStr}.pdf`);
+
+      setPdfToast('PDF downloaded!');
+      setTimeout(() => setPdfToast(null), 2500);
+    } catch (err) {
+      console.error('PDF generation error:', err);
+      setPdfToast('Failed to generate PDF. Please try again.');
+      setTimeout(() => setPdfToast(null), 3000);
+    } finally {
+      setPdfGenerating(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-ivory">
@@ -261,6 +458,9 @@ export default function KeepsakePage() {
 
       {/* Contributions Grid */}
       <div className="max-w-[1100px] mx-auto px-6 py-10">
+
+        {/* PDF-capturable content area */}
+        <div ref={contributionsRef}>
 
         {/* Organizer's Message — pinned at top */}
         {page.creator_message && (
@@ -363,6 +563,7 @@ export default function KeepsakePage() {
                       onClick={() => handleDeleteContribution(contrib)}
                       className="w-7 h-7 rounded-full flex items-center justify-center text-cocoa/30 hover:text-red-500 hover:bg-red-50 transition-colors text-xs"
                       title="Delete contribution"
+                      data-pdf-hide
                     >
                       ✕
                     </button>
@@ -383,7 +584,7 @@ export default function KeepsakePage() {
 
                 {/* Reply form — recipient only, when no reply yet */}
                 {isRecipient && !isCreator && !contrib.recipient_reply && (
-                  <div className="mt-3 pt-3 border-t border-gray-200/60">
+                  <div className="mt-3 pt-3 border-t border-gray-200/60" data-pdf-hide>
                     {replyingToId === contrib.id ? (
                       <div className="animate-fade-in">
                         <textarea
@@ -421,6 +622,21 @@ export default function KeepsakePage() {
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        </div>{/* end PDF-capturable content area */}
+
+        {/* Download PDF — visible to creators and recipients */}
+        {(isCreator || isRecipient) && contributions.length > 0 && (
+          <div className="flex justify-center mt-10 mb-4" data-pdf-hide>
+            <button
+              onClick={handleDownloadPDF}
+              disabled={pdfGenerating}
+              className="py-3 px-6 rounded-full text-sm font-semibold border-2 border-gold text-gold transition-all hover:opacity-90 disabled:opacity-50"
+            >
+              {pdfGenerating ? '⏳ Generating PDF...' : 'Download PDF 📄'}
+            </button>
           </div>
         )}
 
@@ -564,6 +780,18 @@ export default function KeepsakePage() {
           recipientName={page.recipient_name}
           onClose={() => setShowQR(false)}
         />
+      )}
+
+      {/* PDF Toast */}
+      {pdfToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
+          <div className="glass rounded-2xl ios-shadow px-6 py-3 text-sm font-medium text-espresso flex items-center gap-2">
+            {pdfGenerating && (
+              <div className="w-4 h-4 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+            )}
+            {pdfToast}
+          </div>
+        </div>
       )}
     </div>
   );
