@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import type { PageData, Contribution } from '@/components/keepsake/types';
 import A4Page from '@/components/keepsake/A4Page';
@@ -67,9 +66,11 @@ function groupIntoPages(contributions: Contribution[]): ContentPage[] {
 
 // --- Component ---
 
-export default function PrintableKeepsakeClient() {
-  const params = useParams();
-  const slug = params.slug as string;
+interface Props {
+  slug: string;
+}
+
+export default function PrintableKeepsakeClient({ slug }: Props) {
 
   const [page, setPage] = useState<PageData | null>(null);
   const [contributions, setContributions] = useState<Contribution[]>([]);

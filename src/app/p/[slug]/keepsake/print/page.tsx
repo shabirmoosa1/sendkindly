@@ -29,6 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function Page() {
-  return <PrintableKeepsakeClient />;
+export default async function Page({ params }: Props) {
+  const { slug } = await params;
+  return <PrintableKeepsakeClient slug={slug} />;
 }
