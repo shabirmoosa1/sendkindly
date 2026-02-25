@@ -118,35 +118,33 @@ export default function DashboardPage() {
     if (!revealModal) return;
     setRevealing(true);
 
-    const { error } = await supabase
-      .from('pages')
-      .update({ status: 'revealed', revealed_at: new Date().toISOString() })
-      .eq('id', revealModal.id);
+    try {
+      const res = await fetch('/api/reveal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pageId: revealModal.id,
+          slug: revealModal.slug,
+        }),
+      });
 
-    if (error) {
-      console.error('Reveal error:', error);
-      setRevealToast('Failed to reveal. Please try again.');
-      setTimeout(() => setRevealToast(null), 3000);
-    } else {
-      setPages((prev) =>
-        prev.map((p) => p.id === revealModal.id ? { ...p, status: 'revealed' } : p)
-      );
-      setRevealToast(`Keepsake revealed! ${revealModal.recipient_name} has been notified ✨`);
-      setTimeout(() => setRevealToast(null), 3500);
+      const data = await res.json();
 
-      // Send reveal email to recipient (fire-and-forget)
-      const recipientEmail = (revealModal as any).recipient_email;
-      if (recipientEmail) {
-        fetch('/api/email/reveal', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            recipientName: revealModal.recipient_name,
-            recipientEmail,
-            slug: revealModal.slug,
-          }),
-        }).catch((err) => console.error('Reveal email failed:', err));
+      if (!res.ok) {
+        console.error('Reveal error:', data);
+        setRevealToast('Failed to reveal. Please try again.');
+        setTimeout(() => setRevealToast(null), 3000);
+      } else {
+        setPages((prev) =>
+          prev.map((p) => p.id === revealModal.id ? { ...p, status: 'revealed' } : p)
+        );
+        setRevealToast(`Keepsake revealed! ${revealModal.recipient_name} has been notified ✨`);
+        setTimeout(() => setRevealToast(null), 3500);
       }
+    } catch (err) {
+      console.error('Reveal network error:', err);
+      setRevealToast('Network error. Please try again.');
+      setTimeout(() => setRevealToast(null), 3000);
     }
 
     setRevealing(false);
