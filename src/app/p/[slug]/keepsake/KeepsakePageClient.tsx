@@ -140,38 +140,43 @@ export default function KeepsakePage() {
     if (!page || !thanksMessage.trim()) return;
     setSubmittingThanks(true);
 
-    const { error: insertError } = await supabase
-      .from('recipient_thanks')
-      .insert({
-        page_id: page.id,
-        message: thanksMessage.trim(),
-      });
-
-    if (!insertError) {
-      // Transition status to 'thanked'
-      await supabase
-        .from('pages')
-        .update({ status: 'thanked', thanked_at: new Date().toISOString() })
-        .eq('id', page.id);
-
-      setPage((prev) => prev ? { ...prev, status: 'thanked' } : prev);
-      setThanksData({ message: thanksMessage.trim(), created_at: new Date().toISOString() });
-      setThanksSent(true);
-
-      // Send thanks email to creator (fire-and-forget)
-      fetch('/api/email/thanks', {
+    try {
+      const res = await fetch('/api/thanks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           pageId: page.id,
-          recipientName: page.recipient_name,
           thanksMessage: thanksMessage.trim(),
+          recipientName: page.recipient_name,
           slug,
         }),
-      }).catch((err) => console.error('Thanks email failed:', err));
+      });
 
-      setThanksMessage('');
+      if (res.ok) {
+        setPage((prev) => prev ? { ...prev, status: 'thanked' } : prev);
+        setThanksData({ message: thanksMessage.trim(), created_at: new Date().toISOString() });
+        setThanksSent(true);
+
+        // Send thanks email to creator (fire-and-forget)
+        fetch('/api/email/thanks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pageId: page.id,
+            recipientName: page.recipient_name,
+            thanksMessage: thanksMessage.trim(),
+            slug,
+          }),
+        }).catch((err) => console.error('Thanks email failed:', err));
+
+        setThanksMessage('');
+      } else {
+        console.error('Thanks API error:', await res.json());
+      }
+    } catch (err) {
+      console.error('Thanks network error:', err);
     }
+
     setSubmittingThanks(false);
   };
 
