@@ -53,6 +53,11 @@ export default function KeepsakePage() {
   const [submittingReply, setSubmittingReply] = useState(false);
   const [replySent, setReplySent] = useState(false);
   const [shareFeedback, setShareFeedback] = useState<string | null>(null);
+  const [thanksMessage, setThanksMessage] = useState('');
+  const [submittingThanks, setSubmittingThanks] = useState(false);
+  const [thanksSent, setThanksSent] = useState(false);
+  const [thanksData, setThanksData] = useState<{ message: string; created_at: string } | null>(null);
+  const [voiceToast, setVoiceToast] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
   const [inlineReplyText, setInlineReplyText] = useState('');
@@ -97,6 +102,20 @@ export default function KeepsakePage() {
         .order('created_at', { ascending: false });
 
       setReplies(replyData || []);
+
+      // Load recipient thanks
+      const { data: thanksRow } = await supabase
+        .from('recipient_thanks')
+        .select('message, created_at')
+        .eq('page_id', pageData.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (thanksRow) {
+        setThanksData(thanksRow);
+      }
+
       setLoading(false);
     }
     loadData();
@@ -150,6 +169,32 @@ export default function KeepsakePage() {
       }
     }
     setSubmittingReply(false);
+  };
+
+  const handleSendThanks = async () => {
+    if (!page || !thanksMessage.trim()) return;
+    setSubmittingThanks(true);
+
+    const { error: insertError } = await supabase
+      .from('recipient_thanks')
+      .insert({
+        page_id: page.id,
+        message: thanksMessage.trim(),
+      });
+
+    if (!insertError) {
+      // Transition status to 'thanked'
+      await supabase
+        .from('pages')
+        .update({ status: 'thanked', thanked_at: new Date().toISOString() })
+        .eq('id', page.id);
+
+      setPage((prev) => prev ? { ...prev, status: 'thanked' } : prev);
+      setThanksData({ message: thanksMessage.trim(), created_at: new Date().toISOString() });
+      setThanksSent(true);
+      setThanksMessage('');
+    }
+    setSubmittingThanks(false);
   };
 
   const formatOccasion = (type: string) => {
@@ -490,6 +535,26 @@ export default function KeepsakePage() {
         {/* PDF-capturable content area */}
         <div ref={contributionsRef}>
 
+        {/* Recipient's Thank You — shown when status is thanked/complete */}
+        {thanksData && ['thanked', 'complete'].includes(page.status) && (
+          <div className="max-w-[600px] mx-auto mb-10">
+            <div className="glass rounded-2xl p-6 ios-shadow border-l-4 border-gold">
+              <p className="text-xs font-medium tracking-widest text-cocoa/60 mb-3">
+                A MESSAGE FROM {page.recipient_name.toUpperCase()} 💛
+              </p>
+              <p className="text-gray-800 leading-relaxed italic text-lg break-words">
+                &ldquo;{thanksData.message}&rdquo;
+              </p>
+              <p className="text-xs text-cocoa/40 mt-3">
+                {new Date(thanksData.created_at).toLocaleDateString('en-GB', {
+                  day: 'numeric', month: 'long', year: 'numeric',
+                  hour: '2-digit', minute: '2-digit',
+                })}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Organizer's Message — pinned at top */}
         {page.creator_message && (
           <div className="max-w-[600px] mx-auto mb-10">
@@ -674,6 +739,58 @@ export default function KeepsakePage() {
           </div>
         )}
 
+        {/* Thank You Prompt — shown to recipients when status is 'revealed' */}
+        {isRecipient && !isCreator && page.status === 'revealed' && !thanksSent && (
+          <div className="mt-12 mb-10">
+            <div className="max-w-[600px] mx-auto">
+              <div className="glass rounded-3xl ios-shadow p-8 text-center border border-gold/30">
+                <div className="text-4xl mb-3">💛</div>
+                <h3 className="text-xl italic mb-2">Leave a thank you</h3>
+                <p className="text-sm text-cocoa/70 mb-6">Your message will be shared with everyone who contributed</p>
+                <textarea
+                  value={thanksMessage}
+                  onChange={(e) => setThanksMessage(e.target.value.slice(0, 500))}
+                  placeholder="Write your thank you message..."
+                  rows={4}
+                  className="w-full input-warm resize-none mb-2 text-left"
+                />
+                <p className="text-xs text-cocoa/40 text-right mb-4">{thanksMessage.length}/500</p>
+                <button
+                  onClick={() => setVoiceToast(true)}
+                  className="w-full py-2.5 rounded-full text-sm font-medium border-2 border-cocoa/20 text-cocoa/50 mb-3 transition-all"
+                >
+                  Record Voice Message 🎤
+                </button>
+                <button
+                  onClick={handleSendThanks}
+                  disabled={submittingThanks || !thanksMessage.trim()}
+                  className="w-full py-3 rounded-full text-sm font-semibold bg-terracotta text-white transition-all hover:opacity-90 disabled:opacity-50"
+                >
+                  {submittingThanks ? 'Sending...' : 'Send My Thanks 🎉'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Thank You Success — confetti state */}
+        {isRecipient && !isCreator && thanksSent && (
+          <div className="mt-12 mb-10">
+            <div className="max-w-[600px] mx-auto text-center">
+              <div className="confetti-container">
+                {Array.from({ length: 20 }).map((_, i) => (
+                  <div key={i} className="confetti-piece" />
+                ))}
+              </div>
+              <div className="glass rounded-3xl ios-shadow p-8 animate-scale-in">
+                <div className="text-5xl mb-3">🎉</div>
+                <h3 className="text-xl italic mb-2">Your thanks has been sent!</h3>
+                <p className="text-sm text-cocoa/70">Everyone who contributed will see your message</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Creator View: Simplified tools */}
         {isCreator && (
           <div className="mt-16 mb-10">
@@ -824,6 +941,20 @@ export default function KeepsakePage() {
               <div className="w-4 h-4 border-2 border-gold border-t-transparent rounded-full animate-spin" />
             )}
             {pdfToast}
+          </div>
+        </div>
+      )}
+
+      {/* Voice Message Toast */}
+      {voiceToast && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-6" onClick={() => setVoiceToast(false)}>
+          <div className="glass rounded-2xl ios-shadow px-8 py-6 text-center max-w-sm animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            <div className="text-3xl mb-2">🎤</div>
+            <p className="text-sm font-medium text-espresso mb-1">Coming soon in Premium</p>
+            <p className="text-xs text-cocoa/60">Voice messages will be available in a future update</p>
+            <button onClick={() => setVoiceToast(false)} className="mt-4 px-6 py-2 rounded-full text-xs font-medium border border-cocoa/20 text-cocoa">
+              Got it
+            </button>
           </div>
         </div>
       )}
