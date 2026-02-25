@@ -159,7 +159,7 @@ export default function PrintableKeepsakeClient() {
 
       {/* Cover Page */}
       <A4Page>
-        <CoverPage page={page} contributionCount={contributions.length} featured={featured} />
+        <CoverPage page={page} contributionCount={contributions.length} />
       </A4Page>
 
       {/* Content pages */}

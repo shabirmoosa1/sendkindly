@@ -51,7 +51,7 @@ interface PageData {
   status: string;
 }
 
-type ContribType = 'photo' | 'note' | null;
+type ContribType = 'photo' | 'note' | 'sticker' | null;
 
 export default function ContributorPage() {
   const params = useParams();
@@ -77,6 +77,14 @@ export default function ContributorPage() {
   const [contributorEmail, setContributorEmail] = useState('');
   const [emailSaved, setEmailSaved] = useState(false);
   const [lastContributionId, setLastContributionId] = useState<string | null>(null);
+
+  // AI Sticker state
+  const [stickerPrompt, setStickerPrompt] = useState('');
+  const [stickerUrl, setStickerUrl] = useState<string | null>(null);
+  const [generatingSticker, setGeneratingSticker] = useState(false);
+  const [stickerError, setStickerError] = useState('');
+  const [stickerLimitReached, setStickerLimitReached] = useState(false);
+  const [stickerName, setStickerName] = useState('');
 
   useEffect(() => {
     async function loadPage() {
@@ -188,6 +196,11 @@ export default function ContributorPage() {
     setPhotoCaption('');
     setSubmitted(false);
     setError('');
+    setStickerPrompt('');
+    setStickerUrl(null);
+    setStickerError('');
+    setStickerLimitReached(false);
+    setStickerName('');
   };
 
   const fetchSuggestions = async () => {
@@ -227,6 +240,72 @@ export default function ContributorPage() {
       setSuggestionError('Network error. Please check your connection.');
     }
     setLoadingSuggestions(false);
+  };
+
+  const generateSticker = async () => {
+    if (!page || !stickerPrompt.trim()) return;
+    setGeneratingSticker(true);
+    setStickerError('');
+    setStickerUrl(null);
+
+    try {
+      const res = await fetch('/api/generate-sticker', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pageId: page.id,
+          prompt: stickerPrompt.trim(),
+          pageSlug: page.slug,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (data.error === 'limit_reached') {
+          setStickerLimitReached(true);
+        } else {
+          setStickerError(data.error || 'Failed to generate sticker. Please try again.');
+        }
+        setGeneratingSticker(false);
+        return;
+      }
+
+      setStickerUrl(data.imageUrl);
+    } catch {
+      setStickerError('Network error. Please check your connection.');
+    }
+    setGeneratingSticker(false);
+  };
+
+  const handleStickerSubmit = async () => {
+    if (!page || !stickerUrl) return;
+    setSubmitting(true);
+    setError('');
+
+    const { data: insertData, error: insertError } = await supabase
+      .from('contributions')
+      .insert({
+        page_id: page.id,
+        contributor_name: (stickerName.trim() || 'Anonymous'),
+        ai_sticker_url: stickerUrl,
+      })
+      .select('id')
+      .single();
+
+    if (insertError) {
+      console.error('Insert error:', insertError);
+      setError('Something went wrong. Please try again.');
+      setSubmitting(false);
+      return;
+    }
+
+    if (insertData) {
+      setLastContributionId(insertData.id);
+    }
+    setSubmitted(true);
+    setContribCount((c) => c + 1);
+    setSubmitting(false);
   };
 
   const formatOccasion = (type: string) => {
@@ -357,7 +436,7 @@ export default function ContributorPage() {
               You&apos;re amazing! 🎉
             </h2>
             <p className="text-cocoa mb-2 max-w-[280px] mx-auto leading-relaxed">
-              Your {contribType === 'photo' ? 'photo' : 'message'} has been added to {page.recipient_name}&apos;s keepsake.
+              Your {contribType === 'photo' ? 'photo' : contribType === 'sticker' ? 'sticker' : 'message'} has been added to {page.recipient_name}&apos;s keepsake.
             </p>
             <p className="text-sm text-cocoa/60 mb-8 max-w-[280px] mx-auto">
               They&apos;re going to love it 💛
@@ -444,17 +523,20 @@ export default function ContributorPage() {
                 <span className="font-semibold text-espresso">Voice Note</span>
                 <span className="block text-xs text-cocoa/50 mt-1">Coming soon</span>
               </div>
-              <div className="glass rounded-2xl p-6 sm:p-8 text-center opacity-50 relative">
+              <button
+                onClick={() => setContribType('sticker')}
+                className="glass rounded-2xl ios-shadow p-6 sm:p-8 hover:shadow-lg hover:-translate-y-1 transition-all text-center active:scale-95"
+              >
                 <span className="text-4xl block mb-3">🎨</span>
                 <span className="font-semibold text-espresso">AI Sticker</span>
-                <span className="block text-xs text-cocoa/50 mt-1">Coming soon</span>
-              </div>
+                <span className="block text-xs text-cocoa/50 mt-1">Create with AI</span>
+              </button>
             </div>
           </>
         )}
 
-        {/* Contribution Form */}
-        {!submitted && contribType && (
+        {/* Contribution Form — Photo / Note */}
+        {!submitted && contribType && contribType !== 'sticker' && (
           <div className="glass rounded-3xl ios-shadow p-6 animate-fade-in">
             <button
               onClick={() => { setContribType(null); setError(''); }}
@@ -554,6 +636,134 @@ export default function ContributorPage() {
             >
               {submitting ? 'Sending...' : 'Send your love 💛'}
             </button>
+          </div>
+        )}
+
+        {/* AI Sticker Panel */}
+        {!submitted && contribType === 'sticker' && (
+          <div className="glass rounded-3xl ios-shadow p-6 animate-fade-in">
+            <button
+              onClick={() => { setContribType(null); setStickerError(''); setStickerUrl(null); setStickerPrompt(''); setStickerLimitReached(false); }}
+              className="text-cocoa hover:text-espresso text-sm mb-4 block"
+            >
+              ← Back to options
+            </button>
+
+            <p className="text-xs font-medium tracking-widest text-cocoa/60 mb-1">CREATE YOUR STICKER</p>
+            <h2 className="text-xl italic mb-6">🎨 AI Sticker Generator</h2>
+
+            {/* Limit reached banner */}
+            {stickerLimitReached && (
+              <div className="mb-6 p-4 rounded-2xl bg-gold/15 border border-gold/30">
+                <p className="text-sm font-semibold text-espresso mb-1">All 5 free stickers used</p>
+                <p className="text-xs text-cocoa">This page has used all 5 free stickers — ask the creator to upgrade to Premium for more.</p>
+              </div>
+            )}
+
+            {!stickerLimitReached && !stickerUrl && (
+              <>
+                <div className="mb-3">
+                  <label className="block text-xs uppercase tracking-widest text-cocoa font-medium mb-2">Describe Your Sticker</label>
+                  <input
+                    type="text"
+                    value={stickerPrompt}
+                    onChange={(e) => setStickerPrompt(e.target.value.slice(0, 150))}
+                    placeholder="Describe your sticker..."
+                    className="w-full input-warm"
+                    disabled={generatingSticker}
+                  />
+                  <p className="text-xs text-cocoa/50 mt-1 text-right">{stickerPrompt.length}/150</p>
+                </div>
+
+                {/* Suggestion chips */}
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {[
+                    'Baby elephant with balloons 🐘',
+                    'Fireworks saying CONGRATS 🎆',
+                    'Teddy bear with birthday cake 🎂',
+                  ].map((chip) => (
+                    <button
+                      key={chip}
+                      type="button"
+                      onClick={() => setStickerPrompt(chip)}
+                      disabled={generatingSticker}
+                      className="text-xs px-3 py-1.5 rounded-full bg-gold/10 border border-gold/20 text-espresso hover:bg-gold/20 transition-colors disabled:opacity-50"
+                    >
+                      {chip}
+                    </button>
+                  ))}
+                </div>
+
+                {stickerError && (
+                  <p className="text-red-500 text-sm mb-4">{stickerError}</p>
+                )}
+
+                {/* Generating state */}
+                {generatingSticker && (
+                  <div className="text-center py-10">
+                    <div className="inline-block w-16 h-16 rounded-2xl bg-gold/10 flex items-center justify-center mb-4 mx-auto animate-pulse">
+                      <span className="text-3xl">🎨</span>
+                    </div>
+                    <p className="text-sm font-semibold text-espresso mb-1">Creating your sticker...</p>
+                    <p className="text-xs text-cocoa/60">This takes about 10 seconds</p>
+                  </div>
+                )}
+
+                {!generatingSticker && (
+                  <button
+                    onClick={generateSticker}
+                    disabled={!stickerPrompt.trim()}
+                    className="w-full btn-gold"
+                  >
+                    Generate Sticker ✨
+                  </button>
+                )}
+              </>
+            )}
+
+            {/* Sticker preview */}
+            {stickerUrl && !stickerLimitReached && (
+              <div className="animate-fade-in">
+                <div className="flex justify-center mb-6">
+                  <div className="glass rounded-2xl ios-shadow p-4 inline-block">
+                    <img
+                      src={stickerUrl}
+                      alt="Generated sticker"
+                      className="w-48 h-48 rounded-2xl object-cover"
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-xs uppercase tracking-widest text-cocoa font-medium mb-2">Your Name (optional)</label>
+                  <input
+                    type="text"
+                    value={stickerName}
+                    onChange={(e) => setStickerName(e.target.value)}
+                    placeholder="e.g., Aunt Priya"
+                    className="w-full input-warm"
+                  />
+                </div>
+
+                {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => { setStickerUrl(null); setStickerPrompt(''); }}
+                    className="flex-1 py-3 rounded-full text-sm font-semibold border-2 border-cocoa/20 text-cocoa transition-all hover:bg-cocoa/5"
+                  >
+                    Try Again
+                  </button>
+                  <button
+                    onClick={handleStickerSubmit}
+                    disabled={submitting}
+                    className="flex-1 btn-primary"
+                  >
+                    {submitting ? 'Saving...' : 'Use This Sticker 🎉'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

@@ -22,6 +22,7 @@ interface Contribution {
   contributor_name: string;
   message_text: string | null;
   photo_url: string | null;
+  ai_sticker_url: string | null;
   recipient_reply: string | null;
   created_at: string;
 }
@@ -163,6 +164,14 @@ export default function KeepsakePage() {
       }
     }
 
+    // Delete sticker from storage if exists
+    if (contrib.ai_sticker_url) {
+      const urlParts = contrib.ai_sticker_url.split('/stickers/');
+      if (urlParts.length > 1) {
+        await supabase.storage.from('stickers').remove([urlParts[1]]);
+      }
+    }
+
     setContributions((prev) => prev.filter((c) => c.id !== contrib.id));
   };
 
@@ -301,7 +310,21 @@ export default function KeepsakePage() {
                 className="break-inside-avoid glass rounded-2xl p-6 ios-shadow"
                 style={{ backgroundColor: bgColors[i % bgColors.length] }}
               >
-                {contrib.photo_url && (
+                {contrib.ai_sticker_url && (
+                  <div className="mb-4 flex flex-col items-center">
+                    <img
+                      src={contrib.ai_sticker_url}
+                      alt={`AI sticker from ${contrib.contributor_name}`}
+                      className="w-[200px] h-[200px] rounded-2xl object-cover"
+                      loading="lazy"
+                    />
+                    <span className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-gold/80">
+                      ✨ AI-generated sticker
+                    </span>
+                  </div>
+                )}
+
+                {contrib.photo_url && !contrib.ai_sticker_url && (
                   <div className="mb-4 rounded-xl overflow-hidden">
                     <img
                       src={contrib.photo_url}
