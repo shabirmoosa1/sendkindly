@@ -73,6 +73,7 @@ export default function PrintableKeepsakeClient() {
 
   const [page, setPage] = useState<PageData | null>(null);
   const [contributions, setContributions] = useState<Contribution[]>([]);
+  const [thanksData, setThanksData] = useState<{ message: string; created_at: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -99,6 +100,20 @@ export default function PrintableKeepsakeClient() {
         .order('created_at', { ascending: true });
 
       setContributions(contribs || []);
+
+      // Load recipient thanks
+      const { data: thanksRow } = await supabase
+        .from('recipient_thanks')
+        .select('message, created_at')
+        .eq('page_id', pageData.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (thanksRow) {
+        setThanksData(thanksRow);
+      }
+
       setLoading(false);
     }
 
@@ -124,6 +139,29 @@ export default function PrintableKeepsakeClient() {
         <div className="text-center">
           <div className="text-6xl mb-4">😢</div>
           <h1 className="text-2xl italic mb-2">Page not found</h1>
+        </div>
+      </div>
+    );
+  }
+
+  // Gate: print only available after recipient has said thanks
+  if (!['thanked', 'complete'].includes((page as any).status)) {
+    return (
+      <div className="min-h-screen bg-ivory">
+        <div className="flex items-center justify-center min-h-[70vh] px-6">
+          <div className="glass rounded-3xl ios-shadow p-10 max-w-md text-center">
+            <div className="text-5xl mb-4">💛</div>
+            <h1 className="text-2xl italic mb-3">Not ready to print yet</h1>
+            <p className="text-cocoa/70 text-sm mb-6">
+              This keepsake will be available to print after {page.recipient_name} leaves a thank you.
+            </p>
+            <a
+              href={`/p/${slug}/keepsake`}
+              className="inline-block btn-primary px-8"
+            >
+              ← Back to Keepsake
+            </a>
+          </div>
         </div>
       </div>
     );
@@ -206,6 +244,27 @@ export default function PrintableKeepsakeClient() {
             </div>
           </A4Page>
         )
+      )}
+
+      {/* WITH GRATITUDE — recipient's thank you message */}
+      {thanksData && (
+        <A4Page>
+          <div className="flex flex-col items-center justify-center h-full px-8 py-12 text-center">
+            <hr style={{ width: '60px', margin: '0 auto 32px', border: 'none', borderTop: '2px solid #C8A951' }} />
+            <p className="text-xs font-medium tracking-widest text-cocoa/60 mb-6">
+              WITH GRATITUDE FROM {page.recipient_name.toUpperCase()}
+            </p>
+            <p className="text-lg italic text-espresso leading-relaxed max-w-md">
+              &ldquo;{thanksData.message}&rdquo;
+            </p>
+            <p className="text-xs text-cocoa/40 mt-4">
+              {new Date(thanksData.created_at).toLocaleDateString('en-GB', {
+                day: 'numeric', month: 'long', year: 'numeric',
+              })}
+            </p>
+            <hr style={{ width: '60px', margin: '32px auto 0', border: 'none', borderTop: '2px solid #C8A951' }} />
+          </div>
+        </A4Page>
       )}
 
       {/* Separate back page if last content page was too full, or no content pages */}

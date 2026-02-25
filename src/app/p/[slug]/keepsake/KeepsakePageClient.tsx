@@ -945,13 +945,18 @@ export default function KeepsakePage() {
 
         {/* Footer */}
         <div className="text-center py-8 border-t border-gray-200">
-          {contributions.length > 0 && (
+          {contributions.length > 0 && ['thanked', 'complete'].includes(page.status) && (
             <a
               href={`/p/${slug}/keepsake/print`}
               className="inline-flex items-center gap-2 mb-4 px-5 py-2.5 rounded-full text-sm font-medium text-cocoa border border-cocoa/20 hover:bg-cocoa/5 transition-colors"
             >
               🖨️ Print Keepsake
             </a>
+          )}
+          {contributions.length > 0 && page.status === 'revealed' && (
+            <span className="inline-flex items-center gap-2 mb-4 px-5 py-2.5 rounded-full text-sm font-medium text-cocoa/50 border border-cocoa/10 opacity-50 cursor-not-allowed">
+              🖨️ Print unlocks after thank you
+            </span>
           )}
           <p className="text-sm text-cocoa/60">
             Made with 💛 on <span className="font-semibold text-espresso">SendKindly</span>
