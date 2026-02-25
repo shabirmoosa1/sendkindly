@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { copyToClipboard } from '@/lib/clipboard';
 import Navbar from '@/components/Navbar';
+import QRCodeModal from '@/components/QRCodeModal';
 
 interface Page {
   id: string;
@@ -28,6 +29,7 @@ export default function DashboardPage() {
   const [revealCopiedSlug, setRevealCopiedSlug] = useState<string | null>(null);
   const [reminderCopiedSlug, setReminderCopiedSlug] = useState<string | null>(null);
   const [expandedSlug, setExpandedSlug] = useState<string | null>(null);
+  const [qrModal, setQrModal] = useState<{ slug: string; recipientName: string } | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -241,6 +243,15 @@ export default function DashboardPage() {
                           {reminderCopiedSlug === page.slug ? '✅ Copied!' : '📋 Copy Reminder Message'}
                         </button>
                       </div>
+                      <div>
+                        <p className="text-xs text-cocoa/60 mb-1.5">📱 Let guests scan to contribute at in-person events</p>
+                        <button
+                          onClick={() => setQrModal({ slug: page.slug, recipientName: page.recipient_name })}
+                          className="w-full py-2.5 rounded-full text-sm font-medium border-2 border-cocoa/40 text-cocoa hover:border-cocoa hover:opacity-90 transition-all"
+                        >
+                          📱 Show QR Code
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -258,13 +269,11 @@ export default function DashboardPage() {
         {/* Coming Soon Features */}
         <div className="mt-12 mb-4">
           <p className="text-xs font-semibold tracking-widest text-cocoa/60 mb-4">COMING IN FUTURE</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {[
               { icon: '🎁', title: 'Group Gift Fund', desc: 'Pool money towards a gift together' },
-              { icon: '📱', title: 'QR Code Sharing', desc: 'Scan to contribute at events' },
               { icon: '👥', title: 'Co-Organizers', desc: 'Invite others to help manage' },
               { icon: '🎥', title: 'Video Messages', desc: 'Record video contributions' },
-              { icon: '🖨️', title: 'Print Keepsake', desc: 'Export as a beautiful PDF' },
               { icon: '🔔', title: 'Notifications', desc: 'Get notified of new messages' },
             ].map((feature) => (
               <div key={feature.title} className="glass rounded-2xl p-4 text-center opacity-60">
@@ -276,6 +285,15 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
+
+      {/* QR Code Modal */}
+      {qrModal && (
+        <QRCodeModal
+          slug={qrModal.slug}
+          recipientName={qrModal.recipientName}
+          onClose={() => setQrModal(null)}
+        />
+      )}
     </div>
   );
 }

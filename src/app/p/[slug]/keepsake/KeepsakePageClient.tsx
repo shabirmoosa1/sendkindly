@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { shareOrCopy, openEmailShare } from '@/lib/share';
 import Navbar from '@/components/Navbar';
+import QRCodeModal from '@/components/QRCodeModal';
 
 interface PageData {
   id: string;
@@ -56,6 +57,7 @@ export default function KeepsakePage() {
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
   const [inlineReplyText, setInlineReplyText] = useState('');
   const [savingReply, setSavingReply] = useState(false);
+  const [showQR, setShowQR] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -297,6 +299,12 @@ export default function KeepsakePage() {
                 >
                   {shareFeedback || '📨 Share Link'}
                 </button>
+                <button
+                  onClick={() => setShowQR(true)}
+                  className="flex-1 py-3 rounded-full text-sm font-semibold border-2 border-cocoa/40 text-cocoa hover:border-cocoa transition-all"
+                >
+                  📱 QR Code
+                </button>
               </div>
             )}
           </div>
@@ -435,6 +443,12 @@ export default function KeepsakePage() {
                   >
                     {shareFeedback || '📨 Ask Others to Contribute'}
                   </button>
+                  <button
+                    onClick={() => setShowQR(true)}
+                    className="flex-1 py-3 rounded-full text-sm font-semibold border-2 border-cocoa/40 text-cocoa hover:border-cocoa transition-all"
+                  >
+                    📱 QR Code
+                  </button>
                 </div>
                 {/* Desktop email option */}
                 {!isMobile && (
@@ -542,6 +556,15 @@ export default function KeepsakePage() {
           </p>
         </div>
       </div>
+
+      {/* QR Code Modal */}
+      {showQR && page && (
+        <QRCodeModal
+          slug={slug}
+          recipientName={page.recipient_name}
+          onClose={() => setShowQR(false)}
+        />
+      )}
     </div>
   );
 }
