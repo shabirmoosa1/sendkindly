@@ -30,6 +30,9 @@ export default function DashboardPage() {
   const [reminderCopiedSlug, setReminderCopiedSlug] = useState<string | null>(null);
   const [expandedSlug, setExpandedSlug] = useState<string | null>(null);
   const [qrModal, setQrModal] = useState<{ slug: string; recipientName: string } | null>(null);
+  const [revealModal, setRevealModal] = useState<Page | null>(null);
+  const [revealing, setRevealing] = useState(false);
+  const [revealToast, setRevealToast] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -86,7 +89,11 @@ export default function DashboardPage() {
 
   const getStatusStyle = (status: string) => {
     switch (status) {
-      case 'collecting': return 'bg-gold/15 text-gold';
+      case 'collecting': return 'bg-cocoa/10 text-cocoa';
+      case 'active': return 'bg-cocoa/10 text-cocoa';
+      case 'revealed': return 'bg-gold/15 text-gold';
+      case 'thanked': return 'bg-terracotta/15 text-terracotta';
+      case 'complete': return 'bg-green-100 text-green-700';
       case 'locked': return 'bg-terracotta/15 text-terracotta';
       case 'shared': return 'bg-green-100 text-green-700';
       default: return 'bg-cocoa/10 text-cocoa';
@@ -96,11 +103,40 @@ export default function DashboardPage() {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'collecting': return '● COLLECTING';
+      case 'active': return '● COLLECTING';
+      case 'revealed': return '✨ REVEALED';
+      case 'thanked': return '💛 THANKED';
+      case 'complete': return '✓ COMPLETE';
       case 'locked': return '◉ FINALIZING';
       case 'shared': return '✓ DELIVERED';
       case 'draft': return '○ DRAFT';
       default: return status.toUpperCase();
     }
+  };
+
+  const handleRevealConfirm = async () => {
+    if (!revealModal) return;
+    setRevealing(true);
+
+    const { error } = await supabase
+      .from('pages')
+      .update({ status: 'revealed', revealed_at: new Date().toISOString() })
+      .eq('id', revealModal.id);
+
+    if (error) {
+      console.error('Reveal error:', error);
+      setRevealToast('Failed to reveal. Please try again.');
+      setTimeout(() => setRevealToast(null), 3000);
+    } else {
+      setPages((prev) =>
+        prev.map((p) => p.id === revealModal.id ? { ...p, status: 'revealed' } : p)
+      );
+      setRevealToast(`Keepsake revealed! ${revealModal.recipient_name} has been notified ✨`);
+      setTimeout(() => setRevealToast(null), 3500);
+    }
+
+    setRevealing(false);
+    setRevealModal(null);
   };
 
   const formatDate = (dateStr: string) => {
@@ -115,8 +151,8 @@ export default function DashboardPage() {
 
   const filteredPages = pages.filter((page) => {
     if (filter === 'all') return true;
-    if (filter === 'active') return ['draft', 'collecting', 'locked'].includes(page.status);
-    if (filter === 'completed') return page.status === 'shared';
+    if (filter === 'active') return ['draft', 'collecting', 'locked', 'active', 'revealed'].includes(page.status);
+    if (filter === 'completed') return ['shared', 'thanked', 'complete'].includes(page.status);
     return true;
   });
 
@@ -197,12 +233,26 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="px-6 pb-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
+                  <div className="px-6 pb-3 flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <button onClick={() => copyShareLink(page.slug)} className={`flex-1 text-center py-2.5 rounded-full text-sm font-medium border-2 transition-all ${copiedSlug === page.slug ? 'border-green-500 text-green-600' : 'border-gold text-gold'}`}>
                       {copiedSlug === page.slug ? '✅ Copied!' : '🔗 Share Link'}
                     </button>
                     <button onClick={() => router.push(`/p/${page.slug}/keepsake`)} className="flex-1 text-center py-2.5 rounded-full text-sm font-medium bg-terracotta text-white transition-all hover:opacity-90">Open Keepsake →</button>
                   </div>
+                  {/* Reveal button — only when active with contributions */}
+                  {(page.status === 'active' || page.status === 'collecting') && (page.contribution_count || 0) > 0 && (
+                    <div className="px-6 pb-6">
+                      <button
+                        onClick={() => setRevealModal(page)}
+                        className="w-full text-center py-2.5 rounded-full text-sm font-medium btn-gold"
+                      >
+                        Reveal to {page.recipient_name} 🎁
+                      </button>
+                    </div>
+                  )}
+                  {!((page.status === 'active' || page.status === 'collecting') && (page.contribution_count || 0) > 0) && (
+                    <div className="pb-3" />
+                  )}
 
                   {/* Expand/collapse for reveal + reminder links */}
                   <button
@@ -293,6 +343,42 @@ export default function DashboardPage() {
           recipientName={qrModal.recipientName}
           onClose={() => setQrModal(null)}
         />
+      )}
+
+      {/* Reveal Confirmation Modal */}
+      {revealModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
+          <div className="glass rounded-3xl ios-shadow p-8 max-w-md w-full text-center animate-scale-in">
+            <div className="text-5xl mb-4">🎁</div>
+            <h3 className="text-xl italic mb-2">Ready to reveal this keepsake to {revealModal.recipient_name}?</h3>
+            <p className="text-sm text-cocoa/70 mb-6">Contributors will be notified.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setRevealModal(null)}
+                disabled={revealing}
+                className="flex-1 py-2.5 rounded-full text-sm font-medium border-2 border-cocoa/30 text-cocoa transition-all hover:opacity-90"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRevealConfirm}
+                disabled={revealing}
+                className="flex-1 py-2.5 rounded-full text-sm font-medium bg-terracotta text-white transition-all hover:opacity-90 disabled:opacity-50"
+              >
+                {revealing ? 'Revealing...' : 'Reveal Now ✨'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reveal Toast */}
+      {revealToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
+          <div className="glass rounded-2xl ios-shadow px-6 py-3 text-sm font-medium text-espresso">
+            {revealToast}
+          </div>
+        </div>
       )}
     </div>
   );

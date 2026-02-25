@@ -139,6 +139,15 @@ export default function KeepsakePage() {
         ...prev,
       ]);
       setReplyText('');
+
+      // Transition status to 'thanked' if currently 'revealed'
+      if (page.status === 'revealed') {
+        await supabase
+          .from('pages')
+          .update({ status: 'thanked', thanked_at: new Date().toISOString() })
+          .eq('id', page.id);
+        setPage((prev) => prev ? { ...prev, status: 'thanked' } : prev);
+      }
     }
     setSubmittingReply(false);
   };
@@ -421,6 +430,25 @@ export default function KeepsakePage() {
     );
   }
 
+  // Access control: if page is 'active' (not yet revealed), show holding page
+  // Creators can still see the full keepsake to manage it
+  const isActiveHold = page.status === 'active' && !isCreator;
+
+  if (isActiveHold) {
+    return (
+      <div className="min-h-screen bg-ivory">
+        <Navbar />
+        <div className="flex items-center justify-center min-h-[70vh] px-6">
+          <div className="glass rounded-3xl ios-shadow p-10 max-w-md text-center">
+            <div className="text-5xl mb-4">💛</div>
+            <h1 className="text-2xl italic mb-3">This keepsake is still being prepared with love...</h1>
+            <p className="text-cocoa/70 text-sm">Check back soon — something special is on its way!</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-ivory">
       <Navbar />
@@ -627,16 +655,22 @@ export default function KeepsakePage() {
 
         </div>{/* end PDF-capturable content area */}
 
-        {/* Download PDF — visible to creators and recipients */}
+        {/* Download PDF — gated on status */}
         {(isCreator || isRecipient) && contributions.length > 0 && (
           <div className="flex justify-center mt-10 mb-4" data-pdf-hide>
-            <button
-              onClick={handleDownloadPDF}
-              disabled={pdfGenerating}
-              className="py-3 px-6 rounded-full text-sm font-semibold border-2 border-gold text-gold transition-all hover:opacity-90 disabled:opacity-50"
-            >
-              {pdfGenerating ? '⏳ Generating PDF...' : 'Download PDF 📄'}
-            </button>
+            {['thanked', 'complete'].includes(page.status) ? (
+              <button
+                onClick={handleDownloadPDF}
+                disabled={pdfGenerating}
+                className="py-3 px-6 rounded-full text-sm font-semibold border-2 border-gold text-gold transition-all hover:opacity-90 disabled:opacity-50"
+              >
+                {pdfGenerating ? '⏳ Generating PDF...' : 'Download PDF 📄'}
+              </button>
+            ) : page.status === 'revealed' ? (
+              <p className="text-sm text-cocoa/60 italic">
+                PDF will unlock after {page.recipient_name} leaves a thank you 💛
+              </p>
+            ) : null}
           </div>
         )}
 
