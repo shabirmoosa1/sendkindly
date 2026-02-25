@@ -339,6 +339,24 @@ export default function ContributorPage() {
 
   if (!page) return null;
 
+  // Block contributions after the keepsake has been revealed
+  if (['revealed', 'thanked', 'complete'].includes(page.status)) {
+    return (
+      <div className="min-h-screen bg-ivory">
+        <Navbar />
+        <div className="flex items-center justify-center min-h-[70vh] px-6">
+          <div className="glass rounded-3xl ios-shadow p-10 max-w-md text-center">
+            <div className="text-5xl mb-4">🎁</div>
+            <h1 className="text-2xl italic mb-3">This keepsake has been delivered</h1>
+            <p className="text-cocoa/70 text-sm">
+              The contributions for {page.recipient_name} have been sealed and shared.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-ivory">
       <Navbar />

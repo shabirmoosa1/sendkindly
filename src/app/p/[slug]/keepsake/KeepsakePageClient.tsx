@@ -591,7 +591,7 @@ export default function KeepsakePage() {
               </>
             )}
             <p className="text-cocoa mb-6">Share the link with friends and family to start collecting messages!</p>
-            {isCreator && (
+            {isCreator && page.status !== 'revealed' && (
               <div className="flex flex-col sm:flex-row gap-3 max-w-[400px] mx-auto">
                 <button
                   onClick={() => window.location.href = `/p/${slug}`}
@@ -804,8 +804,8 @@ export default function KeepsakePage() {
           </div>
         )}
 
-        {/* Creator View: Simplified tools */}
-        {isCreator && (
+        {/* Creator View: Simplified tools — hidden after reveal */}
+        {isCreator && !['revealed', 'thanked', 'complete'].includes(page.status) && (
           <div className="mt-16 mb-10">
             <div className="max-w-[600px] mx-auto">
               <div className="glass rounded-3xl ios-shadow p-6 text-center">
