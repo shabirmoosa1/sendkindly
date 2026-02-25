@@ -192,6 +192,19 @@ export default function KeepsakePage() {
       setPage((prev) => prev ? { ...prev, status: 'thanked' } : prev);
       setThanksData({ message: thanksMessage.trim(), created_at: new Date().toISOString() });
       setThanksSent(true);
+
+      // Send thanks email to creator (fire-and-forget)
+      fetch('/api/email/thanks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pageId: page.id,
+          recipientName: page.recipient_name,
+          thanksMessage: thanksMessage.trim(),
+          slug,
+        }),
+      }).catch((err) => console.error('Thanks email failed:', err));
+
       setThanksMessage('');
     }
     setSubmittingThanks(false);
@@ -904,6 +917,28 @@ export default function KeepsakePage() {
                   <p className="font-semibold text-espresso italic">Your thanks has been sent!</p>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Contributor Conversion CTA */}
+        {!isCreator && (
+          <div className="mt-16 mb-8">
+            <div className="max-w-[600px] mx-auto">
+              <div className="bg-ivory rounded-3xl p-8 text-center border-2 border-terracotta/20">
+                <p className="text-lg italic text-espresso mb-4">
+                  Want to create something this special for someone you love? 💛
+                </p>
+                <a
+                  href="/dashboard"
+                  className="inline-block btn-gold px-8 shadow-lg hover:scale-105 transition-transform"
+                >
+                  Create a free keepsake →
+                </a>
+                <p className="text-xs text-cocoa/50 mt-3">
+                  Free to create · Takes 2 minutes
+                </p>
+              </div>
             </div>
           </div>
         )}

@@ -133,6 +133,20 @@ export default function DashboardPage() {
       );
       setRevealToast(`Keepsake revealed! ${revealModal.recipient_name} has been notified ✨`);
       setTimeout(() => setRevealToast(null), 3500);
+
+      // Send reveal email to recipient (fire-and-forget)
+      const recipientEmail = (revealModal as any).recipient_email;
+      if (recipientEmail) {
+        fetch('/api/email/reveal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipientName: revealModal.recipient_name,
+            recipientEmail,
+            slug: revealModal.slug,
+          }),
+        }).catch((err) => console.error('Reveal email failed:', err));
+      }
     }
 
     setRevealing(false);
