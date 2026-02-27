@@ -77,7 +77,7 @@ export default function QRCodeModal({ slug, recipientName, onClose }: QRCodeModa
             <QRCodeSVG
               value={url}
               size={200}
-              fgColor="#B76E4C"
+              fgColor="#C0272D"
               bgColor="#FFFFFF"
               level="M"
               includeMargin={false}
@@ -90,7 +90,7 @@ export default function QRCodeModal({ slug, recipientName, onClose }: QRCodeModa
           <QRCodeCanvas
             value={url}
             size={600}
-            fgColor="#B76E4C"
+            fgColor="#C0272D"
             bgColor="#FFFFFF"
             level="M"
             includeMargin={true}

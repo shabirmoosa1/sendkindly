@@ -75,7 +75,7 @@ export default function LoginPage() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            className="w-full bg-white/50 border-none rounded-2xl px-5 py-4 text-espresso placeholder:text-stone-400 focus:ring-2 focus:ring-terracotta/30 focus:outline-none transition-shadow"
+                            className="w-full bg-white/50 border-none rounded-2xl px-5 py-4 text-espresso placeholder:text-stone-400 focus:ring-2 focus:ring-crimson/30 focus:outline-none transition-shadow"
                             placeholder="hello@sendkindly.com"
                         />
                     </div>
@@ -90,7 +90,7 @@ export default function LoginPage() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
-                                className="w-full bg-white/50 border-none rounded-2xl px-5 py-4 pr-12 text-espresso placeholder:text-stone-400 focus:ring-2 focus:ring-terracotta/30 focus:outline-none transition-shadow"
+                                className="w-full bg-white/50 border-none rounded-2xl px-5 py-4 pr-12 text-espresso placeholder:text-stone-400 focus:ring-2 focus:ring-crimson/30 focus:outline-none transition-shadow"
                                 placeholder="••••••••"
                             />
                             <button
@@ -119,7 +119,7 @@ export default function LoginPage() {
                     <div className="text-center">
                         <Link
                             href="/forgot-password"
-                            className="text-sm font-semibold text-espresso hover:text-terracotta underline decoration-terracotta/30 underline-offset-4 transition-colors"
+                            className="text-sm font-semibold text-espresso hover:text-crimson underline decoration-crimson/30 underline-offset-4 transition-colors"
                         >
                             Forgot Password?
                         </Link>
@@ -130,7 +130,7 @@ export default function LoginPage() {
             {/* Bottom link */}
             <div className="mt-8 text-center text-sm text-cocoa">
                 New to SendKindly?{' '}
-                <Link href="/signup" className="text-terracotta font-semibold hover:underline">
+                <Link href="/signup" className="text-crimson font-semibold hover:underline">
                     Create Account
                 </Link>
             </div>

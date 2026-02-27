@@ -25,7 +25,7 @@ const sampleContributions = [
     message: 'Happy birthday, Grandma! Your stories always make us laugh and your kindness never goes unnoticed.',
     name: 'Priya',
     initial: 'P',
-    color: 'bg-terracotta',
+    color: 'bg-crimson',
   },
   {
     message: 'You taught me that the best things in life are the people you share them with. Love you always.',
@@ -92,7 +92,7 @@ export default function HomePage() {
                 step: '1',
                 title: 'Create',
                 desc: 'Pick the occasion, name the person you\'re celebrating, and write a welcome note for contributors.',
-                bg: 'bg-terracotta/10 text-terracotta',
+                bg: 'bg-crimson/10 text-crimson',
               },
               {
                 step: '2',
@@ -195,7 +195,7 @@ export default function HomePage() {
           {authChecked && user && (
             <p className="text-sm text-cocoa mb-3">
               Already creating?{' '}
-              <Link href="/dashboard" className="text-terracotta font-semibold hover:text-terracotta/80 transition-colors no-underline">
+              <Link href="/dashboard" className="text-crimson font-semibold hover:text-crimson/80 transition-colors no-underline">
                 Go to your Dashboard →
               </Link>
             </p>
@@ -203,7 +203,7 @@ export default function HomePage() {
           {authChecked && !user && (
             <p className="text-sm text-cocoa mb-3">
               Already have an account?{' '}
-              <Link href="/login" className="text-terracotta font-semibold hover:text-terracotta/80 transition-colors no-underline">
+              <Link href="/login" className="text-crimson font-semibold hover:text-crimson/80 transition-colors no-underline">
                 Sign in to your Dashboard →
               </Link>
             </p>

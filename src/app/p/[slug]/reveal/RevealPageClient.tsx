@@ -93,7 +93,7 @@ export default function RevealPage() {
               style={{
                 borderLeft: '160px solid transparent',
                 borderRight: '160px solid transparent',
-                borderTop: '100px solid var(--terracotta)',
+                borderTop: '100px solid var(--crimson)',
                 filter: 'brightness(0.9)',
               }}
             />
@@ -102,7 +102,7 @@ export default function RevealPage() {
           {/* Envelope base */}
           <div
             className="relative rounded-b-2xl p-8 pt-6 -mt-1"
-            style={{ backgroundColor: 'var(--terracotta)' }}
+            style={{ backgroundColor: 'var(--crimson)' }}
           >
             {/* Inner shadow at top */}
             <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-black/10 to-transparent rounded-t-none" />

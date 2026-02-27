@@ -59,7 +59,7 @@ export default async function Image({
             alignItems: 'center',
             justifyContent: 'center',
             background:
-              'linear-gradient(135deg, #F6F2EC 0%, #C8A951 50%, #B76E4C 100%)',
+              'linear-gradient(135deg, #F6F2EC 0%, #C8A951 50%, #C0272D 100%)',
           }}
         >
           <span style={{ fontSize: 80 }}>🎁</span>
@@ -222,7 +222,7 @@ export default async function Image({
           alignItems: 'center',
           justifyContent: 'center',
           background:
-            'linear-gradient(145deg, #F6F2EC 0%, #E8D5C4 20%, #C8A951 45%, #B76E4C 70%, #5A4B45 100%)',
+            'linear-gradient(145deg, #F6F2EC 0%, #E8D5C4 20%, #C8A951 45%, #C0272D 70%, #5A4B45 100%)',
           padding: 48,
         }}
       >

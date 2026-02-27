@@ -103,7 +103,7 @@ export default function SignupPage() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            className="w-full bg-white/50 border-none rounded-2xl px-5 py-4 text-espresso placeholder:text-stone-400 focus:ring-2 focus:ring-terracotta/30 focus:outline-none transition-shadow"
+                            className="w-full bg-white/50 border-none rounded-2xl px-5 py-4 text-espresso placeholder:text-stone-400 focus:ring-2 focus:ring-crimson/30 focus:outline-none transition-shadow"
                             placeholder="hello@sendkindly.com"
                         />
                     </div>
@@ -119,7 +119,7 @@ export default function SignupPage() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                                 minLength={8}
-                                className="w-full bg-white/50 border-none rounded-2xl px-5 py-4 pr-12 text-espresso placeholder:text-stone-400 focus:ring-2 focus:ring-terracotta/30 focus:outline-none transition-shadow"
+                                className="w-full bg-white/50 border-none rounded-2xl px-5 py-4 pr-12 text-espresso placeholder:text-stone-400 focus:ring-2 focus:ring-crimson/30 focus:outline-none transition-shadow"
                                 placeholder="At least 8 characters"
                             />
                             <button
@@ -144,7 +144,7 @@ export default function SignupPage() {
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                 required
                                 minLength={8}
-                                className="w-full bg-white/50 border-none rounded-2xl px-5 py-4 pr-12 text-espresso placeholder:text-stone-400 focus:ring-2 focus:ring-terracotta/30 focus:outline-none transition-shadow"
+                                className="w-full bg-white/50 border-none rounded-2xl px-5 py-4 pr-12 text-espresso placeholder:text-stone-400 focus:ring-2 focus:ring-crimson/30 focus:outline-none transition-shadow"
                                 placeholder="Repeat your password"
                             />
                             <button
@@ -175,7 +175,7 @@ export default function SignupPage() {
             {/* Bottom link */}
             <div className="mt-8 text-center text-sm text-cocoa">
                 Already have an account?{' '}
-                <Link href="/login" className="text-terracotta font-semibold hover:underline">
+                <Link href="/login" className="text-crimson font-semibold hover:underline">
                     Sign in
                 </Link>
             </div>

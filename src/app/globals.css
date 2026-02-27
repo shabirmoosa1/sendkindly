@@ -1,27 +1,67 @@
 @import "tailwindcss";
 
 /* ============================================
-   SENDKINDLY DESIGN SYSTEM — Sammy's Tokens
+   SENDKINDLY DESIGN SYSTEM — v2 Crimson + Glass
    ============================================ */
 
 :root {
-  /* Core Palette */
-  --background: #F6F2EC;       /* Warm Ivory */
-  --foreground: #2A1F1C;       /* Deep Espresso */
-  --primary: #B76E4C;          /* Muted Terracotta — primary CTAs */
-  --accent: #C8A951;           /* Antique Gold — highlights */
-  --espresso: #2A1F1C;         /* Deep Espresso — headings, strong text */
-  --cocoa: #5A4B45;            /* Muted Cocoa — secondary/body text */
-  --terracotta: #B76E4C;       /* Muted Terracotta */
-  --gold: #C8A951;             /* Antique Gold */
-  --ivory: #F6F2EC;            /* Warm Ivory */
+  /* ── Brand ── */
+  --crimson: #C0272D;
+  --crimson-light: rgba(192, 39, 45, 0.08);
+  --crimson-mid: rgba(192, 39, 45, 0.15);
 
-  /* Derived */
+  /* ── Glass palette ── */
+  --blush: #F2C4CE;
+  --blush-glass: rgba(242, 196, 206, 0.45);
+  --lavender: #C8CBE8;
+  --lavender-glass: rgba(200, 203, 232, 0.35);
+
+  /* ── Neutrals ── */
+  --ivory: #F6F2EC;
+  --ivory-dark: #EDE8DF;
+  --espresso: #2A1F1C;
+  --cocoa: #5A4B45;
+  --cocoa-light: rgba(90, 75, 69, 0.5);
+
+  /* ── Gold ── */
+  --gold: #C8A951;
+  --gold-light: rgba(200, 169, 81, 0.2);
+  --gold-rule: rgba(200, 169, 81, 0.5);
+
+  /* ── Card surfaces ── */
+  --card-white: #FFFFFF;
+  --card-border: rgba(192, 39, 45, 0.12);
+
+  /* ── RETIRED — do not use ── */
+  /* --navy: #1E3A5F  → removed */
+  /* --terracotta: #B76E4C  → replaced by --crimson */
+
+  /* ── Glassmorphism recipe ── */
+  --glass-bg: linear-gradient(
+    135deg,
+    var(--blush-glass) 0%,
+    var(--lavender-glass) 100%
+  );
+  --glass-border: 1px solid rgba(255, 255, 255, 0.6);
+  --glass-shadow:
+    0 8px 32px var(--crimson-light),
+    0 2px 8px rgba(200, 203, 232, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --glass-blur: blur(16px);
+  --glass-radius: 16px;
+
+  /* ── Typography ── */
+  --font-display: 'Newsreader', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+
+  /* ── Compat aliases ── */
+  --background: #F6F2EC;
+  --foreground: #2A1F1C;
+  --primary: #C0272D;
+  --accent: #C8A951;
   --card-bg: #FFFFFF;
   --input-bg: #F6F2EC;
-  --glass-bg: rgba(255, 255, 255, 0.4);
-  --glass-border: rgba(183, 110, 76, 0.15);
-  --ring-color: rgba(183, 110, 76, 0.3);
+  --ring-color: rgba(192, 39, 45, 0.3);
 }
 
 @theme inline {
@@ -31,9 +71,17 @@
   --color-accent: var(--accent);
   --color-espresso: var(--espresso);
   --color-cocoa: var(--cocoa);
-  --color-terracotta: var(--terracotta);
-  --color-gold: var(--gold);
+  --color-crimson: #C0272D;
+  --color-crimson-light: rgba(192, 39, 45, 0.08);
+  --color-crimson-mid: rgba(192, 39, 45, 0.15);
+  --color-blush: #F2C4CE;
+  --color-blush-glass: rgba(242, 196, 206, 0.45);
+  --color-lavender: #C8CBE8;
+  --color-lavender-glass: rgba(200, 203, 232, 0.35);
   --color-ivory: var(--ivory);
+  --color-ivory-dark: #EDE8DF;
+  --color-gold: var(--gold);
+  --color-gold-light: rgba(200, 169, 81, 0.2);
   --font-sans: var(--font-inter);
   --font-serif: var(--font-newsreader);
   --font-caveat: var(--font-caveat);
@@ -61,13 +109,21 @@ h1, h2, h3, h4, h5, h6 {
 /* Glassmorphism — enhanced depth */
 .glass {
   background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.03),
-    0 8px 24px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--glass-radius);
+}
+
+/* Glass Panel — full recipe class */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--glass-radius);
 }
 
 /* iOS-style soft shadow — layered for depth */
@@ -88,37 +144,30 @@ h1, h2, h3, h4, h5, h6 {
     0 16px 40px rgba(0, 0, 0, 0.03);
 }
 
-/* Primary Button — Terracotta with depth */
+/* Primary Button — Crimson with depth */
 .btn-primary {
-  background: linear-gradient(180deg, #c47d5a 0%, var(--terracotta) 100%);
+  background: var(--crimson);
   color: white;
-  border-radius: 9999px;
-  min-height: 52px;
-  padding: 0.75rem 2rem;
-  font-weight: 600;
-  font-size: 0.95rem;
-  transition: all 200ms ease-out;
-  cursor: pointer;
   border: none;
-  box-shadow:
-    0 2px 4px rgba(183, 110, 76, 0.2),
-    0 6px 16px rgba(183, 110, 76, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px var(--crimson-mid);
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 4px 8px rgba(183, 110, 76, 0.2),
-    0 10px 24px rgba(183, 110, 76, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  background: #A8222A;
+  box-shadow: 0 4px 16px var(--crimson-mid);
+  transform: translateY(-1px);
 }
 
 .btn-primary:active {
   transform: translateY(0) scale(0.98);
-  box-shadow:
-    0 1px 4px rgba(183, 110, 76, 0.2),
-    inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 4px var(--crimson-mid);
 }
 
 .btn-primary:disabled {
@@ -128,33 +177,26 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: none;
 }
 
-/* Secondary Button — Espresso outline with depth */
+/* Secondary Button — Crimson outline */
 .btn-secondary {
-  background-color: transparent;
-  color: var(--espresso);
-  border: 2px solid var(--espresso);
-  border-radius: 9999px;
-  min-height: 52px;
-  padding: 0.75rem 2rem;
-  font-weight: 600;
-  font-size: 0.95rem;
-  transition: all 200ms ease-out;
+  background: transparent;
+  color: var(--crimson);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(42, 31, 28, 0.08);
+  transition: all 0.2s ease;
 }
 
 .btn-secondary:hover {
-  background-color: var(--espresso);
-  color: white;
-  transform: translateY(-2px);
-  box-shadow:
-    0 4px 12px rgba(42, 31, 28, 0.15),
-    0 8px 24px rgba(42, 31, 28, 0.1);
+  background: var(--crimson-light);
 }
 
 .btn-secondary:active {
   transform: translateY(0) scale(0.98);
-  box-shadow: 0 1px 4px rgba(42, 31, 28, 0.1);
 }
 
 /* Gold accent button with depth */
@@ -218,7 +260,7 @@ input:focus, textarea:focus, select:focus, button:focus-visible {
 
 .input-warm:focus {
   box-shadow: 0 0 0 3px var(--ring-color), inset 0 1px 3px rgba(0, 0, 0, 0.04);
-  border-color: rgba(183, 110, 76, 0.2);
+  border-color: rgba(192, 39, 45, 0.2);
 }
 
 /* ============================================
@@ -324,7 +366,7 @@ input:focus, textarea:focus, select:focus, button:focus-visible {
   padding: 4px;
   background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.4) 100%);
   border-radius: 9999px;
-  box-shadow: 0 8px 32px rgba(183, 110, 76, 0.15);
+  box-shadow: 0 8px 32px var(--crimson-light);
 }
 
 /* ============================================
@@ -352,9 +394,10 @@ input:focus, textarea:focus, select:focus, button:focus-visible {
 
 /* Gold decorative rule */
 .gold-rule {
-  width: 80px;
-  height: 2px;
-  background: linear-gradient(90deg, transparent 0%, var(--gold) 30%, var(--gold) 70%, transparent 100%);
+  border: none;
+  border-top: 1px solid var(--gold-rule);
+  width: 60px;
+  margin: 24px auto;
 }
 
 /* Polaroid-style photo card */

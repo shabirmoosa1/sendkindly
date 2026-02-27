@@ -16,7 +16,10 @@ export default function BackPage({ page, contributions }: BackPageProps) {
       {/* Gold rule */}
       <div className="gold-rule mx-auto mb-8" />
 
-      <p className="text-xs font-medium tracking-[0.25em] text-cocoa/40 uppercase mb-6">
+      <p
+        className="text-xs font-medium tracking-[0.25em] uppercase mb-6"
+        style={{ color: 'var(--crimson)' }}
+      >
         With love from
       </p>
 
@@ -39,14 +42,28 @@ export default function BackPage({ page, contributions }: BackPageProps) {
       {/* Date */}
       <p className="text-sm text-cocoa/50 mb-12">{dateStr}</p>
 
-      {/* SK wordmark */}
-      <div className="mt-auto">
-        <p className="text-xs tracking-[0.3em] text-cocoa/30 uppercase">
+      {/* SK wordmark + logo */}
+      <div className="mt-auto flex flex-col items-center">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/Logo Option 4.png"
+          alt="SendKindly"
+          style={{ height: '32px', opacity: 0.85, marginBottom: '8px' }}
+          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+        />
+        <p
+          className="text-xs tracking-[0.3em] uppercase"
+          style={{ color: 'var(--crimson)' }}
+        >
           SendKindly
         </p>
-        <p className="text-[10px] text-cocoa/20 mt-1">
+        <a
+          href="https://sendkindly-bice.vercel.app"
+          className="mt-1"
+          style={{ color: 'var(--crimson)', fontSize: '10px', textDecoration: 'none' }}
+        >
           sendkindly.com
-        </p>
+        </a>
       </div>
     </div>
   );

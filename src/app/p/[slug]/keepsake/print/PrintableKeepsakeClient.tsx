@@ -192,7 +192,7 @@ export default function PrintableKeepsakeClient({ slug }: Props) {
       <div className="no-print text-center pt-6 pb-2">
         <a
           href={`/p/${slug}/keepsake`}
-          className="text-sm text-terracotta hover:underline"
+          className="text-sm text-crimson hover:underline"
         >
           ← Back to interactive keepsake
         </a>

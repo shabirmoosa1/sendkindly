@@ -365,7 +365,7 @@ export default function ContributorPage() {
       <div className="max-w-[700px] mx-auto px-6 py-6">
 
         {/* Kind Gesture Label */}
-        <p className="text-center text-xs font-medium tracking-widest text-terracotta/70 mb-4">A KIND GESTURE</p>
+        <p className="text-center text-xs font-medium tracking-widest text-crimson/70 mb-4">A KIND GESTURE</p>
 
         {/* Hero Card */}
         <div className="glass rounded-3xl ios-shadow overflow-hidden mb-6">
@@ -374,7 +374,7 @@ export default function ContributorPage() {
             style={{
               background: page.hero_image_url
                 ? `url(${page.hero_image_url}) center/cover`
-                : 'linear-gradient(135deg, var(--gold) 0%, var(--terracotta) 40%, var(--espresso) 100%)',
+                : 'linear-gradient(135deg, var(--gold) 0%, var(--crimson) 40%, var(--espresso) 100%)',
             }}
           >
             {!page.hero_image_url && (
@@ -399,7 +399,7 @@ export default function ContributorPage() {
 
             {/* Organizer's Message */}
             {page.creator_message && (
-              <div className="mt-5 p-5 rounded-2xl glass border-l-4 border-terracotta">
+              <div className="mt-5 p-5 rounded-2xl glass border-l-4 border-crimson">
                 <p className="text-xs font-medium tracking-widest text-cocoa/60 mb-2">
                   {page.creator_name ? `${page.creator_name.toUpperCase()}'S MESSAGE` : 'A MESSAGE FROM THE ORGANIZER'}
                 </p>
@@ -432,7 +432,7 @@ export default function ContributorPage() {
                   className="confetti-piece"
                   style={{
                     left: `${Math.random() * 100}%`,
-                    backgroundColor: ['#C8A951', '#E5C467', '#B76E4C', '#FFD700'][i % 4],
+                    backgroundColor: ['#C8A951', '#F2C4CE', '#C0272D', '#C8CBE8'][i % 4],
                     animationDuration: `${2 + Math.random() * 2}s`,
                     animationDelay: `${Math.random() * 0.8}s`,
                   }}
@@ -445,7 +445,7 @@ export default function ContributorPage() {
               <div className="w-28 h-28 rounded-[2rem] bg-gradient-to-br from-green-500 to-green-600 ios-shadow flex items-center justify-center">
                 <span className="text-5xl">🌿</span>
               </div>
-              <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-terracotta text-white flex items-center justify-center ios-shadow border-4 border-ivory">
+              <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-crimson text-white flex items-center justify-center ios-shadow border-4 border-ivory">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
             </div>
@@ -475,7 +475,7 @@ export default function ContributorPage() {
                     value={contributorEmail}
                     onChange={(e) => setContributorEmail(e.target.value)}
                     placeholder="your@email.com"
-                    className="flex-1 bg-white/50 border-none rounded-xl px-4 py-3 text-sm text-espresso placeholder:text-stone-400 focus:ring-2 focus:ring-terracotta/30 focus:outline-none"
+                    className="flex-1 bg-white/50 border-none rounded-xl px-4 py-3 text-sm text-espresso placeholder:text-stone-400 focus:ring-2 focus:ring-crimson/30 focus:outline-none"
                   />
                   <button
                     onClick={async () => {
@@ -489,7 +489,7 @@ export default function ContributorPage() {
                       }
                     }}
                     disabled={!contributorEmail.trim()}
-                    className="px-4 py-2 rounded-full text-sm font-semibold bg-terracotta text-white disabled:opacity-50 transition-all hover:opacity-90 shrink-0"
+                    className="px-4 py-2 rounded-full text-sm font-semibold bg-crimson text-white disabled:opacity-50 transition-all hover:opacity-90 shrink-0"
                   >
                     Save
                   </button>
@@ -593,7 +593,7 @@ export default function ContributorPage() {
                     type="button"
                     onClick={fetchSuggestions}
                     disabled={loadingSuggestions || parseInt(localStorage.getItem(`sk-suggest-${page.id}`) || '0', 10) >= 3}
-                    className="text-xs font-medium text-terracotta hover:text-terracotta/80 disabled:text-cocoa/40 disabled:cursor-not-allowed transition-colors"
+                    className="text-xs font-medium text-crimson hover:text-crimson/80 disabled:text-cocoa/40 disabled:cursor-not-allowed transition-colors"
                   >
                     {loadingSuggestions ? 'Thinking...' : 'Need inspiration? ✨'}
                   </button>
@@ -629,7 +629,7 @@ export default function ContributorPage() {
                     type="file"
                     accept="image/*"
                     onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
-                    className="w-full text-sm text-cocoa file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-terracotta/10 file:text-terracotta hover:file:bg-terracotta/20"
+                    className="w-full text-sm text-cocoa file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-crimson/10 file:text-crimson hover:file:bg-crimson/20"
                   />
                 </div>
                 <div className="mb-4">

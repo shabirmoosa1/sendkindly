@@ -38,7 +38,7 @@ export default async function Image({
           alignItems: 'center',
           justifyContent: 'center',
           background:
-            'linear-gradient(160deg, #2A1F1C 0%, #5A4B45 30%, #B76E4C 60%, #C8A951 100%)',
+            'linear-gradient(160deg, #2A1F1C 0%, #5A4B45 30%, #C0272D 60%, #C8A951 100%)',
           padding: 48,
         }}
       >

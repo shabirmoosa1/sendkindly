@@ -86,7 +86,7 @@ export default function ResetPasswordPage() {
                         <p className="text-sm text-cocoa mb-4">
                             Loading your reset session... If this takes too long, the link may have expired.
                         </p>
-                        <Link href="/forgot-password" className="text-terracotta font-semibold hover:underline text-sm">
+                        <Link href="/forgot-password" className="text-crimson font-semibold hover:underline text-sm">
                             Request a new reset link
                         </Link>
                     </div>
@@ -103,7 +103,7 @@ export default function ResetPasswordPage() {
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
                                     minLength={8}
-                                    className="w-full bg-white/50 border-none rounded-2xl px-5 py-4 pr-12 text-espresso placeholder:text-stone-400 focus:ring-2 focus:ring-terracotta/30 focus:outline-none transition-shadow"
+                                    className="w-full bg-white/50 border-none rounded-2xl px-5 py-4 pr-12 text-espresso placeholder:text-stone-400 focus:ring-2 focus:ring-crimson/30 focus:outline-none transition-shadow"
                                     placeholder="At least 8 characters"
                                 />
                                 <button
@@ -128,7 +128,7 @@ export default function ResetPasswordPage() {
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     required
                                     minLength={8}
-                                    className="w-full bg-white/50 border-none rounded-2xl px-5 py-4 pr-12 text-espresso placeholder:text-stone-400 focus:ring-2 focus:ring-terracotta/30 focus:outline-none transition-shadow"
+                                    className="w-full bg-white/50 border-none rounded-2xl px-5 py-4 pr-12 text-espresso placeholder:text-stone-400 focus:ring-2 focus:ring-crimson/30 focus:outline-none transition-shadow"
                                     placeholder="Repeat your password"
                                 />
                                 <button

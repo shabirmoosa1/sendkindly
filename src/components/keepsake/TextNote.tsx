@@ -7,7 +7,7 @@ interface TextNoteProps {
 
 export default function TextNote({ contribution }: TextNoteProps) {
   return (
-    <div className="bg-white rounded-2xl p-5 border-t-3 border-terracotta/60 shadow-sm break-inside-avoid mb-4">
+    <div className="bg-white rounded-2xl p-5 border-t-3 border-crimson/60 shadow-sm break-inside-avoid mb-4">
       <p className="text-base text-espresso leading-relaxed mb-3 break-words">
         &ldquo;{contribution.message_text}&rdquo;
       </p>

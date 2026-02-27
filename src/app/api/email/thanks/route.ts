@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     const html = `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 520px; margin: 0 auto; background: #F6F2EC; border-radius: 16px; overflow: hidden;">
-        <div style="background: linear-gradient(135deg, #C8A951 0%, #B76E4C 100%); padding: 40px 32px; text-align: center;">
+        <div style="background: linear-gradient(135deg, #C8A951 0%, #C0272D 100%); padding: 40px 32px; text-align: center;">
           <div style="font-size: 48px; margin-bottom: 12px;">💛</div>
           <h1 style="color: #FFFFFF; font-size: 24px; font-weight: 600; margin: 0; line-height: 1.3;">
             ${recipientName} left you a<br/>thank you message!
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
               &mdash; ${recipientName}
             </p>
           </div>
-          <a href="${keepsakeUrl}" style="display: inline-block; background: #B76E4C; color: #FFFFFF; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 32px; border-radius: 50px; margin-bottom: 12px;">
+          <a href="${keepsakeUrl}" style="display: inline-block; background: #C0272D; color: #FFFFFF; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 32px; border-radius: 50px; margin-bottom: 12px;">
             View Full Keepsake
           </a>
           <br/>

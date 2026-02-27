@@ -27,46 +27,85 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-white border-b border-gray-200 sticky top-0 z-20">
-      <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 no-underline">
-          <span className="text-2xl">🎁</span>
-          <span className="text-lg sm:text-xl font-bold text-espresso" style={{ fontFamily: 'var(--font-newsreader), serif' }}>
-            SendKindly
-          </span>
-        </Link>
+    <header
+      className="sticky top-0 z-50 flex items-center justify-between"
+      style={{
+        background: 'var(--glass-bg)',
+        backdropFilter: 'var(--glass-blur)',
+        WebkitBackdropFilter: 'var(--glass-blur)',
+        borderBottom: 'var(--glass-border)',
+        boxShadow: '0 2px 16px var(--crimson-light)',
+        padding: '0 24px',
+        height: '60px',
+      }}
+    >
+      {/* Wordmark */}
+      <Link href="/" className="no-underline">
+        <span
+          style={{
+            fontFamily: "'Newsreader', Georgia, serif",
+            fontStyle: 'italic',
+            fontSize: '22px',
+            color: 'var(--crimson)',
+            letterSpacing: '-0.3px',
+            fontWeight: 600,
+          }}
+        >
+          SendKindly
+        </span>
+      </Link>
 
-        {authChecked && (
-          <div className="flex items-center gap-3 sm:gap-4">
-            {userEmail ? (
-              <>
-                <Link
-                  href="/dashboard"
-                  className="text-sm font-medium text-cocoa hover:text-terracotta transition-colors no-underline relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[2px] after:bg-terracotta after:transition-all hover:after:w-full"
-                >
-                  Dashboard
-                </Link>
-                <span className="text-sm text-cocoa/60 hidden sm:inline truncate max-w-[160px]">
-                  {userEmail}
-                </span>
-                <button
-                  onClick={handleSignOut}
-                  className="text-sm font-medium text-cocoa hover:text-terracotta transition-colors whitespace-nowrap relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[2px] after:bg-terracotta after:transition-all hover:after:w-full"
-                >
-                  Sign Out
-                </button>
-              </>
-            ) : (
+      {/* Nav links + CTA */}
+      {authChecked && (
+        <nav className="flex items-center gap-4">
+          {userEmail ? (
+            <>
+              <Link
+                href="/dashboard"
+                className="no-underline transition-colors"
+                style={{ color: 'var(--cocoa)', fontSize: '14px', fontWeight: 500 }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--crimson)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--cocoa)')}
+              >
+                Dashboard
+              </Link>
+              <span
+                className="hidden sm:inline truncate max-w-[160px]"
+                style={{ fontSize: '14px', color: 'var(--cocoa-light)' }}
+              >
+                {userEmail}
+              </span>
+              <button
+                onClick={handleSignOut}
+                className="transition-colors"
+                style={{ color: 'var(--cocoa)', fontSize: '14px', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--crimson)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--cocoa)')}
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <>
               <Link
                 href="/login"
-                className="text-sm font-medium text-cocoa hover:text-terracotta transition-colors no-underline relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-[2px] after:bg-terracotta after:transition-all hover:after:w-full"
+                className="no-underline transition-colors"
+                style={{ color: 'var(--cocoa)', fontSize: '14px', fontWeight: 500 }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--crimson)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--cocoa)')}
               >
                 Sign In
               </Link>
-            )}
-          </div>
-        )}
-      </div>
-    </nav>
+              <Link
+                href="/dashboard/create"
+                className="btn-primary no-underline"
+              >
+                Create a keepsake
+              </Link>
+            </>
+          )}
+        </nav>
+      )}
+    </header>
   );
 }

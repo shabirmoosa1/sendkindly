@@ -297,7 +297,7 @@ export default function KeepsakePage() {
         style={{
           background: page.hero_image_url
             ? `url(${page.hero_image_url}) center/cover`
-            : 'linear-gradient(135deg, var(--gold) 0%, var(--terracotta) 40%, var(--espresso) 100%)',
+            : 'linear-gradient(135deg, var(--gold) 0%, var(--crimson) 40%, var(--espresso) 100%)',
         }}
       >
         <div className="absolute inset-0 bg-black/20" />
@@ -348,7 +348,7 @@ export default function KeepsakePage() {
         {/* Organizer's Message — pinned at top */}
         {page.creator_message && (
           <div className="max-w-[600px] mx-auto mb-10">
-            <div className="glass rounded-2xl p-6 ios-shadow border-l-4 border-terracotta">
+            <div className="glass rounded-2xl p-6 ios-shadow border-l-4 border-crimson">
               <p className="text-xs font-medium tracking-widest text-cocoa/60 mb-3">
                 {page.creator_name ? `${page.creator_name.toUpperCase()}'S MESSAGE` : 'A MESSAGE FROM THE ORGANIZER'}
               </p>
@@ -487,7 +487,7 @@ export default function KeepsakePage() {
                           <button
                             onClick={() => handleSaveContributionReply(contrib.id)}
                             disabled={savingReply || !inlineReplyText.trim()}
-                            className="flex-1 py-1.5 rounded-full text-xs bg-terracotta text-white disabled:opacity-50"
+                            className="flex-1 py-1.5 rounded-full text-xs bg-crimson text-white disabled:opacity-50"
                           >
                             {savingReply ? 'Saving...' : 'Reply 💛'}
                           </button>
@@ -496,7 +496,7 @@ export default function KeepsakePage() {
                     ) : (
                       <button
                         onClick={() => { setReplyingToId(contrib.id); setInlineReplyText(''); }}
-                        className="text-xs text-terracotta hover:text-terracotta/80 font-medium transition-colors"
+                        className="text-xs text-crimson hover:text-crimson/80 font-medium transition-colors"
                       >
                         Reply to {contrib.contributor_name}
                       </button>
@@ -533,7 +533,7 @@ export default function KeepsakePage() {
                 <button
                   onClick={handleSendThanks}
                   disabled={submittingThanks || !thanksMessage.trim()}
-                  className="w-full py-3 rounded-full text-sm font-semibold bg-terracotta text-white transition-all hover:opacity-90 disabled:opacity-50"
+                  className="w-full py-3 rounded-full text-sm font-semibold bg-crimson text-white transition-all hover:opacity-90 disabled:opacity-50"
                 >
                   {submittingThanks ? 'Sending...' : 'Send My Thanks 🎉'}
                 </button>
@@ -548,18 +548,18 @@ export default function KeepsakePage() {
             <div className="max-w-[600px] mx-auto text-center" style={{ position: 'relative', overflow: 'hidden' }}>
               <div className="confetti-container">
                 {[
-                  { left: '10%', color: '#C9A961', delay: '0s' },
-                  { left: '20%', color: '#B76E4C', delay: '0.1s' },
-                  { left: '30%', color: '#C9A961', delay: '0.2s' },
-                  { left: '40%', color: '#1E3A5F', delay: '0s' },
-                  { left: '50%', color: '#B76E4C', delay: '0.3s' },
-                  { left: '60%', color: '#C9A961', delay: '0.1s' },
-                  { left: '70%', color: '#1E3A5F', delay: '0.2s' },
-                  { left: '80%', color: '#B76E4C', delay: '0s' },
-                  { left: '90%', color: '#C9A961', delay: '0.3s' },
-                  { left: '15%', color: '#1E3A5F', delay: '0.15s' },
-                  { left: '45%', color: '#B76E4C', delay: '0.25s' },
-                  { left: '75%', color: '#C9A961', delay: '0.05s' },
+                  { left: '10%', color: '#C8A951', delay: '0s' },
+                  { left: '20%', color: '#C0272D', delay: '0.1s' },
+                  { left: '30%', color: '#C8A951', delay: '0.2s' },
+                  { left: '40%', color: '#F2C4CE', delay: '0s' },
+                  { left: '50%', color: '#C0272D', delay: '0.3s' },
+                  { left: '60%', color: '#C8A951', delay: '0.1s' },
+                  { left: '70%', color: '#C8CBE8', delay: '0.2s' },
+                  { left: '80%', color: '#C0272D', delay: '0s' },
+                  { left: '90%', color: '#C8A951', delay: '0.3s' },
+                  { left: '15%', color: '#F2C4CE', delay: '0.15s' },
+                  { left: '45%', color: '#C0272D', delay: '0.25s' },
+                  { left: '75%', color: '#C8CBE8', delay: '0.05s' },
                 ].map((p, i) => (
                   <div
                     key={i}
@@ -650,7 +650,7 @@ export default function KeepsakePage() {
         {!isCreator && (
           <div className="mt-16 mb-8">
             <div className="max-w-[600px] mx-auto">
-              <div className="bg-ivory rounded-3xl p-8 text-center border-2 border-terracotta/20">
+              <div className="bg-ivory rounded-3xl p-8 text-center border-2 border-crimson/20">
                 <p className="text-lg italic text-espresso mb-4">
                   Want to create something this special for someone you love? 💛
                 </p>

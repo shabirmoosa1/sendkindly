@@ -61,7 +61,7 @@ export default function ForgotPasswordPage() {
                         <div className="bg-green-50 text-green-700 p-4 rounded-2xl mb-6 text-sm">
                             Check your email for a password reset link. It may take a minute to arrive.
                         </div>
-                        <Link href="/login" className="text-terracotta font-semibold hover:underline text-sm">
+                        <Link href="/login" className="text-crimson font-semibold hover:underline text-sm">
                             Back to Sign In
                         </Link>
                     </div>
@@ -81,7 +81,7 @@ export default function ForgotPasswordPage() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
-                                    className="w-full bg-white/50 border-none rounded-2xl px-5 py-4 text-espresso placeholder:text-stone-400 focus:ring-2 focus:ring-terracotta/30 focus:outline-none transition-shadow"
+                                    className="w-full bg-white/50 border-none rounded-2xl px-5 py-4 text-espresso placeholder:text-stone-400 focus:ring-2 focus:ring-crimson/30 focus:outline-none transition-shadow"
                                     placeholder="hello@sendkindly.com"
                                 />
                             </div>
@@ -97,7 +97,7 @@ export default function ForgotPasswordPage() {
 
                         <div className="mt-6 text-center text-sm text-cocoa">
                             Remember your password?{' '}
-                            <Link href="/login" className="text-terracotta font-semibold hover:underline">
+                            <Link href="/login" className="text-crimson font-semibold hover:underline">
                                 Sign in
                             </Link>
                         </div>

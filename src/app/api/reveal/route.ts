@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 
       const html = `
         <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 520px; margin: 0 auto; background: #F6F2EC; border-radius: 16px; overflow: hidden;">
-          <div style="background: linear-gradient(135deg, #C8A951 0%, #B76E4C 100%); padding: 40px 32px; text-align: center;">
+          <div style="background: linear-gradient(135deg, #C8A951 0%, #C0272D 100%); padding: 40px 32px; text-align: center;">
             <div style="font-size: 48px; margin-bottom: 12px;">🎁</div>
             <h1 style="color: #FFFFFF; font-size: 24px; font-weight: 600; margin: 0; line-height: 1.3;">
               ${pageData.recipient_name}, you have a<br/>special surprise waiting!
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
             <p style="color: #5A4B45; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
               Someone who loves you created something special for you. People who care about you have come together to share their heartfelt messages.
             </p>
-            <a href="${keepsakeUrl}" style="display: inline-block; background: #B76E4C; color: #FFFFFF; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 32px; border-radius: 50px;">
+            <a href="${keepsakeUrl}" style="display: inline-block; background: #C0272D; color: #FFFFFF; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 32px; border-radius: 50px;">
               Open My Surprise 🎁
             </a>
             <p style="color: #5A4B45; opacity: 0.5; font-size: 12px; margin-top: 24px;">

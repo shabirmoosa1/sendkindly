@@ -318,7 +318,7 @@ function CreatePage() {
           {[1, 2, 3].map((s) => (
             <div
               key={s}
-              className={`h-2.5 rounded-full transition-all ${s === step ? 'w-10 bg-terracotta' : s < step ? 'w-2.5 bg-gold' : 'w-2.5 bg-cocoa/20'}`}
+              className={`h-2.5 rounded-full transition-all ${s === step ? 'w-10 bg-crimson' : s < step ? 'w-2.5 bg-gold' : 'w-2.5 bg-cocoa/20'}`}
             />
           ))}
         </div>
@@ -390,7 +390,7 @@ function CreatePage() {
                     type="button"
                     onClick={fetchMessageSuggestions}
                     disabled={loadingMessageAI || !recipientName.trim() || !occasion}
-                    className="text-xs font-medium text-terracotta hover:text-terracotta/80 disabled:text-cocoa/40 disabled:cursor-not-allowed transition-colors"
+                    className="text-xs font-medium text-crimson hover:text-crimson/80 disabled:text-cocoa/40 disabled:cursor-not-allowed transition-colors"
                   >
                     {loadingMessageAI ? 'Thinking...' : 'Need inspiration? ✨'}
                   </button>
@@ -429,7 +429,7 @@ function CreatePage() {
                     type="button"
                     onClick={fetchInstructionSuggestions}
                     disabled={loadingInstructionAI || !recipientName.trim() || !occasion}
-                    className="text-xs font-medium text-terracotta hover:text-terracotta/80 disabled:text-cocoa/40 disabled:cursor-not-allowed transition-colors"
+                    className="text-xs font-medium text-crimson hover:text-crimson/80 disabled:text-cocoa/40 disabled:cursor-not-allowed transition-colors"
                   >
                     {loadingInstructionAI ? 'Thinking...' : 'Suggest instructions ✨'}
                   </button>
@@ -475,7 +475,7 @@ function CreatePage() {
                     key={t.id}
                     onClick={() => setTemplate(t.id)}
                     className={`flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all ${
-                      template === t.id ? 'border-terracotta shadow-md' : 'border-gray-200 hover:border-gray-300'
+                      template === t.id ? 'border-crimson shadow-md' : 'border-gray-200 hover:border-gray-300'
                     }`}
                     style={{ backgroundColor: t.color }}
                   >
@@ -523,7 +523,7 @@ function CreatePage() {
                         setHeroPreview(URL.createObjectURL(file));
                       }
                     }}
-                    className="w-full text-sm text-cocoa file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-terracotta/10 file:text-terracotta hover:file:bg-terracotta/20"
+                    className="w-full text-sm text-cocoa file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-crimson/10 file:text-crimson hover:file:bg-crimson/20"
                   />
                 )}
                 {error && <p className="text-red-500 text-sm mt-2">{error}</p>}

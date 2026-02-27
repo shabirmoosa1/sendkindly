@@ -79,7 +79,7 @@ export default function CoverPage({ page, contributionCount }: CoverPageProps) {
 
       {/* Organizer's message */}
       {page.creator_message && (
-        <div className="mt-8 max-w-md mx-auto border-l-3 border-terracotta pl-5 text-left">
+        <div className="glass-panel mt-8 max-w-md mx-auto text-left" style={{ padding: '40px 36px', marginBottom: '32px' }}>
           <p className="text-xs font-medium tracking-widest text-cocoa/50 mb-2">
             {page.creator_name ? `${page.creator_name.toUpperCase()}'S MESSAGE` : 'A MESSAGE FROM THE ORGANIZER'}
           </p>

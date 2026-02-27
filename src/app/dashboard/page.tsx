@@ -92,9 +92,9 @@ export default function DashboardPage() {
       case 'collecting': return 'bg-cocoa/10 text-cocoa';
       case 'active': return 'bg-cocoa/10 text-cocoa';
       case 'revealed': return 'bg-gold/15 text-gold';
-      case 'thanked': return 'bg-terracotta/15 text-terracotta';
+      case 'thanked': return 'bg-crimson/15 text-crimson';
       case 'complete': return 'bg-green-100 text-green-700';
-      case 'locked': return 'bg-terracotta/15 text-terracotta';
+      case 'locked': return 'bg-crimson/15 text-crimson';
       case 'shared': return 'bg-green-100 text-green-700';
       default: return 'bg-cocoa/10 text-cocoa';
     }
@@ -198,7 +198,7 @@ export default function DashboardPage() {
 
         <div className="flex gap-2 mb-8">
           {(['all', 'active', 'completed'] as FilterTab[]).map((tab) => (
-            <button key={tab} onClick={() => setFilter(tab)} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${filter === tab ? 'bg-terracotta text-white ios-shadow' : 'glass text-cocoa hover:bg-white/60'}`}>
+            <button key={tab} onClick={() => setFilter(tab)} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${filter === tab ? 'bg-crimson text-white ios-shadow' : 'glass text-cocoa hover:bg-white/60'}`}>
               {tab === 'all' ? 'All Projects' : tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
@@ -249,7 +249,7 @@ export default function DashboardPage() {
                     <button onClick={() => copyShareLink(page.slug)} className={`flex-1 text-center py-2.5 rounded-full text-sm font-medium border-2 transition-all ${copiedSlug === page.slug ? 'border-green-500 text-green-600' : 'border-gold text-gold'}`}>
                       {copiedSlug === page.slug ? '✅ Copied!' : '🔗 Share Link'}
                     </button>
-                    <button onClick={() => router.push(`/p/${page.slug}/keepsake`)} className="flex-1 text-center py-2.5 rounded-full text-sm font-medium bg-terracotta text-white transition-all hover:opacity-90">Open Keepsake →</button>
+                    <button onClick={() => router.push(`/p/${page.slug}/keepsake`)} className="flex-1 text-center py-2.5 rounded-full text-sm font-medium bg-crimson text-white transition-all hover:opacity-90">Open Keepsake →</button>
                   </div>
                   {/* Reveal button — only when active with contributions */}
                   {(page.status === 'active' || page.status === 'collecting') && (page.contribution_count || 0) > 0 && (
@@ -300,7 +300,7 @@ export default function DashboardPage() {
                             setReminderCopiedSlug(page.slug);
                             setTimeout(() => setReminderCopiedSlug(null), 2000);
                           }}
-                          className={`w-full py-2.5 rounded-full text-sm font-medium border-2 transition-all ${reminderCopiedSlug === page.slug ? 'border-green-500 text-green-600' : 'border-terracotta text-terracotta hover:opacity-90'}`}
+                          className={`w-full py-2.5 rounded-full text-sm font-medium border-2 transition-all ${reminderCopiedSlug === page.slug ? 'border-green-500 text-green-600' : 'border-crimson text-crimson hover:opacity-90'}`}
                         >
                           {reminderCopiedSlug === page.slug ? '✅ Copied!' : '📋 Copy Reminder Message'}
                         </button>
@@ -322,7 +322,7 @@ export default function DashboardPage() {
           </>
         )}
 
-        <div className="glass border-2 border-dashed border-terracotta/20 rounded-3xl p-8 text-center cursor-pointer hover:border-terracotta/40 transition-colors" onClick={() => router.push('/dashboard/create')}>
+        <div className="glass border-2 border-dashed border-crimson/20 rounded-3xl p-8 text-center cursor-pointer hover:border-crimson/40 transition-colors" onClick={() => router.push('/dashboard/create')}>
           <span className="text-3xl mb-2 block">✨</span>
           <p className="text-lg font-semibold text-espresso">Planning something new?</p>
           <p className="text-sm text-cocoa">Start a collaborative gift in seconds</p>
@@ -375,7 +375,7 @@ export default function DashboardPage() {
               <button
                 onClick={handleRevealConfirm}
                 disabled={revealing}
-                className="flex-1 py-2.5 rounded-full text-sm font-medium bg-terracotta text-white transition-all hover:opacity-90 disabled:opacity-50"
+                className="flex-1 py-2.5 rounded-full text-sm font-medium bg-crimson text-white transition-all hover:opacity-90 disabled:opacity-50"
               >
                 {revealing ? 'Revealing...' : 'Reveal Now ✨'}
               </button>
