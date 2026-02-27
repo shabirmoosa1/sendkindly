@@ -27,8 +27,9 @@ export async function shareOrCopy(
     }
   }
 
-  // Fallback: copy URL to clipboard
-  const success = await copyToClipboard(options.url);
+  // Fallback: copy full invite text (not just URL) to clipboard
+  const textToCopy = options.text || options.url;
+  const success = await copyToClipboard(textToCopy);
   return { shared: false, copied: success };
 }
 

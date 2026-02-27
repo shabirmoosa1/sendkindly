@@ -7,6 +7,7 @@
  * Cards show status, contribution count, and expand to reveal
  * sharing tools (WhatsApp, Email, Copy, QR) and reveal actions.
  *
+ * Tabs: Active (draft/active/revealed) | Archived (thanked/complete)
  * Status flow: draft → active → revealed → thanked → complete
  */
 
@@ -29,13 +30,13 @@ interface Page {
   contribution_count?: number;
 }
 
-type FilterTab = 'all' | 'active' | 'completed';
+type FilterTab = 'active' | 'archived';
 
 export default function DashboardPage() {
   const router = useRouter();
   const [pages, setPages] = useState<Page[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<FilterTab>('all');
+  const [filter, setFilter] = useState<FilterTab>('active');
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const [revealCopiedSlug, setRevealCopiedSlug] = useState<string | null>(null);
   const [expandedSlug, setExpandedSlug] = useState<string | null>(null);
@@ -43,6 +44,8 @@ export default function DashboardPage() {
   const [revealModal, setRevealModal] = useState<Page | null>(null);
   const [revealing, setRevealing] = useState(false);
   const [revealToast, setRevealToast] = useState<string | null>(null);
+  const [deleteModal, setDeleteModal] = useState<Page | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -90,34 +93,41 @@ export default function DashboardPage() {
     loadData();
   }, [router]);
 
-  /** Copy the contributor page link to clipboard */
-  const copyShareLink = async (slug: string) => {
-    const url = getShareUrl(`/p/${slug}`);
-    await copyToClipboard(url);
-    setCopiedSlug(slug);
+  // ─── Sharing helpers ───────────────────────────────────────
+
+  /** Build the full invite message text for a page */
+  const getInviteMessage = (page: Page) => {
+    const url = getShareUrl(`/p/${page.slug}`);
+    const occasion = page.template_type === 'other' ? '' : `${formatOccasion(page.template_type)} `;
+    return `Hey! We're putting together a special keepsake for ${page.recipient_name}'s ${occasion}celebration. Would you add a message, photo, or memory?\n\n${url}`;
+  };
+
+  /** Copy the full invite message (not just URL) to clipboard */
+  const copyInviteMessage = async (page: Page) => {
+    const message = getInviteMessage(page);
+    await copyToClipboard(message);
+    setCopiedSlug(page.slug);
     setTimeout(() => setCopiedSlug(null), 2000);
   };
 
-  /** Open WhatsApp with a pre-composed invite message. Uses web.whatsapp.com on desktop for a smoother UX. */
+  /** Open WhatsApp with a pre-composed invite. Uses wa.me which works on all platforms. */
   const shareOnWhatsApp = (page: Page) => {
-    const url = getShareUrl(`/p/${page.slug}`);
-    const occasion = page.template_type === 'other' ? '' : `${formatOccasion(page.template_type)} `;
-    const text = `Hey! We're putting together a special keepsake for ${page.recipient_name}'s ${occasion}celebration. Would you add a message, photo, or memory?\n\n${url}`;
-    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-    const waUrl = isMobile
-      ? `https://wa.me/?text=${encodeURIComponent(text)}`
-      : `https://web.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-    window.open(waUrl, '_blank');
+    const text = getInviteMessage(page);
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
-  /** Open default email client with a pre-composed invite */
+  /** Open email compose — tries mailto: first, falls back to Gmail web compose */
   const shareViaEmail = (page: Page) => {
     const url = getShareUrl(`/p/${page.slug}`);
     const occasion = page.template_type === 'other' ? '' : `${formatOccasion(page.template_type)} `;
     const subject = `Help celebrate ${page.recipient_name}! Add your message`;
     const body = `Hi!\n\nWe're putting together a special keepsake for ${page.recipient_name}'s ${occasion}celebration. Would you add a message, photo, or memory?\n\nHere's the link:\n${url}\n\nThanks!`;
-    window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    // Use Gmail web compose (more reliable than mailto: across all platforms)
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(gmailUrl, '_blank');
   };
+
+  // ─── Status helpers ────────────────────────────────────────
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -140,6 +150,8 @@ export default function DashboardPage() {
       default:         return status.toUpperCase();
     }
   };
+
+  // ─── Actions ───────────────────────────────────────────────
 
   const handleRevealConfirm = async () => {
     if (!revealModal) return;
@@ -178,6 +190,39 @@ export default function DashboardPage() {
     setRevealModal(null);
   };
 
+  const handleDeleteConfirm = async () => {
+    if (!deleteModal) return;
+    setDeleting(true);
+
+    try {
+      const res = await fetch('/api/delete-page', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pageId: deleteModal.id }),
+      });
+
+      if (res.ok) {
+        setPages((prev) => prev.filter((p) => p.id !== deleteModal.id));
+        setRevealToast(`"${deleteModal.recipient_name}" celebration deleted`);
+        setTimeout(() => setRevealToast(null), 3000);
+      } else {
+        const data = await res.json();
+        console.error('Delete error:', data);
+        setRevealToast('Failed to delete. Please try again.');
+        setTimeout(() => setRevealToast(null), 3000);
+      }
+    } catch (err) {
+      console.error('Delete network error:', err);
+      setRevealToast('Network error. Please try again.');
+      setTimeout(() => setRevealToast(null), 3000);
+    }
+
+    setDeleting(false);
+    setDeleteModal(null);
+  };
+
+  // ─── Formatting helpers ────────────────────────────────────
+
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('en-ZA', {
       day: 'numeric', month: 'short', year: 'numeric',
@@ -188,12 +233,18 @@ export default function DashboardPage() {
     return type.charAt(0).toUpperCase() + type.slice(1).replace(/_/g, ' ');
   };
 
+  // ─── Filtering ─────────────────────────────────────────────
+
   const filteredPages = pages.filter((page) => {
-    if (filter === 'all') return true;
     if (filter === 'active') return ['draft', 'active', 'revealed'].includes(page.status);
-    if (filter === 'completed') return ['thanked', 'complete'].includes(page.status);
+    if (filter === 'archived') return ['thanked', 'complete'].includes(page.status);
     return true;
   });
+
+  const activeCount = pages.filter((p) => ['draft', 'active', 'revealed'].includes(p.status)).length;
+  const archivedCount = pages.filter((p) => ['thanked', 'complete'].includes(p.status)).length;
+
+  // ─── Render ────────────────────────────────────────────────
 
   if (loading) {
     return (
@@ -222,71 +273,88 @@ export default function DashboardPage() {
           </button>
         </div>
 
+        {/* Filter tabs: Active / Archived */}
         <div className="flex gap-2 mb-8">
-          {(['all', 'active', 'completed'] as FilterTab[]).map((tab) => (
-            <button key={tab} onClick={() => setFilter(tab)} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${filter === tab ? 'bg-crimson text-white ios-shadow' : 'glass text-cocoa hover:bg-white/60'}`}>
-              {tab === 'all' ? 'All Projects' : tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
+          <button
+            onClick={() => setFilter('active')}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${filter === 'active' ? 'bg-crimson text-white ios-shadow' : 'glass text-cocoa hover:bg-white/60'}`}
+          >
+            Active{activeCount > 0 ? ` (${activeCount})` : ''}
+          </button>
+          <button
+            onClick={() => setFilter('archived')}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${filter === 'archived' ? 'bg-crimson text-white ios-shadow' : 'glass text-cocoa hover:bg-white/60'}`}
+          >
+            Archived{archivedCount > 0 ? ` (${archivedCount})` : ''}
+          </button>
         </div>
 
+        {/* Empty state */}
         {filteredPages.length === 0 && !loading && (
           <div className="text-center py-20">
-            <div className="text-5xl sm:text-6xl mb-4">🎉</div>
-            <h2 className="text-xl sm:text-2xl italic mb-3">{filter === 'all' ? 'Create your first celebration!' : `No ${filter} celebrations yet`}</h2>
-            <p className="text-cocoa mb-6">Start a page for someone special and invite friends to contribute.</p>
-            <button onClick={() => router.push('/dashboard/create')} className="btn-primary">+ New Celebration</button>
+            <div className="text-5xl sm:text-6xl mb-4">{filter === 'active' ? '🎉' : '📦'}</div>
+            <h2 className="text-xl sm:text-2xl italic mb-3">
+              {filter === 'active' ? 'Create your first celebration!' : 'No archived celebrations yet'}
+            </h2>
+            <p className="text-cocoa mb-6">
+              {filter === 'active'
+                ? 'Start a page for someone special and invite friends to contribute.'
+                : 'Celebrations move here once the recipient has sent their thank you.'}
+            </p>
+            {filter === 'active' && (
+              <button onClick={() => router.push('/dashboard/create')} className="btn-primary">+ New Celebration</button>
+            )}
           </div>
         )}
 
+        {/* Celebration cards */}
         {filteredPages.length > 0 && (
-          <>
-            <p className="text-xs font-semibold tracking-widest text-cocoa/60 mb-4">ACTIVE CELEBRATIONS</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
-              {filteredPages.map((page) => (
-                <div key={page.id} className="glass rounded-3xl ios-shadow hover:shadow-md transition-shadow">
-                  {/* Clickable card header — opens keepsake */}
-                  <div
-                    className="p-6 pb-0 cursor-pointer"
-                    onClick={() => router.push(`/p/${page.slug}/keepsake`)}
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="text-lg font-bold text-espresso">{page.recipient_name}</h3>
-                        <p className="text-sm text-cocoa">{page.template_type === 'other' ? 'Celebration' : `${formatOccasion(page.template_type)} Celebration`}</p>
-                      </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wide ${getStatusStyle(page.status)}`}>{getStatusLabel(page.status)}</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+            {filteredPages.map((page) => (
+              <div key={page.id} className="glass rounded-3xl ios-shadow hover:shadow-md transition-shadow">
+                {/* Clickable card header — opens keepsake */}
+                <div
+                  className="p-6 pb-0 cursor-pointer"
+                  onClick={() => router.push(`/p/${page.slug}/keepsake`)}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="text-lg font-bold text-espresso">{page.recipient_name}</h3>
+                      <p className="text-sm text-cocoa">{page.template_type === 'other' ? 'Celebration' : `${formatOccasion(page.template_type)} Celebration`}</p>
                     </div>
-                    {/* Progress indicator */}
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between text-xs text-cocoa/60 mb-1.5">
-                        <span>✨ {page.contribution_count || 0} contributions</span>
-                        <span className="text-gold font-semibold">{formatDate(page.created_at)}</span>
-                      </div>
-                      <div className="h-1.5 bg-cocoa/10 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gold rounded-full transition-all"
-                          style={{ width: `${Math.min(((page.contribution_count || 0) / 10) * 100, 100)}%` }}
-                        />
-                      </div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wide ${getStatusStyle(page.status)}`}>{getStatusLabel(page.status)}</span>
+                  </div>
+                  {/* Progress indicator */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between text-xs text-cocoa/60 mb-1.5">
+                      <span>✨ {page.contribution_count || 0} contributions</span>
+                      <span className="text-gold font-semibold">{formatDate(page.created_at)}</span>
+                    </div>
+                    <div className="h-1.5 bg-cocoa/10 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gold rounded-full transition-all"
+                        style={{ width: `${Math.min(((page.contribution_count || 0) / 10) * 100, 100)}%` }}
+                      />
                     </div>
                   </div>
-                  {/* Primary action */}
-                  <div className="px-6 pb-3">
-                    <button onClick={() => router.push(`/p/${page.slug}/keepsake`)} className="w-full text-center py-2.5 rounded-full text-sm font-medium bg-crimson text-white transition-all hover:opacity-90">Open Keepsake →</button>
-                  </div>
+                </div>
+                {/* Primary action */}
+                <div className="px-6 pb-3">
+                  <button onClick={() => router.push(`/p/${page.slug}/keepsake`)} className="w-full text-center py-2.5 rounded-full text-sm font-medium bg-crimson text-white transition-all hover:opacity-90">Open Keepsake →</button>
+                </div>
 
-                  {/* Expand/collapse for invite & share tools */}
-                  <button
-                    onClick={() => setExpandedSlug(expandedSlug === page.slug ? null : page.slug)}
-                    className="w-full text-center text-xs text-cocoa/50 hover:text-cocoa py-3 transition-colors"
-                  >
-                    {expandedSlug === page.slug ? 'Hide options ▲' : 'Invite & share ▼'}
-                  </button>
+                {/* Expand/collapse for tools */}
+                <button
+                  onClick={() => setExpandedSlug(expandedSlug === page.slug ? null : page.slug)}
+                  className="w-full text-center text-xs text-cocoa/50 hover:text-cocoa py-3 transition-colors"
+                >
+                  {expandedSlug === page.slug ? 'Hide options ▲' : 'Options ▼'}
+                </button>
 
-                  {expandedSlug === page.slug && (
-                    <div className="mx-6 mb-6 pt-3 border-t border-gray-100 flex flex-col gap-3 animate-fade-in">
-                      {/* Invite contributors */}
+                {expandedSlug === page.slug && (
+                  <div className="mx-6 mb-6 pt-3 border-t border-gray-100 flex flex-col gap-3 animate-fade-in">
+                    {/* Invite contributors — only for active pages */}
+                    {['draft', 'active'].includes(page.status) && (
                       <div>
                         <p className="text-xs text-cocoa/60 mb-2">📨 Invite friends to contribute:</p>
                         <div className="flex gap-2">
@@ -303,55 +371,64 @@ export default function DashboardPage() {
                             ✉️ Email
                           </button>
                           <button
-                            onClick={() => copyShareLink(page.slug)}
+                            onClick={() => copyInviteMessage(page)}
                             className={`flex-1 text-center py-2.5 rounded-full text-sm font-medium border-2 transition-all ${copiedSlug === page.slug ? 'border-green-500 text-green-600' : 'border-cocoa/30 text-cocoa hover:border-cocoa/50'}`}
                           >
-                            {copiedSlug === page.slug ? '✅ Copied!' : '🔗 Copy'}
+                            {copiedSlug === page.slug ? '✅ Copied!' : '📋 Copy'}
                           </button>
                         </div>
                       </div>
-                      {/* QR code */}
+                    )}
+                    {/* QR code — only for active pages */}
+                    {['draft', 'active'].includes(page.status) && (
                       <button
                         onClick={() => setQrModal({ slug: page.slug, recipientName: page.recipient_name })}
                         className="w-full py-2.5 rounded-full text-sm font-medium border-2 border-cocoa/30 text-cocoa hover:border-cocoa transition-all"
                       >
                         📱 QR Code
                       </button>
-                      {/* Reveal — only when active with contributions */}
-                      {page.status === 'active' && (page.contribution_count || 0) > 0 && (
-                        <div>
-                          <p className="text-xs text-cocoa/60 mb-1.5">🎁 Ready to deliver? Reveal to {page.recipient_name}:</p>
-                          <button
-                            onClick={() => setRevealModal(page)}
-                            className="w-full py-2.5 rounded-full text-sm font-medium btn-gold"
-                          >
-                            Reveal to {page.recipient_name} 🎁
-                          </button>
-                        </div>
-                      )}
-                      {/* Reveal link for recipient */}
-                      {['revealed', 'thanked', 'complete'].includes(page.status) && (
-                        <div>
-                          <p className="text-xs text-cocoa/60 mb-1.5">🎁 Send this to {page.recipient_name} — they&apos;ll see a surprise reveal</p>
-                          <button
-                            onClick={async () => {
-                              const url = getShareUrl(`/p/${page.slug}/reveal`);
-                              await copyToClipboard(url);
-                              setRevealCopiedSlug(page.slug);
-                              setTimeout(() => setRevealCopiedSlug(null), 2000);
-                            }}
-                            className={`w-full py-2.5 rounded-full text-sm font-medium border-2 transition-all ${revealCopiedSlug === page.slug ? 'border-green-500 text-green-600' : 'border-espresso text-espresso hover:opacity-90'}`}
-                          >
-                            {revealCopiedSlug === page.slug ? '✅ Copied!' : '🎁 Copy Reveal Link'}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </>
+                    )}
+                    {/* Reveal — only when active with contributions */}
+                    {page.status === 'active' && (page.contribution_count || 0) > 0 && (
+                      <div>
+                        <p className="text-xs text-cocoa/60 mb-1.5">🎁 Ready to deliver? Reveal to {page.recipient_name}:</p>
+                        <button
+                          onClick={() => setRevealModal(page)}
+                          className="w-full py-2.5 rounded-full text-sm font-medium btn-gold"
+                        >
+                          Reveal to {page.recipient_name} 🎁
+                        </button>
+                      </div>
+                    )}
+                    {/* Copy reveal link — only after revealed */}
+                    {['revealed', 'thanked', 'complete'].includes(page.status) && (
+                      <div>
+                        <p className="text-xs text-cocoa/60 mb-1.5">🎁 Send this to {page.recipient_name} — they&apos;ll see a surprise reveal</p>
+                        <button
+                          onClick={async () => {
+                            const url = getShareUrl(`/p/${page.slug}/reveal`);
+                            await copyToClipboard(url);
+                            setRevealCopiedSlug(page.slug);
+                            setTimeout(() => setRevealCopiedSlug(null), 2000);
+                          }}
+                          className={`w-full py-2.5 rounded-full text-sm font-medium border-2 transition-all ${revealCopiedSlug === page.slug ? 'border-green-500 text-green-600' : 'border-espresso text-espresso hover:opacity-90'}`}
+                        >
+                          {revealCopiedSlug === page.slug ? '✅ Copied!' : '🎁 Copy Reveal Link'}
+                        </button>
+                      </div>
+                    )}
+                    {/* Delete celebration */}
+                    <button
+                      onClick={() => setDeleteModal(page)}
+                      className="w-full py-2 rounded-full text-xs font-medium text-red-400 hover:text-red-600 hover:bg-red-50 transition-all mt-1"
+                    >
+                      🗑 Delete celebration
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         )}
 
         <div className="glass border-2 border-dashed border-crimson/20 rounded-3xl p-8 text-center cursor-pointer hover:border-crimson/40 transition-colors" onClick={() => router.push('/dashboard/create')}>
@@ -416,7 +493,40 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Reveal Toast */}
+      {/* Delete Confirmation Modal */}
+      {deleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
+          <div className="glass rounded-3xl ios-shadow p-8 max-w-md w-full text-center animate-scale-in">
+            <div className="text-5xl mb-4">🗑</div>
+            <h3 className="text-xl italic mb-2">Delete &ldquo;{deleteModal.recipient_name}&rdquo; celebration?</h3>
+            <p className="text-sm text-cocoa/70 mb-2">This will permanently delete:</p>
+            <ul className="text-sm text-cocoa/70 mb-6 text-left max-w-[280px] mx-auto">
+              <li>• All {deleteModal.contribution_count || 0} contributions</li>
+              <li>• Photos and AI stickers</li>
+              <li>• Thank you messages</li>
+            </ul>
+            <p className="text-xs text-red-500 font-medium mb-6">This cannot be undone.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteModal(null)}
+                disabled={deleting}
+                className="flex-1 py-2.5 rounded-full text-sm font-medium border-2 border-cocoa/30 text-cocoa transition-all hover:opacity-90"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={deleting}
+                className="flex-1 py-2.5 rounded-full text-sm font-medium bg-red-600 text-white transition-all hover:opacity-90 disabled:opacity-50"
+              >
+                {deleting ? 'Deleting...' : 'Delete Forever'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
       {revealToast && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
           <div className="glass rounded-2xl ios-shadow px-6 py-3 text-sm font-medium text-espresso">

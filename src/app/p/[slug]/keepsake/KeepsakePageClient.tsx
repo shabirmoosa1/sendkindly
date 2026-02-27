@@ -125,16 +125,19 @@ export default function KeepsakePage() {
     setIsMobile(/Mobi|Android/i.test(navigator.userAgent));
   }, []);
 
+  /** Copy full invite message (with link) to clipboard */
   const handleShareContributorLink = async () => {
     if (!page) return;
     const url = getShareUrl(`/p/${slug}`);
-    const result = await shareOrCopy({
+    const occasion = page.template_type === 'other' ? '' : `${formatOccasion(page.template_type)} `;
+    const message = `Hey! We're putting together a special keepsake for ${page.recipient_name}'s ${occasion}celebration. Would you add a message, photo, or memory?\n\n${url}`;
+    const { copied } = await shareOrCopy({
       title: `Help celebrate ${page.recipient_name}!`,
-      text: `Add your message to ${page.recipient_name}'s ${formatOccasion(page.template_type)} celebration`,
+      text: message,
       url,
     });
-    if (result.copied) {
-      setShareFeedback('✅ Link copied!');
+    if (copied) {
+      setShareFeedback('✅ Copied!');
       setTimeout(() => setShareFeedback(null), 2000);
     }
   };
@@ -675,11 +678,7 @@ export default function KeepsakePage() {
                       const url = getShareUrl(`/p/${slug}`);
                       const occasion = page.template_type === 'other' ? '' : `${formatOccasion(page.template_type)} `;
                       const text = `Hey! We're putting together a special keepsake for ${page.recipient_name}'s ${occasion}celebration. Would you add a message, photo, or memory?\n\n${url}`;
-                      const onMobile = /Mobi|Android/i.test(navigator.userAgent);
-                      const waUrl = onMobile
-                        ? `https://wa.me/?text=${encodeURIComponent(text)}`
-                        : `https://web.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-                      window.open(waUrl, '_blank');
+                      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
                     }}
                     className="flex-1 py-2.5 rounded-full text-sm font-medium border-2 border-green-500 text-green-600 hover:bg-green-50 transition-all"
                   >
@@ -689,10 +688,9 @@ export default function KeepsakePage() {
                     onClick={() => {
                       if (!page) return;
                       const url = getShareUrl(`/p/${slug}`);
-                      openEmailShare({
-                        subject: `Help celebrate ${page.recipient_name}!`,
-                        body: `Hi!\n\nI'm putting together a special keepsake for ${page.recipient_name}'s ${formatOccasion(page.template_type)} celebration. Would you add a message or photo?\n\nHere's the link: ${url}\n\nThanks!`,
-                      });
+                      const subject = `Help celebrate ${page.recipient_name}!`;
+                      const body = `Hi!\n\nI'm putting together a special keepsake for ${page.recipient_name}'s ${formatOccasion(page.template_type)} celebration. Would you add a message or photo?\n\nHere's the link: ${url}\n\nThanks!`;
+                      window.open(`https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
                     }}
                     className="flex-1 py-2.5 rounded-full text-sm font-medium border-2 border-gold text-gold hover:bg-gold/5 transition-all"
                   >
