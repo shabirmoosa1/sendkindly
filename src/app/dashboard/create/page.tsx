@@ -310,7 +310,7 @@ function CreatePage() {
           onClick={() => step === 1 ? router.push('/dashboard') : setStep((step - 1) as Step)}
           className="mb-6 text-cocoa hover:text-espresso transition-colors flex items-center gap-1"
         >
-          ← {step === 1 ? 'Dashboard' : 'Back'}
+          ← {step === 1 ? 'My Celebrations' : 'Back'}
         </button>
 
         {/* Progress Dots */}

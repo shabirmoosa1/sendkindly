@@ -1,5 +1,15 @@
 'use client';
 
+/**
+ * Dashboard — "My Celebrations"
+ *
+ * Lists all celebration pages the logged-in user has created.
+ * Cards show status, contribution count, and expand to reveal
+ * sharing tools (WhatsApp, Email, Copy, QR) and reveal actions.
+ *
+ * Status flow: draft → active → revealed → thanked → complete
+ */
+
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
@@ -80,6 +90,7 @@ export default function DashboardPage() {
     loadData();
   }, [router]);
 
+  /** Copy the contributor page link to clipboard */
   const copyShareLink = async (slug: string) => {
     const url = getShareUrl(`/p/${slug}`);
     await copyToClipboard(url);
@@ -87,6 +98,7 @@ export default function DashboardPage() {
     setTimeout(() => setCopiedSlug(null), 2000);
   };
 
+  /** Open WhatsApp with a pre-composed invite message. Uses web.whatsapp.com on desktop for a smoother UX. */
   const shareOnWhatsApp = (page: Page) => {
     const url = getShareUrl(`/p/${page.slug}`);
     const occasion = page.template_type === 'other' ? '' : `${formatOccasion(page.template_type)} `;
@@ -98,6 +110,7 @@ export default function DashboardPage() {
     window.open(waUrl, '_blank');
   };
 
+  /** Open default email client with a pre-composed invite */
   const shareViaEmail = (page: Page) => {
     const url = getShareUrl(`/p/${page.slug}`);
     const occasion = page.template_type === 'other' ? '' : `${formatOccasion(page.template_type)} `;
@@ -108,28 +121,23 @@ export default function DashboardPage() {
 
   const getStatusStyle = (status: string) => {
     switch (status) {
-      case 'collecting': return 'bg-cocoa/10 text-cocoa';
-      case 'active': return 'bg-cocoa/10 text-cocoa';
+      case 'draft':    return 'bg-cocoa/10 text-cocoa';
+      case 'active':   return 'bg-cocoa/10 text-cocoa';
       case 'revealed': return 'bg-gold/15 text-gold';
-      case 'thanked': return 'bg-crimson/15 text-crimson';
+      case 'thanked':  return 'bg-crimson/15 text-crimson';
       case 'complete': return 'bg-green-100 text-green-700';
-      case 'locked': return 'bg-crimson/15 text-crimson';
-      case 'shared': return 'bg-green-100 text-green-700';
-      default: return 'bg-cocoa/10 text-cocoa';
+      default:         return 'bg-cocoa/10 text-cocoa';
     }
   };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'collecting': return '● COLLECTING';
-      case 'active': return '● COLLECTING';
+      case 'draft':    return '○ DRAFT';
+      case 'active':   return '● COLLECTING';
       case 'revealed': return '✨ REVEALED';
-      case 'thanked': return '💛 THANKED';
+      case 'thanked':  return '💛 THANKED';
       case 'complete': return '✓ COMPLETE';
-      case 'locked': return '◉ FINALIZING';
-      case 'shared': return '✓ DELIVERED';
-      case 'draft': return '○ DRAFT';
-      default: return status.toUpperCase();
+      default:         return status.toUpperCase();
     }
   };
 
@@ -182,8 +190,8 @@ export default function DashboardPage() {
 
   const filteredPages = pages.filter((page) => {
     if (filter === 'all') return true;
-    if (filter === 'active') return ['draft', 'collecting', 'locked', 'active', 'revealed'].includes(page.status);
-    if (filter === 'completed') return ['shared', 'thanked', 'complete'].includes(page.status);
+    if (filter === 'active') return ['draft', 'active', 'revealed'].includes(page.status);
+    if (filter === 'completed') return ['thanked', 'complete'].includes(page.status);
     return true;
   });
 
@@ -204,11 +212,10 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-ivory">
       <Navbar />
 
-      <main className="max-w-[1100px] mx-auto px-6 py-8">
+      <main className="max-w-[1100px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <p className="text-xs font-medium tracking-widest text-cocoa/50 mb-1">OWNER STUDIO</p>
-            <h1 className="text-3xl sm:text-4xl italic">My Celebrations</h1>
+            <h1 className="text-2xl sm:text-4xl italic">My Celebrations</h1>
           </div>
           <button onClick={() => router.push('/dashboard/create')} className="btn-primary flex items-center justify-center gap-2 shrink-0">
             <span className="text-lg">+</span> New Celebration
@@ -225,8 +232,8 @@ export default function DashboardPage() {
 
         {filteredPages.length === 0 && !loading && (
           <div className="text-center py-20">
-            <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-2xl italic mb-3">{filter === 'all' ? 'Create your first celebration!' : `No ${filter} celebrations yet`}</h2>
+            <div className="text-5xl sm:text-6xl mb-4">🎉</div>
+            <h2 className="text-xl sm:text-2xl italic mb-3">{filter === 'all' ? 'Create your first celebration!' : `No ${filter} celebrations yet`}</h2>
             <p className="text-cocoa mb-6">Start a page for someone special and invite friends to contribute.</p>
             <button onClick={() => router.push('/dashboard/create')} className="btn-primary">+ New Celebration</button>
           </div>
@@ -311,7 +318,7 @@ export default function DashboardPage() {
                         📱 QR Code
                       </button>
                       {/* Reveal — only when active with contributions */}
-                      {(page.status === 'active' || page.status === 'collecting') && (page.contribution_count || 0) > 0 && (
+                      {page.status === 'active' && (page.contribution_count || 0) > 0 && (
                         <div>
                           <p className="text-xs text-cocoa/60 mb-1.5">🎁 Ready to deliver? Reveal to {page.recipient_name}:</p>
                           <button

@@ -1,5 +1,18 @@
 'use client';
 
+/**
+ * Contributor Page — `/p/[slug]`
+ *
+ * Public page where friends and family add messages, photos,
+ * or AI stickers to a celebration. Includes:
+ * - Photo upload with crop tool (react-easy-crop)
+ * - Text message with AI-powered suggestions
+ * - AI sticker generation (DALL-E 3)
+ * - "My Contributions" section to review past submissions
+ *
+ * Locks after the page is revealed (status !== 'active').
+ */
+
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Cropper from 'react-easy-crop';
@@ -524,7 +537,7 @@ export default function ContributorPage() {
       <Navbar />
 
       {/* Main Content */}
-      <div className="max-w-[700px] mx-auto px-6 py-6">
+      <div className="max-w-[700px] mx-auto px-4 sm:px-6 py-6">
 
         {/* Kind Gesture Label */}
         <p className="text-center text-xs font-medium tracking-widest text-crimson/70 mb-4">A KIND GESTURE</p>
@@ -690,34 +703,34 @@ export default function ContributorPage() {
               Add your message for {page.recipient_name}
             </h2>
             <p className="text-xs font-medium tracking-widest text-cocoa/50 mb-5">CHOOSE YOUR EXPRESSION</p>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <button
                 onClick={() => setContribType('photo')}
-                className="glass rounded-2xl ios-shadow p-6 sm:p-8 hover:shadow-lg hover:-translate-y-1 transition-all text-center active:scale-95"
+                className="glass rounded-2xl ios-shadow p-5 sm:p-8 hover:shadow-lg hover:-translate-y-1 transition-all text-center active:scale-95"
               >
-                <span className="text-4xl block mb-3">📷</span>
-                <span className="font-semibold text-espresso">Add Photo</span>
+                <span className="text-3xl sm:text-4xl block mb-2 sm:mb-3">📷</span>
+                <span className="font-semibold text-espresso text-sm sm:text-base">Add Photo</span>
                 <span className="block text-xs text-cocoa/50 mt-1">Share a memory</span>
               </button>
               <button
                 onClick={() => setContribType('note')}
-                className="glass rounded-2xl ios-shadow p-6 sm:p-8 hover:shadow-lg hover:-translate-y-1 transition-all text-center active:scale-95"
+                className="glass rounded-2xl ios-shadow p-5 sm:p-8 hover:shadow-lg hover:-translate-y-1 transition-all text-center active:scale-95"
               >
-                <span className="text-4xl block mb-3">✍️</span>
-                <span className="font-semibold text-espresso">Write Note</span>
+                <span className="text-3xl sm:text-4xl block mb-2 sm:mb-3">✍️</span>
+                <span className="font-semibold text-espresso text-sm sm:text-base">Write Note</span>
                 <span className="block text-xs text-cocoa/50 mt-1">Send a message</span>
               </button>
-              <div className="glass rounded-2xl p-6 sm:p-8 text-center opacity-50 relative">
-                <span className="text-4xl block mb-3">🎤</span>
-                <span className="font-semibold text-espresso">Voice Note</span>
+              <div className="glass rounded-2xl p-5 sm:p-8 text-center opacity-50 relative">
+                <span className="text-3xl sm:text-4xl block mb-2 sm:mb-3">🎤</span>
+                <span className="font-semibold text-espresso text-sm sm:text-base">Voice Note</span>
                 <span className="block text-xs text-cocoa/50 mt-1">Coming soon</span>
               </div>
               <button
                 onClick={() => setContribType('sticker')}
-                className="glass rounded-2xl ios-shadow p-6 sm:p-8 hover:shadow-lg hover:-translate-y-1 transition-all text-center active:scale-95"
+                className="glass rounded-2xl ios-shadow p-5 sm:p-8 hover:shadow-lg hover:-translate-y-1 transition-all text-center active:scale-95"
               >
-                <span className="text-4xl block mb-3">🎨</span>
-                <span className="font-semibold text-espresso">AI Sticker</span>
+                <span className="text-3xl sm:text-4xl block mb-2 sm:mb-3">🎨</span>
+                <span className="font-semibold text-espresso text-sm sm:text-base">AI Sticker</span>
                 <span className="block text-xs text-cocoa/50 mt-1">Create with AI</span>
               </button>
             </div>

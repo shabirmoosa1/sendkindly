@@ -355,7 +355,7 @@ export default function KeepsakePage() {
       </div>
 
       {/* Contributions Grid */}
-      <div className="max-w-[1100px] mx-auto px-6 py-10">
+      <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-8 sm:py-10">
 
         {/* Recipient's Thank You — shown when status is thanked/complete */}
         {thanksData && ['thanked', 'complete'].includes(page.status) && (
@@ -438,7 +438,7 @@ export default function KeepsakePage() {
                     <img
                       src={contrib.ai_sticker_url}
                       alt={`AI sticker from ${contrib.contributor_name}`}
-                      className="w-[200px] h-[200px] rounded-2xl object-cover"
+                      className="w-[160px] h-[160px] sm:w-[200px] sm:h-[200px] rounded-2xl object-cover"
                       loading="lazy"
                     />
                     <span className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-gold/80">

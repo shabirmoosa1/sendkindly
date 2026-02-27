@@ -32,10 +32,10 @@ export default function CoverPage({ page, contributionCount }: CoverPageProps) {
   const occasion = formatOccasion(page.template_type);
 
   return (
-    <div className="flex flex-col items-center justify-center h-full px-8 py-12 text-center relative">
+    <div className="flex flex-col items-center justify-center h-full px-5 sm:px-8 py-10 sm:py-12 text-center relative">
       {/* Hero image or decorative background */}
       {page.hero_image_url ? (
-        <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-full overflow-hidden mb-8 border-4 border-white shadow-lg mx-auto">
+        <div className="w-36 h-36 sm:w-48 sm:h-48 md:w-56 md:h-56 rounded-full overflow-hidden mb-8 border-4 border-white shadow-lg mx-auto">
           <img
             src={page.hero_image_url}
             alt={page.recipient_name}
@@ -43,7 +43,7 @@ export default function CoverPage({ page, contributionCount }: CoverPageProps) {
           />
         </div>
       ) : (
-        <div className="text-7xl sm:text-8xl mb-8">{emoji}</div>
+        <div className="text-6xl sm:text-7xl md:text-8xl mb-8">{emoji}</div>
       )}
 
       {/* Occasion label */}
@@ -56,7 +56,7 @@ export default function CoverPage({ page, contributionCount }: CoverPageProps) {
 
       {/* Recipient name */}
       <h1
-        className="text-4xl sm:text-5xl md:text-6xl italic text-espresso mb-6"
+        className="text-3xl sm:text-4xl md:text-6xl italic text-espresso mb-6"
         style={{ lineHeight: 1.2 }}
       >
         {page.recipient_name}
@@ -79,7 +79,7 @@ export default function CoverPage({ page, contributionCount }: CoverPageProps) {
 
       {/* Organizer's message */}
       {page.creator_message && (
-        <div className="glass-panel mt-8 max-w-md mx-auto text-left" style={{ padding: '40px 36px', marginBottom: '32px' }}>
+        <div className="glass-panel mt-8 max-w-md mx-auto text-left px-6 py-6 sm:px-9 sm:py-10 mb-8">
           <p className="text-xs font-medium tracking-widest text-cocoa/50 mb-2">
             {page.creator_name ? `${page.creator_name.toUpperCase()}'S MESSAGE` : 'A MESSAGE FROM THE ORGANIZER'}
           </p>

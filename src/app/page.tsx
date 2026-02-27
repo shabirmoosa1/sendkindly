@@ -61,13 +61,13 @@ export default function HomePage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="max-w-[1100px] mx-auto px-6 pt-16 sm:pt-20 pb-20 text-center">
+      <section className="max-w-[1100px] mx-auto px-4 sm:px-6 pt-12 sm:pt-20 pb-16 sm:pb-20 text-center">
         <img
           src="/logo-cleaned.png"
           alt="SendKindly"
           className="w-32 h-32 sm:w-40 sm:h-40 mx-auto mb-8"
         />
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-espresso leading-tight">
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-espresso leading-tight">
           Celebrate the people<br className="hidden sm:block" /> who matter most
         </h1>
         <p className="text-lg sm:text-xl text-cocoa mt-6 max-w-[620px] mx-auto leading-relaxed">
@@ -84,8 +84,8 @@ export default function HomePage() {
 
       {/* How It Works */}
       <section className="py-20">
-        <div className="max-w-[900px] mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center text-espresso mb-3">
+        <div className="max-w-[900px] mx-auto px-4 sm:px-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center text-espresso mb-3">
             How it works
           </h2>
           <p className="text-cocoa text-center mb-14">
@@ -125,22 +125,22 @@ export default function HomePage() {
       </section>
 
       {/* Occasion Types */}
-      <section className="max-w-[1100px] mx-auto px-6 py-20">
-        <h2 className="text-3xl font-bold text-center text-espresso mb-3">
+      <section className="max-w-[1100px] mx-auto px-4 sm:px-6 py-12 sm:py-20">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center text-espresso mb-3">
           For every moment that matters
         </h2>
         <p className="text-cocoa text-center mb-12">
           Birthdays, weddings, farewells, and more
         </p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-4">
           {occasions.map((o) => (
             <Link
               key={o.label}
               href={user ? `/dashboard/create?occasion=${o.value}` : `/signup?occasion=${o.value}`}
               className="no-underline"
             >
-              <div className="logo-box p-6 text-center hover:-translate-y-1 transition-all cursor-pointer" style={{ minHeight: '100px' }}>
-                <span className="text-3xl block mb-2 relative z-10 drop-shadow-sm">{o.emoji}</span>
+              <div className="logo-box p-4 sm:p-6 text-center hover:-translate-y-1 transition-all cursor-pointer" style={{ minHeight: '90px' }}>
+                <span className="text-2xl sm:text-3xl block mb-2 relative z-10 drop-shadow-sm">{o.emoji}</span>
                 <span className="text-sm font-bold text-espresso relative z-10 drop-shadow-sm">{o.label}</span>
               </div>
             </Link>
@@ -201,7 +201,7 @@ export default function HomePage() {
             <p className="text-sm text-cocoa mb-3">
               Already creating?{' '}
               <Link href="/dashboard" className="text-crimson font-semibold hover:text-crimson/80 transition-colors no-underline">
-                Go to your Dashboard →
+                Go to My Celebrations →
               </Link>
             </p>
           )}
@@ -209,7 +209,7 @@ export default function HomePage() {
             <p className="text-sm text-cocoa mb-3">
               Already have an account?{' '}
               <Link href="/login" className="text-crimson font-semibold hover:text-crimson/80 transition-colors no-underline">
-                Sign in to your Dashboard →
+                Sign in →
               </Link>
             </p>
           )}
