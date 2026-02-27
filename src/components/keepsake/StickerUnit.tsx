@@ -2,10 +2,11 @@ import type { Contribution } from './types';
 
 interface StickerUnitProps {
   contribution: Contribution;
+  loveCount?: number;
 }
 
 /** AI sticker contribution card — used in the printable keepsake layout */
-export default function StickerUnit({ contribution }: StickerUnitProps) {
+export default function StickerUnit({ contribution, loveCount }: StickerUnitProps) {
   return (
     <div className="bg-white rounded-2xl p-4 shadow-sm break-inside-avoid mb-4 text-center">
       <img
@@ -25,6 +26,11 @@ export default function StickerUnit({ contribution }: StickerUnitProps) {
         <span className="font-medium text-cocoa" style={{ fontSize: '11px' }}>
           {contribution.contributor_name}
         </span>
+        {loveCount != null && loveCount > 0 && (
+          <span className="text-cocoa/40" style={{ fontSize: '10px' }}>
+            ❤️ {loveCount}
+          </span>
+        )}
       </div>
 
       {/* Recipient reply */}

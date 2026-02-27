@@ -17,8 +17,10 @@ function wordCount(text: string | null): number {
   return text.trim().split(/\s+/).length;
 }
 
-function layoutScore(c: Contribution): number {
-  let score = 0;
+/** Score for sorting — loves are primary, then media + word count as tiebreaker. */
+function layoutScore(c: Contribution, loveCounts: Record<string, number>): number {
+  const loves = loveCounts[c.id] || 0;
+  let score = loves * 1000; // loves are the primary sort signal
   if (c.photo_url || c.ai_sticker_url) score += 100;
   score += wordCount(c.message_text);
   return score;
@@ -74,6 +76,7 @@ export default function PrintableKeepsakeClient({ slug }: Props) {
 
   const [page, setPage] = useState<PageData | null>(null);
   const [contributions, setContributions] = useState<Contribution[]>([]);
+  const [loveCounts, setLoveCounts] = useState<Record<string, number>>({});
   const [thanksData, setThanksData] = useState<{ message: string; created_at: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -101,6 +104,17 @@ export default function PrintableKeepsakeClient({ slug }: Props) {
         .order('created_at', { ascending: true });
 
       setContributions(contribs || []);
+
+      // Load love counts for print ordering
+      try {
+        const res = await fetch(`/api/love?pageId=${pageData.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setLoveCounts(data.loves || {});
+        }
+      } catch (err) {
+        console.error('Failed to load loves for print:', err);
+      }
 
       // Load recipient thanks
       const { data: thanksRow } = await supabase
@@ -168,9 +182,9 @@ export default function PrintableKeepsakeClient({ slug }: Props) {
     );
   }
 
-  // Sort by layout score — top one goes on cover, rest into content pages
-  const sorted = [...contributions].sort((a, b) => layoutScore(b) - layoutScore(a));
-  const featured = sorted.length > 0 && layoutScore(sorted[0]) > 0 ? sorted[0] : null;
+  // Sort by love count (primary) then layout score — most loved goes on cover
+  const sorted = [...contributions].sort((a, b) => layoutScore(b, loveCounts) - layoutScore(a, loveCounts));
+  const featured = sorted.length > 0 && layoutScore(sorted[0], loveCounts) > 0 ? sorted[0] : null;
   const remaining = featured ? sorted.slice(1) : sorted;
   const contentPages = groupIntoPages(remaining);
 
@@ -213,12 +227,12 @@ export default function PrintableKeepsakeClient({ slug }: Props) {
                 <div className="columns-1 sm:columns-2 gap-4">
                   {cp.contributions.map((c) => {
                     if (c.ai_sticker_url) {
-                      return <StickerUnit key={c.id} contribution={c} />;
+                      return <StickerUnit key={c.id} contribution={c} loveCount={loveCounts[c.id]} />;
                     }
                     if (c.photo_url) {
-                      return <PhotoUnit key={c.id} contribution={c} />;
+                      return <PhotoUnit key={c.id} contribution={c} loveCount={loveCounts[c.id]} />;
                     }
-                    return <TextNote key={c.id} contribution={c} />;
+                    return <TextNote key={c.id} contribution={c} loveCount={loveCounts[c.id]} />;
                   })}
                 </div>
 

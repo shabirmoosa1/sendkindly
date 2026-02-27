@@ -2,10 +2,11 @@ import type { Contribution } from './types';
 
 interface PhotoUnitProps {
   contribution: Contribution;
+  loveCount?: number;
 }
 
 /** Photo contribution card — used in the printable keepsake layout */
-export default function PhotoUnit({ contribution }: PhotoUnitProps) {
+export default function PhotoUnit({ contribution, loveCount }: PhotoUnitProps) {
   return (
     <div className="polaroid break-inside-avoid" style={{ marginBottom: '10px', maxHeight: '200px', overflow: 'hidden' }}>
       <img
@@ -21,13 +22,20 @@ export default function PhotoUnit({ contribution }: PhotoUnitProps) {
         </p>
       )}
 
-      <div className="mt-1.5 flex items-center gap-1.5">
-        <div className="w-5 h-5 rounded-full flex items-center justify-center text-white font-bold bg-espresso/80" style={{ fontSize: '9px' }}>
-          {contribution.contributor_name.charAt(0).toUpperCase()}
+      <div className="mt-1.5 flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <div className="w-5 h-5 rounded-full flex items-center justify-center text-white font-bold bg-espresso/80" style={{ fontSize: '9px' }}>
+            {contribution.contributor_name.charAt(0).toUpperCase()}
+          </div>
+          <span className="font-medium text-cocoa" style={{ fontSize: '11px' }}>
+            {contribution.contributor_name}
+          </span>
         </div>
-        <span className="font-medium text-cocoa" style={{ fontSize: '11px' }}>
-          {contribution.contributor_name}
-        </span>
+        {loveCount != null && loveCount > 0 && (
+          <span className="text-cocoa/40" style={{ fontSize: '10px' }}>
+            ❤️ {loveCount}
+          </span>
+        )}
       </div>
 
       {/* Recipient reply */}

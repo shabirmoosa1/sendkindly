@@ -21,16 +21,3 @@ export interface Contribution {
   created_at: string;
 }
 
-export interface Reaction {
-  id: string;
-  contribution_id: string;
-  reactor_name: string;
-  emoji: string;
-  created_at: string;
-}
-
-export interface ReactionCount {
-  emoji: string;
-  count: number;
-  reacted: boolean; // whether current visitor reacted with this emoji
-}

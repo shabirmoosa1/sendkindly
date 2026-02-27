@@ -2,23 +2,31 @@ import type { Contribution } from './types';
 
 interface TextNoteProps {
   contribution: Contribution;
+  loveCount?: number;
 }
 
 /** Text-only contribution card — used in the printable keepsake layout */
-export default function TextNote({ contribution }: TextNoteProps) {
+export default function TextNote({ contribution, loveCount }: TextNoteProps) {
   return (
     <div className="bg-white rounded-2xl p-5 border-t-3 border-crimson/60 shadow-sm break-inside-avoid mb-4">
       <p className="text-base text-espresso leading-relaxed mb-3 break-words">
         &ldquo;{contribution.message_text}&rdquo;
       </p>
 
-      <div className="flex items-center gap-2">
-        <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold bg-espresso/80">
-          {contribution.contributor_name.charAt(0).toUpperCase()}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold bg-espresso/80">
+            {contribution.contributor_name.charAt(0).toUpperCase()}
+          </div>
+          <span className="text-sm font-medium text-cocoa">
+            {contribution.contributor_name}
+          </span>
         </div>
-        <span className="text-sm font-medium text-cocoa">
-          {contribution.contributor_name}
-        </span>
+        {loveCount != null && loveCount > 0 && (
+          <span className="text-cocoa/40" style={{ fontSize: '11px' }}>
+            ❤️ {loveCount}
+          </span>
+        )}
       </div>
 
       {/* Recipient reply */}

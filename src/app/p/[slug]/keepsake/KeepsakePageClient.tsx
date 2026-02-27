@@ -61,6 +61,12 @@ export default function KeepsakePage() {
   const [savingReply, setSavingReply] = useState(false);
   const [showQR, setShowQR] = useState(false);
 
+  // Love/vote state
+  const [loveCounts, setLoveCounts] = useState<Record<string, number>>({});
+  const [visitorLoved, setVisitorLoved] = useState<Record<string, boolean>>({});
+  const [togglingLove, setTogglingLove] = useState<string | null>(null);
+  const [visitorId, setVisitorId] = useState<string>('');
+
   // AI suggestion state for thank you message
   const [thanksSuggestions, setThanksSuggestions] = useState<string[]>([]);
   const [loadingThanksSuggestions, setLoadingThanksSuggestions] = useState(false);
@@ -119,6 +125,34 @@ export default function KeepsakePage() {
     }
     loadData();
   }, [slug]);
+
+  // Generate/retrieve visitor ID for love tracking
+  useEffect(() => {
+    let vid = localStorage.getItem('sk_visitor_id');
+    if (!vid) {
+      vid = crypto.randomUUID();
+      localStorage.setItem('sk_visitor_id', vid);
+    }
+    setVisitorId(vid);
+  }, []);
+
+  // Load love counts once page data is available
+  useEffect(() => {
+    if (!page || !visitorId) return;
+    async function loadLoves() {
+      try {
+        const res = await fetch(`/api/love?pageId=${page!.id}&visitorId=${encodeURIComponent(visitorId)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setLoveCounts(data.loves || {});
+          setVisitorLoved(data.visitorLoved || {});
+        }
+      } catch (err) {
+        console.error('Failed to load loves:', err);
+      }
+    }
+    loadLoves();
+  }, [page, visitorId]);
 
   // Detect mobile for share vs copy behavior
   useEffect(() => {
@@ -242,6 +276,45 @@ export default function KeepsakePage() {
       setInlineReplyText('');
     }
     setSavingReply(false);
+  };
+
+  const handleToggleLove = async (contributionId: string) => {
+    if (!visitorId || togglingLove) return;
+    setTogglingLove(contributionId);
+
+    // Optimistic update
+    const wasLoved = visitorLoved[contributionId];
+    setVisitorLoved((prev) => ({ ...prev, [contributionId]: !wasLoved }));
+    setLoveCounts((prev) => ({
+      ...prev,
+      [contributionId]: Math.max(0, (prev[contributionId] || 0) + (wasLoved ? -1 : 1)),
+    }));
+
+    try {
+      const res = await fetch('/api/love', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contributionId, visitorId }),
+      });
+
+      if (!res.ok) {
+        // Revert on failure
+        setVisitorLoved((prev) => ({ ...prev, [contributionId]: wasLoved }));
+        setLoveCounts((prev) => ({
+          ...prev,
+          [contributionId]: Math.max(0, (prev[contributionId] || 0) + (wasLoved ? 1 : -1)),
+        }));
+      }
+    } catch {
+      // Revert on error
+      setVisitorLoved((prev) => ({ ...prev, [contributionId]: wasLoved }));
+      setLoveCounts((prev) => ({
+        ...prev,
+        [contributionId]: Math.max(0, (prev[contributionId] || 0) + (wasLoved ? 1 : -1)),
+      }));
+    }
+
+    setTogglingLove(null);
   };
 
   const fetchThanksSuggestions = async () => {
@@ -476,16 +549,35 @@ export default function KeepsakePage() {
                       {contrib.contributor_name}
                     </span>
                   </div>
-                  {isCreator && (
+                  <div className="flex items-center gap-1">
+                    {/* Love button */}
                     <button
-                      onClick={() => handleDeleteContribution(contrib)}
-                      className="w-7 h-7 rounded-full flex items-center justify-center text-cocoa/30 hover:text-red-500 hover:bg-red-50 transition-colors text-xs"
-                      title="Delete contribution"
-
+                      onClick={() => handleToggleLove(contrib.id)}
+                      disabled={togglingLove === contrib.id}
+                      className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
+                        visitorLoved[contrib.id]
+                          ? 'bg-crimson/10 text-crimson'
+                          : 'bg-gray-100 text-cocoa/50 hover:bg-crimson/5 hover:text-crimson/70'
+                      }`}
+                      title={visitorLoved[contrib.id] ? 'Remove love' : 'Love this'}
                     >
-                      ✕
+                      <span className={`transition-transform ${visitorLoved[contrib.id] ? 'scale-110' : ''}`}>
+                        {visitorLoved[contrib.id] ? '❤️' : '🤍'}
+                      </span>
+                      {(loveCounts[contrib.id] || 0) > 0 && (
+                        <span>{loveCounts[contrib.id]}</span>
+                      )}
                     </button>
-                  )}
+                    {isCreator && (
+                      <button
+                        onClick={() => handleDeleteContribution(contrib)}
+                        className="w-7 h-7 rounded-full flex items-center justify-center text-cocoa/30 hover:text-red-500 hover:bg-red-50 transition-colors text-xs"
+                        title="Delete contribution"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Existing recipient reply */}
