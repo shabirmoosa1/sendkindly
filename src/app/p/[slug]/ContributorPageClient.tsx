@@ -1,9 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
+
+interface MyContribution {
+  id: string;
+  contributor_name: string;
+  message_text: string | null;
+  photo_url: string | null;
+  ai_sticker_url: string | null;
+  created_at: string;
+}
 
 function resizeImage(file: File, maxWidth = 1200, quality = 0.8): Promise<File> {
   return new Promise((resolve) => {
@@ -86,6 +95,45 @@ export default function ContributorPage() {
   const [stickerLimitReached, setStickerLimitReached] = useState(false);
   const [stickerName, setStickerName] = useState('');
 
+  // My Contributions state
+  const [myContributions, setMyContributions] = useState<MyContribution[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editMessage, setEditMessage] = useState('');
+  const [savingEdit, setSavingEdit] = useState(false);
+  const myContribsRef = useRef<HTMLDivElement>(null);
+
+  const getMyContribIds = (pageId: string): string[] => {
+    try {
+      const raw = localStorage.getItem(`sk-my-contribs-${pageId}`);
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  };
+
+  const saveContribId = (pageId: string, contribId: string) => {
+    const ids = getMyContribIds(pageId);
+    if (!ids.includes(contribId)) {
+      ids.push(contribId);
+      localStorage.setItem(`sk-my-contribs-${pageId}`, JSON.stringify(ids));
+    }
+  };
+
+  const removeContribId = (pageId: string, contribId: string) => {
+    const ids = getMyContribIds(pageId).filter(id => id !== contribId);
+    localStorage.setItem(`sk-my-contribs-${pageId}`, JSON.stringify(ids));
+  };
+
+  const fetchMyContributions = async (pageId: string) => {
+    const ids = getMyContribIds(pageId);
+    if (ids.length === 0) { setMyContributions([]); return; }
+    const { data } = await supabase
+      .from('contributions')
+      .select('id, contributor_name, message_text, photo_url, ai_sticker_url, created_at')
+      .in('id', ids)
+      .order('created_at', { ascending: false });
+    setMyContributions(data || []);
+  };
+
   useEffect(() => {
     async function loadPage() {
       const { data, error } = await supabase
@@ -109,8 +157,12 @@ export default function ContributorPage() {
 
       setContribCount(count || 0);
       setLoading(false);
+
+      // Load my contributions from localStorage IDs
+      fetchMyContributions(data.id);
     }
     loadPage();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
   const handleSubmit = async () => {
@@ -182,10 +234,13 @@ export default function ContributorPage() {
 
     if (insertData) {
       setLastContributionId(insertData.id);
+      saveContribId(page.id, insertData.id);
     }
     setSubmitted(true);
     setContribCount((c) => c + 1);
     setSubmitting(false);
+    // Refresh my contributions list
+    fetchMyContributions(page.id);
   };
 
   const resetForm = () => {
@@ -302,10 +357,64 @@ export default function ContributorPage() {
 
     if (insertData) {
       setLastContributionId(insertData.id);
+      saveContribId(page.id, insertData.id);
     }
     setSubmitted(true);
     setContribCount((c) => c + 1);
     setSubmitting(false);
+    // Refresh my contributions list
+    fetchMyContributions(page.id);
+  };
+
+  const handleEditSave = async (contrib: MyContribution) => {
+    setSavingEdit(true);
+    const { error } = await supabase
+      .from('contributions')
+      .update({
+        contributor_name: editName.trim() || contrib.contributor_name,
+        message_text: editMessage.trim() || null,
+      })
+      .eq('id', contrib.id);
+
+    if (!error) {
+      setMyContributions(prev => prev.map(c =>
+        c.id === contrib.id
+          ? { ...c, contributor_name: editName.trim() || c.contributor_name, message_text: editMessage.trim() || null }
+          : c
+      ));
+      setEditingId(null);
+    }
+    setSavingEdit(false);
+  };
+
+  const handleDeleteOwn = async (contrib: MyContribution) => {
+    if (!confirm(`Delete your ${contrib.photo_url ? 'photo' : contrib.ai_sticker_url ? 'sticker' : 'message'}? This cannot be undone.`)) return;
+    if (!page) return;
+
+    const { error } = await supabase
+      .from('contributions')
+      .delete()
+      .eq('id', contrib.id);
+
+    if (error) { console.error('Delete error:', error); return; }
+
+    // Clean up storage files
+    if (contrib.photo_url) {
+      const urlParts = contrib.photo_url.split('/contributions/');
+      if (urlParts.length > 1) {
+        await supabase.storage.from('contributions').remove([urlParts[1]]);
+      }
+    }
+    if (contrib.ai_sticker_url) {
+      const urlParts = contrib.ai_sticker_url.split('/stickers/');
+      if (urlParts.length > 1) {
+        await supabase.storage.from('stickers').remove([urlParts[1]]);
+      }
+    }
+
+    removeContribId(page.id, contrib.id);
+    setMyContributions(prev => prev.filter(c => c.id !== contrib.id));
+    setContribCount(c => Math.max(0, c - 1));
   };
 
   const formatOccasion = (type: string) => {
@@ -509,6 +618,15 @@ export default function ContributorPage() {
             >
               Add Another Contribution
             </button>
+
+            {myContributions.length > 0 && (
+              <button
+                onClick={() => myContribsRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                className="mt-3 text-sm text-crimson hover:text-crimson/80 transition-colors cursor-pointer"
+              >
+                View my contributions ({myContributions.length}) ↓
+              </button>
+            )}
           </div>
         )}
 
@@ -782,6 +900,106 @@ export default function ContributorPage() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* My Contributions Section */}
+        {myContributions.length > 0 && (
+          <div ref={myContribsRef} className="mt-8">
+            <p className="text-xs font-medium tracking-widest text-cocoa/60 mb-3">✏️ MY CONTRIBUTIONS</p>
+            <div className="flex flex-col gap-3">
+              {myContributions.map((contrib) => (
+                <div key={contrib.id} className="glass rounded-2xl ios-shadow p-4 animate-fade-in">
+                  {editingId === contrib.id ? (
+                    /* Edit Mode */
+                    <div>
+                      <div className="mb-3">
+                        <label className="block text-xs text-cocoa/60 mb-1">Name</label>
+                        <input
+                          type="text"
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          className="w-full input-warm text-sm"
+                        />
+                      </div>
+                      {(contrib.message_text || (!contrib.photo_url && !contrib.ai_sticker_url)) && (
+                        <div className="mb-3">
+                          <label className="block text-xs text-cocoa/60 mb-1">Message</label>
+                          <textarea
+                            value={editMessage}
+                            onChange={(e) => setEditMessage(e.target.value.slice(0, 500))}
+                            rows={3}
+                            className="w-full input-warm text-sm resize-none"
+                          />
+                        </div>
+                      )}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleEditSave(contrib)}
+                          disabled={savingEdit}
+                          className="flex-1 py-2 rounded-full text-sm font-semibold bg-crimson text-white hover:opacity-90 transition-all disabled:opacity-50"
+                        >
+                          {savingEdit ? 'Saving...' : 'Save'}
+                        </button>
+                        <button
+                          onClick={() => setEditingId(null)}
+                          className="flex-1 py-2 rounded-full text-sm font-semibold border-2 border-cocoa/20 text-cocoa hover:bg-cocoa/5 transition-all"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Display Mode */
+                    <div>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          {/* Photo or sticker thumbnail */}
+                          {(contrib.photo_url || contrib.ai_sticker_url) && (
+                            <img
+                              src={contrib.photo_url || contrib.ai_sticker_url || ''}
+                              alt=""
+                              className="w-20 h-20 rounded-xl object-cover mb-2"
+                            />
+                          )}
+                          {/* Message */}
+                          {contrib.message_text && (
+                            <p className="text-sm text-espresso leading-relaxed mb-1">
+                              &ldquo;{contrib.message_text}&rdquo;
+                            </p>
+                          )}
+                          {/* Name + time */}
+                          <p className="text-xs text-cocoa/60">
+                            — {contrib.contributor_name} · {new Date(contrib.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        {/* Edit + Delete buttons */}
+                        <div className="flex gap-1 shrink-0">
+                          <button
+                            onClick={() => {
+                              setEditingId(contrib.id);
+                              setEditName(contrib.contributor_name);
+                              setEditMessage(contrib.message_text || '');
+                            }}
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-cocoa/40 hover:text-crimson hover:bg-crimson/10 transition-colors text-sm"
+                            title="Edit"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={() => handleDeleteOwn(contrib)}
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-cocoa/40 hover:text-red-500 hover:bg-red-50 transition-colors text-xs"
+                            title="Delete"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

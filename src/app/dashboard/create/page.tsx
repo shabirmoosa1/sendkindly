@@ -390,9 +390,10 @@ function CreatePage() {
                     type="button"
                     onClick={fetchMessageSuggestions}
                     disabled={loadingMessageAI || !recipientName.trim() || !occasion}
-                    className="text-xs font-medium text-crimson hover:text-crimson/80 disabled:text-cocoa/40 disabled:cursor-not-allowed transition-colors"
+                    title={!recipientName.trim() || !occasion ? 'Fill in recipient name and occasion first' : 'Get AI-powered message suggestions'}
+                    className="text-xs font-medium text-crimson hover:text-crimson/80 cursor-pointer disabled:text-cocoa/40 disabled:cursor-not-allowed transition-colors"
                   >
-                    {loadingMessageAI ? 'Thinking...' : 'Need inspiration? ✨'}
+                    {loadingMessageAI ? 'Thinking...' : (!recipientName.trim() || !occasion ? 'Need inspiration? (fill name & occasion first)' : 'Need inspiration? ✨')}
                   </button>
                   <p className="text-xs text-cocoa/50">{creatorMessage.length}/500</p>
                 </div>
@@ -429,9 +430,10 @@ function CreatePage() {
                     type="button"
                     onClick={fetchInstructionSuggestions}
                     disabled={loadingInstructionAI || !recipientName.trim() || !occasion}
-                    className="text-xs font-medium text-crimson hover:text-crimson/80 disabled:text-cocoa/40 disabled:cursor-not-allowed transition-colors"
+                    title={!recipientName.trim() || !occasion ? 'Fill in recipient name and occasion first' : 'Get AI-powered instruction suggestions'}
+                    className="text-xs font-medium text-crimson hover:text-crimson/80 cursor-pointer disabled:text-cocoa/40 disabled:cursor-not-allowed transition-colors"
                   >
-                    {loadingInstructionAI ? 'Thinking...' : 'Suggest instructions ✨'}
+                    {loadingInstructionAI ? 'Thinking...' : (!recipientName.trim() || !occasion ? 'Suggest instructions (fill name & occasion first)' : 'Suggest instructions ✨')}
                   </button>
                   <p className="text-xs text-cocoa/50">{contributionPrompt.length}/200</p>
                 </div>
