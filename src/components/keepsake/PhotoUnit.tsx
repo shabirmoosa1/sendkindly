@@ -1,10 +1,10 @@
 import type { Contribution } from './types';
-import EmojiReactions from './EmojiReactions';
 
 interface PhotoUnitProps {
   contribution: Contribution;
 }
 
+/** Photo contribution card — used in the printable keepsake layout */
 export default function PhotoUnit({ contribution }: PhotoUnitProps) {
   return (
     <div className="polaroid break-inside-avoid" style={{ marginBottom: '10px', maxHeight: '200px', overflow: 'hidden' }}>
@@ -39,9 +39,6 @@ export default function PhotoUnit({ contribution }: PhotoUnitProps) {
           </p>
         </div>
       )}
-
-      {/* Emoji reactions */}
-      <EmojiReactions contributionId={contribution.id} />
     </div>
   );
 }

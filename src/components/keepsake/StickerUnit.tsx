@@ -1,10 +1,10 @@
 import type { Contribution } from './types';
-import EmojiReactions from './EmojiReactions';
 
 interface StickerUnitProps {
   contribution: Contribution;
 }
 
+/** AI sticker contribution card — used in the printable keepsake layout */
 export default function StickerUnit({ contribution }: StickerUnitProps) {
   return (
     <div className="bg-white rounded-2xl p-4 shadow-sm break-inside-avoid mb-4 text-center">
@@ -36,9 +36,6 @@ export default function StickerUnit({ contribution }: StickerUnitProps) {
           </p>
         </div>
       )}
-
-      {/* Emoji reactions */}
-      <EmojiReactions contributionId={contribution.id} />
     </div>
   );
 }
