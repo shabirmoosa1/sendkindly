@@ -172,7 +172,7 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-ivory">
         <div className="text-center">
-          <div className="text-5xl mb-4">🎁</div>
+          <img src="/logo-cleaned.png" alt="SendKindly" className="w-16 h-16 mx-auto mb-4" />
           <div className="w-10 h-10 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-lg font-semibold text-espresso mb-1">Loading your celebrations...</p>
           <p className="text-sm text-cocoa/60">Getting everything ready</p>

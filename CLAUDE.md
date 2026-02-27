@@ -132,7 +132,7 @@ Creator builds page (status: active)
 - [x] **Glass utilities** — `.glass-panel` (blush/lavender gradient, backdrop blur, white border, layered shadows)
 - [x] **Navbar redesign** — glass header, crimson italic wordmark, cocoa nav links, "Create a keepsake" CTA
 - [x] **Keepsake cover glass-panel** — organizer message card uses glassmorphism
-- [x] **BackPage crimson branding** — crimson labels, Logo Option 4.png, sendkindly.com link
+- [x] **BackPage crimson branding** — crimson labels, logo-cleaned.png, sendkindly.com link
 - [x] **Global color sweep** — all 24 files updated; hex refs, Tailwind classes, email templates, OG images, confetti palettes
 - [x] **Confetti palette updated** — gold, blush, crimson, lavender (replaces navy/terracotta)
 
@@ -248,7 +248,7 @@ Utility classes: `.glass-panel`, `.glass` (navbar), `.btn-primary`, `.btn-second
 - **Display font:** `'Newsreader', Georgia, serif` — keepsake headings, wordmark (italic)
 - **Body font:** `'Inter', system-ui, sans-serif` — UI text
 - **Keepsake style:** Cream A4, multi-page book format, "With Gratitude" thank you page at end
-- **Logo:** `public/Logo Option 4.png` — glassmorphic app icon, displayed in BackPage footer
+- **Logo:** `public/logo-cleaned.png` — glassmorphic app icon, displayed in BackPage footer
 
 ---
 

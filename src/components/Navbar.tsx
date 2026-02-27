@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
@@ -39,8 +40,15 @@ export default function Navbar() {
         height: '60px',
       }}
     >
-      {/* Wordmark */}
-      <Link href="/" className="no-underline">
+      {/* Logo + Wordmark */}
+      <Link href="/" className="no-underline flex items-center gap-2">
+        <Image
+          src="/logo-cleaned.png"
+          alt="SendKindly"
+          width={32}
+          height={32}
+          className=""
+        />
         <span
           style={{
             fontFamily: "'Newsreader', Georgia, serif",

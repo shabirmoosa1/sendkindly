@@ -46,7 +46,7 @@ export default function BackPage({ page, contributions }: BackPageProps) {
       <div className="mt-auto flex flex-col items-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/Logo Option 4.png"
+          src="/logo-cleaned.png"
           alt="SendKindly"
           style={{ height: '32px', opacity: 0.85, marginBottom: '8px' }}
           onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}

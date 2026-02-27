@@ -62,6 +62,11 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <section className="max-w-[1100px] mx-auto px-6 pt-16 sm:pt-20 pb-20 text-center">
+        <img
+          src="/logo-cleaned.png"
+          alt="SendKindly"
+          className="w-32 h-32 sm:w-40 sm:h-40 mx-auto mb-8"
+        />
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-espresso leading-tight">
           Celebrate the people<br className="hidden sm:block" /> who matter most
         </h1>
@@ -78,7 +83,7 @@ export default function HomePage() {
       </section>
 
       {/* How It Works */}
-      <section className="bg-white py-20">
+      <section className="py-20">
         <div className="max-w-[900px] mx-auto px-6">
           <h2 className="text-3xl font-bold text-center text-espresso mb-3">
             How it works
@@ -86,7 +91,7 @@ export default function HomePage() {
           <p className="text-cocoa text-center mb-14">
             Three simple steps to create something unforgettable
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
             {[
               {
                 step: '1',
@@ -107,7 +112,7 @@ export default function HomePage() {
                 bg: 'bg-espresso/10 text-espresso',
               },
             ].map((item) => (
-              <div key={item.step}>
+              <div key={item.step} className="glass-panel p-8">
                 <div className={`w-16 h-16 mx-auto mb-5 rounded-full ${item.bg} flex items-center justify-center`}>
                   <span className="text-2xl font-bold">{item.step}</span>
                 </div>
@@ -134,9 +139,9 @@ export default function HomePage() {
               href={user ? `/dashboard/create?occasion=${o.value}` : `/signup?occasion=${o.value}`}
               className="no-underline"
             >
-              <div className="card p-6 text-center hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer">
-                <span className="text-3xl block mb-2">{o.emoji}</span>
-                <span className="text-sm font-semibold text-espresso">{o.label}</span>
+              <div className="logo-box p-6 text-center hover:-translate-y-1 transition-all cursor-pointer" style={{ minHeight: '100px' }}>
+                <span className="text-3xl block mb-2 relative z-10 drop-shadow-sm">{o.emoji}</span>
+                <span className="text-sm font-bold text-espresso relative z-10 drop-shadow-sm">{o.label}</span>
               </div>
             </Link>
           ))}
@@ -144,7 +149,7 @@ export default function HomePage() {
       </section>
 
       {/* Keepsake Preview */}
-      <section className="bg-white py-20">
+      <section className="py-20">
         <div className="max-w-[800px] mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold text-espresso mb-3">
             A keepsake they&apos;ll treasure

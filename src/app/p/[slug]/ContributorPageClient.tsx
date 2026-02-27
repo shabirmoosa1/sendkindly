@@ -346,7 +346,7 @@ export default function ContributorPage() {
         <Navbar />
         <div className="flex items-center justify-center min-h-[70vh] px-6">
           <div className="glass rounded-3xl ios-shadow p-10 max-w-md text-center">
-            <div className="text-5xl mb-4">🎁</div>
+            <img src="/logo-cleaned.png" alt="SendKindly" className="w-16 h-16 mx-auto mb-4" />
             <h1 className="text-2xl italic mb-3">This keepsake has been delivered</h1>
             <p className="text-cocoa/70 text-sm">
               The contributions for {page.recipient_name} have been sealed and shared.
@@ -379,7 +379,7 @@ export default function ContributorPage() {
           >
             {!page.hero_image_url && (
               <div className="absolute inset-0 flex items-center justify-center opacity-15">
-                <span className="text-8xl">🎁</span>
+                <img src="/logo-cleaned.png" alt="" className="w-24 h-24" />
               </div>
             )}
             <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white/40 to-transparent" />
