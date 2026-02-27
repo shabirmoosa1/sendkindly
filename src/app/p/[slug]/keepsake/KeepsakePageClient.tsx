@@ -661,28 +661,14 @@ export default function KeepsakePage() {
             <div className="max-w-[600px] mx-auto">
               <div className="glass rounded-3xl ios-shadow p-6 text-center">
                 <p className="text-xs font-medium tracking-widest text-cocoa/60 mb-3">CREATOR TOOLS</p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <button
-                    onClick={() => window.location.href = `/p/${slug}`}
-                    className="flex-1 py-3 rounded-full text-sm font-semibold btn-gold"
-                  >
-                    ✍️ Add Your Contribution
-                  </button>
-                  <button
-                    onClick={handleShareContributorLink}
-                    className="flex-1 py-3 rounded-full text-sm font-semibold border-2 border-gold text-gold transition-all hover:opacity-90"
-                  >
-                    {shareFeedback || '📨 Ask Others to Contribute'}
-                  </button>
-                  <button
-                    onClick={() => setShowQR(true)}
-                    className="flex-1 py-3 rounded-full text-sm font-semibold border-2 border-cocoa/40 text-cocoa hover:border-cocoa transition-all"
-                  >
-                    📱 QR Code
-                  </button>
-                </div>
-                {/* Direct share options */}
-                <div className="flex gap-3 mt-3">
+                <button
+                  onClick={() => window.location.href = `/p/${slug}`}
+                  className="w-full py-3 rounded-full text-sm font-semibold btn-gold mb-4"
+                >
+                  ✍️ Add Your Contribution
+                </button>
+                <p className="text-xs text-cocoa/50 mb-2">Invite friends to contribute:</p>
+                <div className="flex gap-2">
                   <button
                     onClick={() => {
                       if (!page) return;
@@ -691,25 +677,29 @@ export default function KeepsakePage() {
                       const text = `Hey! We're putting together a special keepsake for ${page.recipient_name}'s ${occasion}celebration. Would you add a message, photo, or memory?\n\n${url}`;
                       window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
                     }}
-                    className="flex-1 py-2 text-xs text-green-600 hover:text-green-700 font-medium transition-colors"
+                    className="flex-1 py-2.5 rounded-full text-sm font-medium border-2 border-green-500 text-green-600 hover:bg-green-50 transition-all"
                   >
-                    Share via WhatsApp
+                    WhatsApp
                   </button>
-                  {!isMobile && (
-                    <button
-                      onClick={() => {
-                        if (!page) return;
-                        const url = getShareUrl(`/p/${slug}`);
-                        openEmailShare({
-                          subject: `Help celebrate ${page.recipient_name}!`,
-                          body: `Hi!\n\nI'm putting together a special keepsake for ${page.recipient_name}'s ${formatOccasion(page.template_type)} celebration. Would you add a message or photo?\n\nHere's the link: ${url}\n\nThanks!`,
-                        });
-                      }}
-                      className="flex-1 py-2 text-xs text-cocoa/50 hover:text-cocoa transition-colors"
-                    >
-                      ✉️ Email link to friends
-                    </button>
-                  )}
+                  <button
+                    onClick={() => {
+                      if (!page) return;
+                      const url = getShareUrl(`/p/${slug}`);
+                      openEmailShare({
+                        subject: `Help celebrate ${page.recipient_name}!`,
+                        body: `Hi!\n\nI'm putting together a special keepsake for ${page.recipient_name}'s ${formatOccasion(page.template_type)} celebration. Would you add a message or photo?\n\nHere's the link: ${url}\n\nThanks!`,
+                      });
+                    }}
+                    className="flex-1 py-2.5 rounded-full text-sm font-medium border-2 border-gold text-gold hover:bg-gold/5 transition-all"
+                  >
+                    ✉️ Email
+                  </button>
+                  <button
+                    onClick={handleShareContributorLink}
+                    className={`flex-1 py-2.5 rounded-full text-sm font-medium border-2 transition-all ${shareFeedback ? 'border-green-500 text-green-600' : 'border-cocoa/30 text-cocoa hover:border-cocoa/50'}`}
+                  >
+                    {shareFeedback || '🔗 Copy'}
+                  </button>
                 </div>
               </div>
             </div>

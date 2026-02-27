@@ -261,60 +261,77 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </div>
-                  {/* Share buttons — invite contributors */}
-                  <div className="px-6 pb-1">
-                    <p className="text-xs text-cocoa/50 mb-2 text-center">Invite friends to contribute:</p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => shareOnWhatsApp(page)}
-                        className="flex-1 text-center py-2.5 rounded-full text-sm font-medium border-2 border-green-500 text-green-600 hover:bg-green-50 transition-all"
-                      >
-                        WhatsApp
-                      </button>
-                      <button
-                        onClick={() => shareViaEmail(page)}
-                        className="flex-1 text-center py-2.5 rounded-full text-sm font-medium border-2 border-gold text-gold hover:bg-gold/5 transition-all"
-                      >
-                        ✉️ Email
-                      </button>
-                      <button
-                        onClick={() => copyShareLink(page.slug)}
-                        className={`flex-1 text-center py-2.5 rounded-full text-sm font-medium border-2 transition-all ${copiedSlug === page.slug ? 'border-green-500 text-green-600' : 'border-cocoa/30 text-cocoa hover:border-cocoa/50'}`}
-                      >
-                        {copiedSlug === page.slug ? '✅ Copied!' : '🔗 Copy'}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="px-6 pb-3 pt-2">
-                    <button onClick={() => router.push(`/p/${page.slug}/keepsake`)} className="w-full text-center py-2.5 rounded-full text-sm font-medium bg-crimson text-white transition-all hover:opacity-90">Open Keepsake →</button>
-                  </div>
-                  {/* Reveal button — only when active with contributions */}
-                  {(page.status === 'active' || page.status === 'collecting') && (page.contribution_count || 0) > 0 && (
-                    <div className="px-6 pb-6">
+                  {/* Primary actions */}
+                  <div className="px-6 pb-3 flex gap-3">
+                    <button onClick={() => router.push(`/p/${page.slug}/keepsake`)} className="flex-1 text-center py-2.5 rounded-full text-sm font-medium bg-crimson text-white transition-all hover:opacity-90">Open Keepsake →</button>
+                    {(page.status === 'active' || page.status === 'collecting') && (page.contribution_count || 0) > 0 && (
                       <button
                         onClick={() => setRevealModal(page)}
-                        className="w-full text-center py-2.5 rounded-full text-sm font-medium btn-gold"
+                        className="flex-1 text-center py-2.5 rounded-full text-sm font-medium btn-gold"
                       >
-                        Reveal to {page.recipient_name} 🎁
+                        Reveal 🎁
                       </button>
-                    </div>
-                  )}
-                  {!((page.status === 'active' || page.status === 'collecting') && (page.contribution_count || 0) > 0) && (
-                    <div className="pb-3" />
-                  )}
+                    )}
+                  </div>
 
-                  {/* Expand/collapse for reveal + reminder links */}
+                  {/* Expand/collapse for invite & share tools */}
                   <button
                     onClick={() => setExpandedSlug(expandedSlug === page.slug ? null : page.slug)}
                     className="w-full text-center text-xs text-cocoa/50 hover:text-cocoa py-3 transition-colors"
                   >
-                    {expandedSlug === page.slug ? 'Hide options ▲' : 'More options ▼'}
+                    {expandedSlug === page.slug ? 'Hide options ▲' : 'Invite & share ▼'}
                   </button>
 
                   {expandedSlug === page.slug && (
                     <div className="mx-6 mb-6 pt-3 border-t border-gray-100 flex flex-col gap-3 animate-fade-in">
+                      {/* Invite contributors */}
                       <div>
-                        <p className="text-xs text-cocoa/60 mb-1.5">🎁 Share this with {page.recipient_name} — they&apos;ll see a surprise envelope reveal</p>
+                        <p className="text-xs text-cocoa/60 mb-2">📨 Invite friends to contribute:</p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => shareOnWhatsApp(page)}
+                            className="flex-1 text-center py-2.5 rounded-full text-sm font-medium border-2 border-green-500 text-green-600 hover:bg-green-50 transition-all"
+                          >
+                            WhatsApp
+                          </button>
+                          <button
+                            onClick={() => shareViaEmail(page)}
+                            className="flex-1 text-center py-2.5 rounded-full text-sm font-medium border-2 border-gold text-gold hover:bg-gold/5 transition-all"
+                          >
+                            ✉️ Email
+                          </button>
+                          <button
+                            onClick={() => copyShareLink(page.slug)}
+                            className={`flex-1 text-center py-2.5 rounded-full text-sm font-medium border-2 transition-all ${copiedSlug === page.slug ? 'border-green-500 text-green-600' : 'border-cocoa/30 text-cocoa hover:border-cocoa/50'}`}
+                          >
+                            {copiedSlug === page.slug ? '✅ Copied!' : '🔗 Copy'}
+                          </button>
+                        </div>
+                      </div>
+                      {/* QR code + Reminder */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setQrModal({ slug: page.slug, recipientName: page.recipient_name })}
+                          className="flex-1 py-2.5 rounded-full text-sm font-medium border-2 border-cocoa/30 text-cocoa hover:border-cocoa transition-all"
+                        >
+                          📱 QR Code
+                        </button>
+                        <button
+                          onClick={async () => {
+                            const url = getShareUrl(`/p/${page.slug}`);
+                            const message = `Hey! Don\u2019t forget to add your message for ${page.recipient_name}\u2019s ${formatOccasion(page.template_type)} celebration: ${url}`;
+                            await copyToClipboard(message);
+                            setReminderCopiedSlug(page.slug);
+                            setTimeout(() => setReminderCopiedSlug(null), 2000);
+                          }}
+                          className={`flex-1 py-2.5 rounded-full text-sm font-medium border-2 transition-all ${reminderCopiedSlug === page.slug ? 'border-green-500 text-green-600' : 'border-crimson/60 text-crimson hover:border-crimson'}`}
+                        >
+                          {reminderCopiedSlug === page.slug ? '✅ Copied!' : '📋 Reminder'}
+                        </button>
+                      </div>
+                      {/* Reveal link for recipient */}
+                      <div>
+                        <p className="text-xs text-cocoa/60 mb-1.5">🎁 Send this to {page.recipient_name} — they&apos;ll see a surprise reveal</p>
                         <button
                           onClick={async () => {
                             const url = getShareUrl(`/p/${page.slug}/reveal`);
@@ -325,30 +342,6 @@ export default function DashboardPage() {
                           className={`w-full py-2.5 rounded-full text-sm font-medium border-2 transition-all ${revealCopiedSlug === page.slug ? 'border-green-500 text-green-600' : 'border-espresso text-espresso hover:opacity-90'}`}
                         >
                           {revealCopiedSlug === page.slug ? '✅ Copied!' : '🎁 Copy Reveal Link'}
-                        </button>
-                      </div>
-                      <div>
-                        <p className="text-xs text-cocoa/60 mb-1.5">Nudge people who haven&apos;t contributed yet</p>
-                        <button
-                          onClick={async () => {
-                            const url = getShareUrl(`/p/${page.slug}`);
-                            const message = `Hey! Don\u2019t forget to add your message for ${page.recipient_name}\u2019s ${formatOccasion(page.template_type)} celebration: ${url}`;
-                            await copyToClipboard(message);
-                            setReminderCopiedSlug(page.slug);
-                            setTimeout(() => setReminderCopiedSlug(null), 2000);
-                          }}
-                          className={`w-full py-2.5 rounded-full text-sm font-medium border-2 transition-all ${reminderCopiedSlug === page.slug ? 'border-green-500 text-green-600' : 'border-crimson text-crimson hover:opacity-90'}`}
-                        >
-                          {reminderCopiedSlug === page.slug ? '✅ Copied!' : '📋 Copy Reminder Message'}
-                        </button>
-                      </div>
-                      <div>
-                        <p className="text-xs text-cocoa/60 mb-1.5">📱 Let guests scan to contribute at in-person events</p>
-                        <button
-                          onClick={() => setQrModal({ slug: page.slug, recipientName: page.recipient_name })}
-                          className="w-full py-2.5 rounded-full text-sm font-medium border-2 border-cocoa/40 text-cocoa hover:border-cocoa hover:opacity-90 transition-all"
-                        >
-                          📱 Show QR Code
                         </button>
                       </div>
                     </div>
