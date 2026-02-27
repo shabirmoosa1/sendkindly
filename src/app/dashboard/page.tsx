@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { copyToClipboard } from '@/lib/clipboard';
+import { getShareUrl } from '@/lib/getShareUrl';
 import Navbar from '@/components/Navbar';
 import QRCodeModal from '@/components/QRCodeModal';
 
@@ -81,10 +82,25 @@ export default function DashboardPage() {
   }, [router]);
 
   const copyShareLink = async (slug: string) => {
-    const url = `${window.location.origin}/p/${slug}`;
+    const url = getShareUrl(`/p/${slug}`);
     await copyToClipboard(url);
     setCopiedSlug(slug);
     setTimeout(() => setCopiedSlug(null), 2000);
+  };
+
+  const shareOnWhatsApp = (page: Page) => {
+    const url = getShareUrl(`/p/${page.slug}`);
+    const occasion = page.template_type === 'other' ? '' : `${formatOccasion(page.template_type)} `;
+    const text = `Hey! We're putting together a special keepsake for ${page.recipient_name}'s ${occasion}celebration. Would you add a message, photo, or memory?\n\n${url}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const shareViaEmail = (page: Page) => {
+    const url = getShareUrl(`/p/${page.slug}`);
+    const occasion = page.template_type === 'other' ? '' : `${formatOccasion(page.template_type)} `;
+    const subject = `Help celebrate ${page.recipient_name}! Add your message`;
+    const body = `Hi!\n\nWe're putting together a special keepsake for ${page.recipient_name}'s ${occasion}celebration. Would you add a message, photo, or memory?\n\nHere's the link:\n${url}\n\nThanks!`;
+    window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
   const getStatusStyle = (status: string) => {
@@ -245,11 +261,32 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="px-6 pb-3 flex flex-col sm:flex-row gap-2 sm:gap-3">
-                    <button onClick={() => copyShareLink(page.slug)} className={`flex-1 text-center py-2.5 rounded-full text-sm font-medium border-2 transition-all ${copiedSlug === page.slug ? 'border-green-500 text-green-600' : 'border-gold text-gold'}`}>
-                      {copiedSlug === page.slug ? '✅ Copied!' : '🔗 Share Link'}
-                    </button>
-                    <button onClick={() => router.push(`/p/${page.slug}/keepsake`)} className="flex-1 text-center py-2.5 rounded-full text-sm font-medium bg-crimson text-white transition-all hover:opacity-90">Open Keepsake →</button>
+                  {/* Share buttons — invite contributors */}
+                  <div className="px-6 pb-1">
+                    <p className="text-xs text-cocoa/50 mb-2 text-center">Invite friends to contribute:</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => shareOnWhatsApp(page)}
+                        className="flex-1 text-center py-2.5 rounded-full text-sm font-medium border-2 border-green-500 text-green-600 hover:bg-green-50 transition-all"
+                      >
+                        WhatsApp
+                      </button>
+                      <button
+                        onClick={() => shareViaEmail(page)}
+                        className="flex-1 text-center py-2.5 rounded-full text-sm font-medium border-2 border-gold text-gold hover:bg-gold/5 transition-all"
+                      >
+                        ✉️ Email
+                      </button>
+                      <button
+                        onClick={() => copyShareLink(page.slug)}
+                        className={`flex-1 text-center py-2.5 rounded-full text-sm font-medium border-2 transition-all ${copiedSlug === page.slug ? 'border-green-500 text-green-600' : 'border-cocoa/30 text-cocoa hover:border-cocoa/50'}`}
+                      >
+                        {copiedSlug === page.slug ? '✅ Copied!' : '🔗 Copy'}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="px-6 pb-3 pt-2">
+                    <button onClick={() => router.push(`/p/${page.slug}/keepsake`)} className="w-full text-center py-2.5 rounded-full text-sm font-medium bg-crimson text-white transition-all hover:opacity-90">Open Keepsake →</button>
                   </div>
                   {/* Reveal button — only when active with contributions */}
                   {(page.status === 'active' || page.status === 'collecting') && (page.contribution_count || 0) > 0 && (
@@ -280,7 +317,7 @@ export default function DashboardPage() {
                         <p className="text-xs text-cocoa/60 mb-1.5">🎁 Share this with {page.recipient_name} — they&apos;ll see a surprise envelope reveal</p>
                         <button
                           onClick={async () => {
-                            const url = `${window.location.origin}/p/${page.slug}/reveal`;
+                            const url = getShareUrl(`/p/${page.slug}/reveal`);
                             await copyToClipboard(url);
                             setRevealCopiedSlug(page.slug);
                             setTimeout(() => setRevealCopiedSlug(null), 2000);
@@ -294,7 +331,7 @@ export default function DashboardPage() {
                         <p className="text-xs text-cocoa/60 mb-1.5">Nudge people who haven&apos;t contributed yet</p>
                         <button
                           onClick={async () => {
-                            const url = `${window.location.origin}/p/${page.slug}`;
+                            const url = getShareUrl(`/p/${page.slug}`);
                             const message = `Hey! Don\u2019t forget to add your message for ${page.recipient_name}\u2019s ${formatOccasion(page.template_type)} celebration: ${url}`;
                             await copyToClipboard(message);
                             setReminderCopiedSlug(page.slug);

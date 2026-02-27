@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { QRCodeSVG, QRCodeCanvas } from 'qrcode.react';
 import { copyToClipboard } from '@/lib/clipboard';
+import { getShareUrl } from '@/lib/getShareUrl';
 
 interface QRCodeModalProps {
   slug: string;
@@ -14,7 +15,7 @@ export default function QRCodeModal({ slug, recipientName, onClose }: QRCodeModa
   const canvasRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
 
-  const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/p/${slug}`;
+  const url = getShareUrl(`/p/${slug}`);
 
   // Close on Escape key
   useEffect(() => {

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { shareOrCopy, openEmailShare } from '@/lib/share';
+import { getShareUrl } from '@/lib/getShareUrl';
 import Navbar from '@/components/Navbar';
 import QRCodeModal from '@/components/QRCodeModal';
 
@@ -126,7 +127,7 @@ export default function KeepsakePage() {
 
   const handleShareContributorLink = async () => {
     if (!page) return;
-    const url = `${window.location.origin}/p/${slug}`;
+    const url = getShareUrl(`/p/${slug}`);
     const result = await shareOrCopy({
       title: `Help celebrate ${page.recipient_name}!`,
       text: `Add your message to ${page.recipient_name}'s ${formatOccasion(page.template_type)} celebration`,
@@ -680,22 +681,36 @@ export default function KeepsakePage() {
                     📱 QR Code
                   </button>
                 </div>
-                {/* Desktop email option */}
-                {!isMobile && (
+                {/* Direct share options */}
+                <div className="flex gap-3 mt-3">
                   <button
                     onClick={() => {
                       if (!page) return;
-                      const url = `${window.location.origin}/p/${slug}`;
-                      openEmailShare({
-                        subject: `Help celebrate ${page.recipient_name}!`,
-                        body: `Hi!\n\nI'm putting together a special keepsake for ${page.recipient_name}'s ${formatOccasion(page.template_type)} celebration. Would you add a message or photo?\n\nHere's the link: ${url}\n\nThanks!`,
-                      });
+                      const url = getShareUrl(`/p/${slug}`);
+                      const occasion = page.template_type === 'other' ? '' : `${formatOccasion(page.template_type)} `;
+                      const text = `Hey! We're putting together a special keepsake for ${page.recipient_name}'s ${occasion}celebration. Would you add a message, photo, or memory?\n\n${url}`;
+                      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
                     }}
-                    className="w-full mt-3 py-2 text-xs text-cocoa/50 hover:text-cocoa transition-colors"
+                    className="flex-1 py-2 text-xs text-green-600 hover:text-green-700 font-medium transition-colors"
                   >
-                    ✉️ Or email this link to friends
+                    Share via WhatsApp
                   </button>
-                )}
+                  {!isMobile && (
+                    <button
+                      onClick={() => {
+                        if (!page) return;
+                        const url = getShareUrl(`/p/${slug}`);
+                        openEmailShare({
+                          subject: `Help celebrate ${page.recipient_name}!`,
+                          body: `Hi!\n\nI'm putting together a special keepsake for ${page.recipient_name}'s ${formatOccasion(page.template_type)} celebration. Would you add a message or photo?\n\nHere's the link: ${url}\n\nThanks!`,
+                        });
+                      }}
+                      className="flex-1 py-2 text-xs text-cocoa/50 hover:text-cocoa transition-colors"
+                    >
+                      ✉️ Email link to friends
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
