@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     // Generate image with DALL-E 3
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-    const stickerPrompt = `Cute cartoon sticker style, vibrant colors, white background, no text: ${prompt}`;
+    const stickerPrompt = `Cute cartoon sticker in a universal, globally-appealing kawaii illustration style. Vibrant colors, clean white background, no text or words. Do not assume any specific ethnicity or cultural context for people: ${prompt}`;
 
     const imageResponse = await openai.images.generate({
       model: 'dall-e-3',

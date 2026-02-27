@@ -60,6 +60,11 @@ export default function KeepsakePage() {
   const [savingReply, setSavingReply] = useState(false);
   const [showQR, setShowQR] = useState(false);
 
+  // AI suggestion state for thank you message
+  const [thanksSuggestions, setThanksSuggestions] = useState<string[]>([]);
+  const [loadingThanksSuggestions, setLoadingThanksSuggestions] = useState(false);
+  const [thanksSuggestionsUsed, setThanksSuggestionsUsed] = useState(false);
+
   useEffect(() => {
     async function loadData() {
       const { data: pageData, error: pageError } = await supabase
@@ -233,6 +238,32 @@ export default function KeepsakePage() {
       setInlineReplyText('');
     }
     setSavingReply(false);
+  };
+
+  const fetchThanksSuggestions = async () => {
+    if (!page || thanksSuggestionsUsed) return;
+    setLoadingThanksSuggestions(true);
+    try {
+      const res = await fetch('/api/suggest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientName: page.recipient_name,
+          occasion: page.template_type,
+          prompt: `Write a heartfelt thank you message from ${page.recipient_name} to the people who contributed to their ${page.template_type.replace(/_/g, ' ')} celebration. The message should express gratitude for the kind words, photos, and love shared.`,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.suggestions && Array.isArray(data.suggestions)) {
+          setThanksSuggestions(data.suggestions);
+          setThanksSuggestionsUsed(true);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch thanks suggestions:', err);
+    }
+    setLoadingThanksSuggestions(false);
   };
 
   const bgColors = ['#fef3c7', '#dbeafe', '#fce7f3', '#d1fae5', '#ede9fe', '#fee2e2', '#e0e7ff', '#ccfbf1'];
@@ -477,6 +508,23 @@ export default function KeepsakePage() {
                           rows={2}
                           className="w-full input-warm resize-none text-sm mb-2"
                         />
+                        {!inlineReplyText && (
+                          <div className="flex gap-1.5 mb-2 flex-wrap">
+                            {[
+                              `Thank you ${contrib.contributor_name}, this means so much to me! 💛`,
+                              `${contrib.contributor_name}, your words truly touched my heart. Thank you!`,
+                            ].map((chip, ci) => (
+                              <button
+                                key={ci}
+                                type="button"
+                                onClick={() => setInlineReplyText(chip)}
+                                className="text-xs px-2.5 py-1 rounded-full bg-gold/10 border border-gold/20 text-espresso/80 hover:bg-gold/20 transition-colors"
+                              >
+                                {chip.length > 40 ? chip.slice(0, 40) + '...' : chip}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                         <div className="flex gap-2">
                           <button
                             onClick={() => { setReplyingToId(null); setInlineReplyText(''); }}
@@ -523,7 +571,31 @@ export default function KeepsakePage() {
                   rows={4}
                   className="w-full input-warm resize-none mb-2 text-left"
                 />
-                <p className="text-xs text-cocoa/40 text-right mb-4">{thanksMessage.length}/500</p>
+                <div className="flex items-center justify-between mb-4">
+                  <button
+                    type="button"
+                    onClick={fetchThanksSuggestions}
+                    disabled={loadingThanksSuggestions || thanksSuggestionsUsed}
+                    className="text-xs font-medium text-crimson hover:text-crimson/80 disabled:text-cocoa/40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {loadingThanksSuggestions ? 'Thinking...' : 'Need inspiration? ✨'}
+                  </button>
+                  <p className="text-xs text-cocoa/40">{thanksMessage.length}/500</p>
+                </div>
+                {thanksSuggestions.length > 0 && (
+                  <div className="mb-4 flex flex-col gap-2">
+                    {thanksSuggestions.map((s, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => { setThanksMessage(s); setThanksSuggestions([]); }}
+                        className="text-left text-sm p-3 rounded-xl bg-gold/10 border border-gold/20 text-espresso hover:bg-gold/20 transition-colors break-words"
+                      >
+                        &ldquo;{s}&rdquo;
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <button
                   onClick={() => setVoiceToast(true)}
                   className="w-full py-2.5 rounded-full text-sm font-medium border-2 border-cocoa/20 text-cocoa/50 mb-3 transition-all"
