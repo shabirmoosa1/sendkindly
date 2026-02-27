@@ -282,7 +282,7 @@ function CreatePage() {
         creator_message: creatorMessage.trim() || null,
         contribution_prompt: contributionPrompt.trim() || null,
         hero_image_url: heroImageUrl,
-        status: 'collecting',
+        status: 'active',
       });
 
     if (insertError) {
