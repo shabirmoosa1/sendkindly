@@ -675,7 +675,11 @@ export default function KeepsakePage() {
                       const url = getShareUrl(`/p/${slug}`);
                       const occasion = page.template_type === 'other' ? '' : `${formatOccasion(page.template_type)} `;
                       const text = `Hey! We're putting together a special keepsake for ${page.recipient_name}'s ${occasion}celebration. Would you add a message, photo, or memory?\n\n${url}`;
-                      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                      const onMobile = /Mobi|Android/i.test(navigator.userAgent);
+                      const waUrl = onMobile
+                        ? `https://wa.me/?text=${encodeURIComponent(text)}`
+                        : `https://web.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+                      window.open(waUrl, '_blank');
                     }}
                     className="flex-1 py-2.5 rounded-full text-sm font-medium border-2 border-green-500 text-green-600 hover:bg-green-50 transition-all"
                   >
