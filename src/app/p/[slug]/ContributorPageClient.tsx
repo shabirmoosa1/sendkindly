@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
+import Cropper from 'react-easy-crop';
 import { supabase } from '@/lib/supabase';
+import { getCroppedImg, type CropArea } from '@/lib/cropImage';
 import Navbar from '@/components/Navbar';
 
 interface MyContribution {
@@ -76,6 +78,13 @@ export default function ContributorPage() {
   const [messageText, setMessageText] = useState('');
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoCaption, setPhotoCaption] = useState('');
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [cropAspect, setCropAspect] = useState(4 / 3);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<CropArea | null>(null);
+  const [cropConfirmed, setCropConfirmed] = useState(false);
+  const [cropping, setCropping] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
@@ -175,8 +184,8 @@ export default function ContributorPage() {
       setError('Please write a message.');
       return;
     }
-    if (contribType === 'photo' && !photoFile) {
-      setError('Please select a photo.');
+    if (contribType === 'photo' && (!photoFile || !cropConfirmed)) {
+      setError(photoFile ? 'Please confirm your crop first.' : 'Please select a photo.');
       return;
     }
 
@@ -243,12 +252,56 @@ export default function ContributorPage() {
     fetchMyContributions(page.id);
   };
 
+  const onCropComplete = useCallback((_croppedArea: CropArea, croppedPixels: CropArea) => {
+    setCroppedAreaPixels(croppedPixels);
+  }, []);
+
+  const handlePhotoSelect = (file: File | null) => {
+    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+    if (file) {
+      setPhotoPreviewUrl(URL.createObjectURL(file));
+      setCropConfirmed(false);
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+      setCropAspect(4 / 3);
+    } else {
+      setPhotoPreviewUrl(null);
+    }
+    setPhotoFile(file);
+  };
+
+  const handleConfirmCrop = async () => {
+    if (!photoPreviewUrl || !croppedAreaPixels) return;
+    setCropping(true);
+    try {
+      const croppedFile = await getCroppedImg(photoPreviewUrl, croppedAreaPixels);
+      setPhotoFile(croppedFile);
+      setCropConfirmed(true);
+    } catch (err) {
+      console.error('Crop error:', err);
+      setError('Failed to crop image. Please try again.');
+    }
+    setCropping(false);
+  };
+
+  const handleRecrop = () => {
+    setCropConfirmed(false);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+  };
+
   const resetForm = () => {
     setContribType(null);
     setContributorName('');
     setMessageText('');
+    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
     setPhotoFile(null);
+    setPhotoPreviewUrl(null);
     setPhotoCaption('');
+    setCropConfirmed(false);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCropAspect(4 / 3);
     setSubmitted(false);
     setError('');
     setStickerPrompt('');
@@ -741,25 +794,134 @@ export default function ContributorPage() {
 
             {contribType === 'photo' && (
               <>
-                <div className="mb-4">
-                  <label className="block text-xs uppercase tracking-widest text-cocoa font-medium mb-2">Choose Photo</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
-                    className="w-full text-sm text-cocoa file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-crimson/10 file:text-crimson hover:file:bg-crimson/20"
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-xs uppercase tracking-widest text-cocoa font-medium mb-2">Caption (optional)</label>
-                  <input
-                    type="text"
-                    value={photoCaption}
-                    onChange={(e) => setPhotoCaption(e.target.value)}
-                    placeholder="e.g., Summer of '23!"
-                    className="w-full input-warm"
-                  />
-                </div>
+                {/* File picker — only show when no photo selected yet */}
+                {!photoPreviewUrl && (
+                  <div className="mb-4">
+                    <label className="block text-xs uppercase tracking-widest text-cocoa font-medium mb-2">Choose Photo</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handlePhotoSelect(e.target.files?.[0] || null)}
+                      className="w-full text-sm text-cocoa file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-crimson/10 file:text-crimson hover:file:bg-crimson/20"
+                    />
+                  </div>
+                )}
+
+                {/* Crop UI — shown after file selected, before crop confirmed */}
+                {photoPreviewUrl && !cropConfirmed && (
+                  <div className="mb-4">
+                    <label className="block text-xs uppercase tracking-widest text-cocoa font-medium mb-2">Frame Your Photo</label>
+                    <p className="text-xs text-cocoa/60 mb-3">Drag to move, pinch or scroll to zoom</p>
+
+                    {/* Cropper */}
+                    <div className="relative h-[280px] rounded-xl overflow-hidden bg-espresso/10 mb-3">
+                      <Cropper
+                        image={photoPreviewUrl}
+                        crop={crop}
+                        zoom={zoom}
+                        aspect={cropAspect}
+                        onCropChange={setCrop}
+                        onZoomChange={setZoom}
+                        onCropComplete={onCropComplete}
+                        showGrid={false}
+                        style={{
+                          containerStyle: { borderRadius: '12px' },
+                        }}
+                      />
+                    </div>
+
+                    {/* Aspect ratio toggle */}
+                    <div className="flex gap-2 mb-3">
+                      {[
+                        { label: 'Landscape', value: 4 / 3 },
+                        { label: 'Square', value: 1 },
+                        { label: 'Portrait', value: 3 / 4 },
+                      ].map(({ label, value }) => (
+                        <button
+                          key={label}
+                          type="button"
+                          onClick={() => setCropAspect(value)}
+                          className={`flex-1 py-2 rounded-full text-xs font-semibold transition-all ${
+                            cropAspect === value
+                              ? 'bg-crimson text-white'
+                              : 'border-2 border-cocoa/20 text-cocoa hover:bg-cocoa/5'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Zoom slider */}
+                    <div className="flex items-center gap-3 mb-4">
+                      <span className="text-xs text-cocoa/60">🔍</span>
+                      <input
+                        type="range"
+                        min={1}
+                        max={3}
+                        step={0.05}
+                        value={zoom}
+                        onChange={(e) => setZoom(Number(e.target.value))}
+                        className="flex-1 accent-crimson"
+                      />
+                      <span className="text-xs text-cocoa/60">🔍+</span>
+                    </div>
+
+                    {/* Confirm / Change photo */}
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={handleConfirmCrop}
+                        disabled={cropping}
+                        className="flex-1 btn-primary"
+                      >
+                        {cropping ? 'Cropping...' : 'Confirm Crop ✅'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handlePhotoSelect(null)}
+                        className="px-4 py-3 rounded-full text-sm font-semibold border-2 border-cocoa/20 text-cocoa hover:bg-cocoa/5 transition-all"
+                      >
+                        Change
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Cropped preview — shown after crop confirmed */}
+                {photoPreviewUrl && cropConfirmed && photoFile && (
+                  <div className="mb-4">
+                    <label className="block text-xs uppercase tracking-widest text-cocoa font-medium mb-2">Your Photo</label>
+                    <div className="rounded-xl overflow-hidden bg-espresso/5 flex items-center justify-center">
+                      <img
+                        src={URL.createObjectURL(photoFile)}
+                        alt="Cropped preview"
+                        className="max-h-[250px] object-contain rounded-xl"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRecrop}
+                      className="mt-2 text-xs text-crimson hover:text-crimson/80 transition-colors cursor-pointer"
+                    >
+                      🔄 Re-crop
+                    </button>
+                  </div>
+                )}
+
+                {/* Caption — always visible when photo selected */}
+                {photoPreviewUrl && (
+                  <div className="mb-4">
+                    <label className="block text-xs uppercase tracking-widest text-cocoa font-medium mb-2">Caption (optional)</label>
+                    <input
+                      type="text"
+                      value={photoCaption}
+                      onChange={(e) => setPhotoCaption(e.target.value)}
+                      placeholder="e.g., Summer of '23!"
+                      className="w-full input-warm"
+                    />
+                  </div>
+                )}
               </>
             )}
 
@@ -959,7 +1121,7 @@ export default function ContributorPage() {
                             <img
                               src={contrib.photo_url || contrib.ai_sticker_url || ''}
                               alt=""
-                              className="w-20 h-20 rounded-xl object-cover mb-2"
+                              className="w-20 h-20 rounded-xl object-contain bg-espresso/5 mb-2"
                             />
                           )}
                           {/* Message */}
