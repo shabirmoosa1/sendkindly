@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
-    // Check usage limit (5 per page)
+    // Check usage limit (20 per page)
     const { count, error: countError } = await supabaseAdmin
       .from('ai_sticker_usage')
       .select('*', { count: 'exact', head: true })
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if ((count ?? 0) >= 5) {
+    if ((count ?? 0) >= 20) {
       return NextResponse.json({ error: 'limit_reached' }, { status: 429 });
     }
 

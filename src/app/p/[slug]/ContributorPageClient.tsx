@@ -966,8 +966,8 @@ export default function ContributorPage() {
             {/* Limit reached banner */}
             {stickerLimitReached && (
               <div className="mb-6 p-4 rounded-2xl bg-gold/15 border border-gold/30">
-                <p className="text-sm font-semibold text-espresso mb-1">All 5 free stickers used</p>
-                <p className="text-xs text-cocoa">This page has used all 5 free stickers — ask the creator to upgrade to Premium for more.</p>
+                <p className="text-sm font-semibold text-espresso mb-1">All 20 stickers used</p>
+                <p className="text-xs text-cocoa">This page has used all 20 AI stickers.</p>
               </div>
             )}
 
