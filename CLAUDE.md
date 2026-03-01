@@ -1,6 +1,6 @@
 # SendKindly — Claude Code Reference
 
-> Last updated: 2026-02-27 (Session 3)
+> Last updated: 2026-03-01
 > Project: AIGF Cohort 5 — Demo Day March 28, 2026 (Bengaluru)
 > Team: Code & Heart — Prof Moosa (build), Naila (mobile/desktop testing), Viral (test cases), Sanjeev (Demo Day prep), Sammy (bug feedback)
 
@@ -68,9 +68,9 @@ Key columns:
 - `contribution_loves` — anonymous love votes on contributions (visitor_id + contribution_id, unique constraint)
 - `recipient_thanks` — thank you messages from recipient (written via `/api/thanks`)
 - `recipient_replies` — inline replies from recipient to individual contributions
-- `ai_sticker_usage` — tracks DALL-E 3 usage per page
+- `ai_sticker_usage` — tracks DALL-E 3 usage per page (limit: 20 per page)
 
-### `contribution_loves` table (NEW — Session 3)
+### `contribution_loves` table (added Feb 27)
 ```sql
 CREATE TABLE contribution_loves (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -126,20 +126,20 @@ Creator builds page (status: active)
 - [x] **Print gate** — Print Keepsake unlocks only after status = thanked/complete
 - [x] **Print page gate** — `/p/[slug]/keepsake/print` shows "Not ready" card if not yet thanked
 
-### Love/Vote System (Session 3)
+### Love/Vote System (Feb 27 evening)
 - [x] **Anonymous love votes** — visitors tap heart on any contribution, tracked via localStorage visitor ID
 - [x] **Optimistic UI toggle** — instant heart fill/unfill, reverts on API failure
 - [x] **Love counts** — displayed on keepsake page and print cards
 - [x] **Print ordering by loves** — most-loved contributions rank higher in printable keepsake (`layoutScore()` uses `loves * 1000` as primary sort signal)
 - [x] **`/api/love` route** — POST toggles love (insert/delete), GET returns counts + visitor's loves
 
-### Dashboard & Management (Session 2)
+### Dashboard & Management (Feb 27 afternoon)
 - [x] **Active/Archived tabs** — replaces All/Active/Completed; Active = draft/active/revealed, Archived = thanked/complete
 - [x] **Delete celebration** — `/api/delete-page` with cascading cleanup (storage files, contributions, thanks, replies, sticker usage)
 - [x] **Delete contributions** — creator can remove individual contributions from keepsake page (client-side)
 - [x] **Renamed "Dashboard" → "My Celebrations"** throughout app (Navbar, create page, homepage)
 
-### Sharing (Session 2)
+### Sharing (Feb 27 afternoon)
 - [x] **Copy** — copies full invite message text (not just URL) via `shareOrCopy()` in `src/lib/share.ts`
 - [x] **WhatsApp** — uses `wa.me/?text=` universally (no more web.whatsapp.com login page on desktop)
 - [x] **Email** — Gmail web compose URL (`mail.google.com/mail/?view=cm&fs=1&su=...&body=...`) instead of broken `mailto:`
@@ -163,7 +163,7 @@ Creator builds page (status: active)
 - [x] **Thanks email** — sent to creator when recipient submits thank you
 - [ ] **Contributor notification email** — not yet confirmed working end-to-end
 
-### Responsive Design (Session 2)
+### Responsive Design (Feb 27 afternoon)
 - [x] **Navbar** — responsive Tailwind classes (`px-3 sm:px-6`, `text-xs sm:text-sm`, `gap-2 sm:gap-4`)
 - [x] **Dashboard cards** — responsive padding, smaller emojis on mobile, scaled headings
 - [x] **Keepsake page** — responsive hero banner, contribution grid
@@ -302,40 +302,89 @@ Always develop in `~/Developer/` not `~/Documents/`
 - `main` branch → auto-deploys to Vercel
 - Claude Code commits directly to main for Prof Moosa's solo builds
 - Always run `npx tsc --noEmit` before committing — must show no output (zero errors)
+- **Push after every commit** — keeps Vercel deploys granular and makes rollback easy
 
-### All commits since Feb 25, 2026 (chronological)
+### Session Tracking Convention
+Each Claude Code conversation = one session. Follow this at the **start and end** of every session:
 
-**Session 1 — Feb 25–27: Core fixes + Design System v2**
-| Commit | Description |
-|--------|-------------|
-| `fa0d6b6` | fix: pass slug to PrintableKeepsakeClient so print route loads correctly |
-| `3f7a7b7` | fix: remove duplicate thank you form, keep recipient_thanks flow only |
-| `d8f9cf3` | fix: move thanks status update to server-side API to bypass RLS |
-| `6bf3588` | fix: remove broken Download PDF, keep Print Keepsake only; fix confetti |
-| `4329ba7` | fix: add colour and position to confetti pieces so they are visible |
-| `23bb336` | docs: update CLAUDE.md with Feb 25 fixes |
-| `7685ce4` | feat: design system v2 — crimson + glassmorphism rebrand (24 files) |
-| `d7368c1` | docs: update CLAUDE.md with design system v2 |
+**Start of session:**
+1. Read CLAUDE.md for context
+2. Announce the session name: `YYYY-MM-DD <Purpose>` (e.g., `2026-03-05 Reveal Modal`)
+3. Commit and push after each feature/fix (not in batches)
 
-**Session 2 — Feb 27: Features, branding, photo crop, sharing, responsive**
-| Commit | Description |
-|--------|-------------|
-| `35540ce` | feat: logo-cleaned branding, logo-box occasion cards |
-| `038de93` | fix: AI inspiration working + suggestions for thank you and replies |
-| `a6277d8` | feat: edit/delete own contributions + clearer inspiration hints |
-| `f20498b` | feat: photo crop tool for contributors (react-easy-crop, issue #4) |
-| `c459f18` | fix: share links use production URL + WhatsApp/Email share buttons |
-| `472dedd` | fix: create wizard used status 'collecting' — changed to 'active' |
-| `819cd32` | refactor: clean up dashboard cards + keepsake creator tools layout |
-| `8e2b895` | refactor: clean dashboard cards, smarter WhatsApp, remove Reminder |
-| `893a971` | fix: responsive design + rename Dashboard to My Celebrations |
-| `6cc2612` | feat: sharing fixes, Active/Archived tabs, delete celebration |
+**End of session:**
+1. Run `npx tsc --noEmit` — confirm zero errors
+2. Update the Session Log table in CLAUDE.md with all commits from this session
+3. Update any changed sections (Features Completed, Pending, API Routes, etc.)
+4. Commit CLAUDE.md update: `docs: update CLAUDE.md with <session name>`
+5. Push
 
-**Session 3 — Feb 27: Love votes + print cleanup**
-| Commit | Description |
-|--------|-------------|
-| `c270612` | fix: remove clickable emoji reactions from printable keepsake |
-| `1cec069` | feat: love/vote system for keepsake contributions |
+**Session naming:** `YYYY-MM-DD <Purpose>`
+- Use the date the session started
+- Purpose should be 2–4 words: `Build Features`, `Design Rebrand`, `Bug Fixes`, `Demo Day Prep`
+- If two sessions happen on the same day, add time of day: `2026-03-05 AM Bug Fixes`, `2026-03-05 PM New Features`
+
+### Session Log (chronological)
+
+> **Convention:** Sessions named by date + purpose. Each push is individually tracked.
+> Commits marked BATCH were pushed together; PUSH means pushed individually right after commit.
+
+**Pre-push era (Feb 15–24) — batch-pushed, 38 commits**
+Multiple Claude Code sessions across initial build. All committed locally and pushed to GitHub in bulk. Not individually tracked. Key milestones:
+- Feb 15–16: Initial Next.js + Supabase scaffolding
+- Feb 20: Phase 2 core pages (Dashboard, Create, Contributor, Keepsake)
+- Feb 22: Auth, Sammy feedback fixes, occasions, env cleanup
+- Feb 23 AM: Phases A–D marathon (design system, features, homepage)
+- Feb 23 PM: Phase E visual upgrade (PRs #1 + #2), Sammy bug fixes, UX polish
+- Feb 24 AM: Printable keepsake, emoji reactions, print layout
+
+**2026-02-25 Build Features (13:18–23:49) — 16 commits, each pushed individually**
+| Commit | Time | Description |
+|--------|------|-------------|
+| `bef53be` | 13:18 | feat: AI Sticker feature + fix CoverPage build error |
+| `1bfa1c5` | 13:26 | feat: sticker support to print keepsake + cleanup |
+| `cd7b0b8` | 13:54 | feat: QR Code sharing to Dashboard and Keepsake |
+| `a59ac6b` | 15:37 | feat: PDF download to keepsake page |
+| `06626b7` | 16:03 | feat: page status lifecycle: reveal flow, access control, PDF gate |
+| `ddf1d85` | 16:14 | feat: recipient thank you with prompt, display, standalone page |
+| `1c0156c` | 16:50 | feat: email notifications for reveal/thanks lifecycle |
+| `64aba1a` | 16:52 | fix: reveal button → server-side API route |
+| `8d33030` | 18:29 | fix: lock contributions and hide creator tools after reveal |
+| `560f313` | 18:41 | feat: gate print behind thank you, add thanks to print layout |
+| `fa0d6b6` | 22:49 | fix: pass slug to PrintableKeepsakeClient |
+| `3f7a7b7` | 23:13 | fix: remove duplicate thank you form |
+| `d8f9cf3` | 23:24 | fix: move thanks status update to server-side API (RLS bypass) |
+| `6bf3588` | 23:37 | fix: remove broken Download PDF, keep Print Keepsake; fix confetti |
+| `4329ba7` | 23:41 | fix: confetti colour and position |
+| `23bb336` | 23:49 | **docs: CLAUDE.md update** |
+
+**2026-02-27 Design Rebrand (06:10–06:20) — 2 commits, batch-pushed at 06:20**
+| Commit | Time | Description |
+|--------|------|-------------|
+| `7685ce4` | 06:10 | feat: design system v2 — crimson + glassmorphism rebrand (24 files) |
+| `d7368c1` | 06:20 | **docs: CLAUDE.md update** (pushed both commits) |
+
+**2026-02-27 Build Features 2 (14:25–22:34) — 13 commits, each pushed individually**
+| Commit | Time | Description |
+|--------|------|-------------|
+| `35540ce` | 14:25 | feat: logo-cleaned branding, logo-box occasion cards |
+| `038de93` | 14:58 | fix: AI inspiration working + suggestions for thank you and replies |
+| `a6277d8` | 16:10 | feat: edit/delete own contributions + clearer inspiration hints |
+| `f20498b` | 16:34 | feat: photo crop tool for contributors (react-easy-crop, issue #4) |
+| `c459f18` | 16:42 | fix: share links use production URL + WhatsApp/Email share buttons |
+| `472dedd` | 18:36 | fix: create wizard used status 'collecting' — changed to 'active' |
+| `819cd32` | 20:30 | refactor: clean up dashboard cards + keepsake creator tools layout |
+| `8e2b895` | 20:39 | refactor: clean dashboard cards, smarter WhatsApp, remove Reminder |
+| `893a971` | 20:56 | fix: responsive design + rename Dashboard to My Celebrations |
+| `6cc2612` | 21:27 | feat: sharing fixes, Active/Archived tabs, delete celebration |
+| `c270612` | 22:13 | fix: remove clickable emoji reactions from printable keepsake |
+| `1cec069` | 22:27 | feat: love/vote system for keepsake contributions |
+| `4839414` | 22:34 | **docs: CLAUDE.md update** |
+
+**2026-03-01 Housekeeping — 1 commit**
+| Commit | Time | Description |
+|--------|------|-------------|
+| `f3cd85a` | — | feat: increase AI sticker limit from 5 to 20 per page |
 
 ---
 
