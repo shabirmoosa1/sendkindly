@@ -436,6 +436,138 @@ input:focus, textarea:focus, select:focus, button:focus-visible {
 }
 
 /* ============================================
+   KEEPSAKE THEMES
+   ============================================ */
+
+/* --- Scrapbook Theme --- */
+
+/* Kraft paper textured background */
+.theme-scrapbook {
+  --sb-bg: #f0e4d4;
+  --sb-card-bg: #fffdf7;
+  --sb-tape: #b8d4a3;
+  --sb-tape-alt: #f4c2c2;
+  --sb-tape-gold: #e8d490;
+  --sb-shadow: rgba(90, 75, 69, 0.12);
+}
+
+.theme-scrapbook .keepsake-bg {
+  background-color: var(--sb-bg);
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 24px,
+      rgba(90, 75, 69, 0.03) 24px,
+      rgba(90, 75, 69, 0.03) 25px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 24px,
+      rgba(90, 75, 69, 0.03) 24px,
+      rgba(90, 75, 69, 0.03) 25px
+    );
+}
+
+/* Scrapbook contribution cards: sticky-note feel */
+.theme-scrapbook .contrib-card {
+  background: var(--sb-card-bg) !important;
+  border: none !important;
+  border-radius: 4px !important;
+  box-shadow:
+    2px 3px 8px var(--sb-shadow),
+    0 1px 2px rgba(0, 0, 0, 0.06) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  position: relative;
+}
+
+/* Alternating card rotations for organic feel */
+.theme-scrapbook .contrib-card:nth-child(3n+1) {
+  transform: rotate(-1.2deg);
+}
+.theme-scrapbook .contrib-card:nth-child(3n+2) {
+  transform: rotate(0.8deg);
+}
+.theme-scrapbook .contrib-card:nth-child(3n) {
+  transform: rotate(-0.5deg);
+}
+
+/* Washi tape accent on cards */
+.theme-scrapbook .contrib-card::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-2deg);
+  width: 60px;
+  height: 14px;
+  border-radius: 1px;
+  opacity: 0.85;
+  z-index: 1;
+}
+
+.theme-scrapbook .contrib-card:nth-child(odd)::before {
+  background: var(--sb-tape);
+}
+.theme-scrapbook .contrib-card:nth-child(even)::before {
+  background: var(--sb-tape-alt);
+}
+.theme-scrapbook .contrib-card:nth-child(3n)::before {
+  background: var(--sb-tape-gold);
+}
+
+/* Scrapbook photo style: more dramatic polaroid */
+.theme-scrapbook .contrib-card img {
+  border-radius: 2px !important;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+/* Scrapbook contributor names in handwriting font */
+.theme-scrapbook .contrib-name {
+  font-family: var(--font-caveat), 'Caveat', cursive;
+  font-size: 1rem;
+}
+
+/* Scrapbook hero banner overlay */
+.theme-scrapbook .keepsake-hero {
+  border-bottom: 4px solid var(--sb-tape);
+}
+
+/* --- Modern Theme --- */
+
+.theme-modern .keepsake-bg {
+  background-color: #ffffff;
+  background-image:
+    radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Modern: borderless cards with lots of white space */
+.theme-modern .contrib-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Modern: clean sans-serif everywhere */
+.theme-modern h1,
+.theme-modern h2,
+.theme-modern h3 {
+  font-family: var(--font-body);
+  font-style: normal;
+}
+
+/* Modern: muted text colors */
+.theme-modern .contrib-card {
+  color: #333;
+}
+
+/* ============================================
    PRINT STYLES
    ============================================ */
 

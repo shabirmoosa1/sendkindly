@@ -13,6 +13,7 @@ interface PageData {
   slug: string;
   recipient_name: string;
   template_type: string;
+  keepsake_theme: string | null;
   hero_image_url: string | null;
   creator_message: string | null;
   creator_name: string | null;
@@ -343,6 +344,9 @@ export default function KeepsakePage() {
     setLoadingThanksSuggestions(false);
   };
 
+  const theme = page?.keepsake_theme || 'classic';
+  const themeClass = theme !== 'classic' ? `theme-${theme}` : '';
+
   const bgColors = ['#fef3c7', '#dbeafe', '#fce7f3', '#d1fae5', '#ede9fe', '#fee2e2', '#e0e7ff', '#ccfbf1'];
 
   const OCCASION_EMOJIS: Record<string, string> = {
@@ -396,12 +400,12 @@ export default function KeepsakePage() {
   }
 
   return (
-    <div className="min-h-screen bg-ivory">
+    <div className={`min-h-screen bg-ivory ${themeClass}`}>
       <Navbar />
 
       {/* Hero Banner */}
       <div
-        className="relative h-48 sm:h-56 md:h-72 flex items-center justify-center overflow-hidden"
+        className={`relative h-48 sm:h-56 md:h-72 flex items-center justify-center overflow-hidden keepsake-hero`}
         style={{
           background: page.hero_image_url
             ? `url(${page.hero_image_url}) center/cover`
@@ -431,7 +435,7 @@ export default function KeepsakePage() {
       </div>
 
       {/* Contributions Grid */}
-      <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-8 sm:py-10">
+      <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-8 sm:py-10 keepsake-bg">
 
         {/* Recipient's Thank You — shown when status is thanked/complete */}
         {thanksData && ['thanked', 'complete'].includes(page.status) && (
@@ -506,7 +510,7 @@ export default function KeepsakePage() {
             {contributions.map((contrib, i) => (
               <div
                 key={contrib.id}
-                className="break-inside-avoid glass rounded-2xl p-6 ios-shadow"
+                className="break-inside-avoid glass rounded-2xl p-6 ios-shadow contrib-card"
                 style={{ backgroundColor: bgColors[i % bgColors.length] }}
               >
                 {contrib.ai_sticker_url && (
@@ -545,7 +549,7 @@ export default function KeepsakePage() {
                     <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold bg-espresso">
                       {contrib.contributor_name.charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-sm font-semibold text-espresso">
+                    <span className="text-sm font-semibold text-espresso contrib-name">
                       {contrib.contributor_name}
                     </span>
                   </div>

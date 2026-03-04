@@ -16,8 +16,8 @@ const occasions = [
 
 const templates = [
   { id: 'classic', name: 'Classic', desc: 'Clean and elegant', emoji: '✨', color: '#f8f6f3' },
-  { id: 'playful', name: 'Playful', desc: 'Colorful and fun', emoji: '🎨', color: '#fef3c7' },
-  { id: 'memorial', name: 'Memorial', desc: 'Dark and respectful', emoji: '🕊️', color: '#e2e8f0' },
+  { id: 'scrapbook', name: 'Scrapbook', desc: 'Warm, handcrafted collage feel', emoji: '📒', color: '#f5e6d3' },
+  { id: 'modern', name: 'Modern', desc: 'Minimal and editorial', emoji: '◻️', color: '#f0f0f0' },
 ];
 
 const OCCASION_PLACEHOLDERS: Record<string, { name: string; wish: string; instructions: string }> = {
@@ -279,6 +279,7 @@ function CreatePage() {
         slug,
         recipient_name: recipientName.trim(),
         template_type: occasion,
+        keepsake_theme: template,
         creator_message: creatorMessage.trim() || null,
         contribution_prompt: contributionPrompt.trim() || null,
         hero_image_url: heroImageUrl,
