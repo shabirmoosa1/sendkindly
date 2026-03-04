@@ -8,7 +8,7 @@ interface StickerUnitProps {
 /** AI sticker contribution card — used in the printable keepsake layout */
 export default function StickerUnit({ contribution, loveCount }: StickerUnitProps) {
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-sm break-inside-avoid mb-4 text-center">
+    <div className="bg-white rounded-2xl p-4 shadow-sm break-inside-avoid mb-4 text-center contrib-card">
       <img
         src={contribution.ai_sticker_url!}
         alt={`AI sticker from ${contribution.contributor_name}`}
@@ -23,7 +23,7 @@ export default function StickerUnit({ contribution, loveCount }: StickerUnitProp
         <div className="w-5 h-5 rounded-full flex items-center justify-center text-white font-bold bg-espresso/80" style={{ fontSize: '9px' }}>
           {contribution.contributor_name.charAt(0).toUpperCase()}
         </div>
-        <span className="font-medium text-cocoa" style={{ fontSize: '11px' }}>
+        <span className="font-medium text-cocoa contrib-name" style={{ fontSize: '11px' }}>
           {contribution.contributor_name}
         </span>
         {loveCount != null && loveCount > 0 && (

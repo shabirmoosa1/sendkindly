@@ -535,6 +535,11 @@ input:focus, textarea:focus, select:focus, button:focus-visible {
   border-bottom: 4px solid var(--sb-tape);
 }
 
+/* Scrapbook print pages: kraft background */
+.theme-scrapbook .keepsake-page {
+  background: var(--sb-bg);
+}
+
 /* --- Modern Theme --- */
 
 .theme-modern .keepsake-bg {
@@ -565,6 +570,11 @@ input:focus, textarea:focus, select:focus, button:focus-visible {
 /* Modern: muted text colors */
 .theme-modern .contrib-card {
   color: #333;
+}
+
+/* Modern print pages: white background */
+.theme-modern .keepsake-page {
+  background: #ffffff;
 }
 
 /* ============================================
@@ -604,6 +614,14 @@ input:focus, textarea:focus, select:focus, button:focus-visible {
 
   .keepsake-page {
     background: #F6F2EC !important;
+  }
+
+  /* Theme-specific print backgrounds */
+  .theme-scrapbook .keepsake-page {
+    background: #f0e4d4 !important;
+  }
+  .theme-modern .keepsake-page {
+    background: #ffffff !important;
   }
 
   /* Constrain photo height on print */

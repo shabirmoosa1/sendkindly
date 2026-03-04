@@ -182,6 +182,9 @@ export default function PrintableKeepsakeClient({ slug }: Props) {
     );
   }
 
+  const theme = (page as any).keepsake_theme || 'classic';
+  const themeClass = theme !== 'classic' ? `theme-${theme}` : '';
+
   // Sort by love count (primary) then layout score — most loved goes on cover
   const sorted = [...contributions].sort((a, b) => layoutScore(b, loveCounts) - layoutScore(a, loveCounts));
   const featured = sorted.length > 0 && layoutScore(sorted[0], loveCounts) > 0 ? sorted[0] : null;
@@ -193,7 +196,7 @@ export default function PrintableKeepsakeClient({ slug }: Props) {
   const backPageInline = lastPage && lastPage.weight <= 0.80;
 
   return (
-    <div className="keepsake-print-view bg-ivory min-h-screen pb-20 print:pb-0 print:bg-white">
+    <div className={`keepsake-print-view bg-ivory min-h-screen pb-20 print:pb-0 print:bg-white ${themeClass}`}>
       {/* Print button — fixed, hidden on print */}
       <button
         onClick={() => window.print()}

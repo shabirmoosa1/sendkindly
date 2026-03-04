@@ -8,7 +8,7 @@ interface PhotoUnitProps {
 /** Photo contribution card — used in the printable keepsake layout */
 export default function PhotoUnit({ contribution, loveCount }: PhotoUnitProps) {
   return (
-    <div className="polaroid break-inside-avoid" style={{ marginBottom: '10px', maxHeight: '200px', overflow: 'hidden' }}>
+    <div className="polaroid break-inside-avoid contrib-card" style={{ marginBottom: '10px', maxHeight: '200px', overflow: 'hidden' }}>
       <img
         src={contribution.photo_url!}
         alt={`From ${contribution.contributor_name}`}
@@ -27,7 +27,7 @@ export default function PhotoUnit({ contribution, loveCount }: PhotoUnitProps) {
           <div className="w-5 h-5 rounded-full flex items-center justify-center text-white font-bold bg-espresso/80" style={{ fontSize: '9px' }}>
             {contribution.contributor_name.charAt(0).toUpperCase()}
           </div>
-          <span className="font-medium text-cocoa" style={{ fontSize: '11px' }}>
+          <span className="font-medium text-cocoa contrib-name" style={{ fontSize: '11px' }}>
             {contribution.contributor_name}
           </span>
         </div>

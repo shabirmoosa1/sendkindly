@@ -3,6 +3,7 @@ export interface PageData {
   slug: string;
   recipient_name: string;
   template_type: string;
+  keepsake_theme: string | null;
   hero_image_url: string | null;
   creator_message: string | null;
   creator_name: string | null;
