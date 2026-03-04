@@ -82,13 +82,65 @@ export async function POST(request: NextRequest) {
       </div>
     `;
 
-    // TODO: notify individual contributors when email collection is added in v2
-
+    // Send thank you email to creator
     await sendEmail({
       to: creatorEmail,
       subject: `${recipientName} left you a thank you message! 💛`,
       html,
     });
+
+    // Notify contributors who left their email
+    const { data: contributors } = await supabaseAdmin
+      .from('contributions')
+      .select('contributor_name, contributor_email')
+      .eq('page_id', pageId)
+      .not('contributor_email', 'is', null);
+
+    if (contributors && contributors.length > 0) {
+      // Deduplicate by email (a contributor may have multiple contributions)
+      const seen = new Set<string>();
+      const unique = contributors.filter(c => {
+        if (!c.contributor_email || seen.has(c.contributor_email)) return false;
+        seen.add(c.contributor_email);
+        return true;
+      });
+
+      for (const contrib of unique) {
+        const contributorHtml = `
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 520px; margin: 0 auto; background: #F6F2EC; border-radius: 16px; overflow: hidden;">
+            <div style="background: linear-gradient(135deg, #C8A951 0%, #C0272D 100%); padding: 40px 32px; text-align: center;">
+              <div style="font-size: 48px; margin-bottom: 12px;">✨</div>
+              <h1 style="color: #FFFFFF; font-size: 24px; font-weight: 600; margin: 0; line-height: 1.3;">
+                ${recipientName} loved your<br/>contribution!
+              </h1>
+            </div>
+            <div style="padding: 32px; text-align: center;">
+              <p style="color: #5A4B45; font-size: 16px; line-height: 1.6; margin: 0 0 8px;">
+                Hi ${contrib.contributor_name},
+              </p>
+              <p style="color: #5A4B45; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                ${recipientName} has seen their keepsake and left a heartfelt thank you. Your words made a difference!
+              </p>
+              <a href="${keepsakeUrl}" style="display: inline-block; background: #C0272D; color: #FFFFFF; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 32px; border-radius: 50px;">
+                View the Keepsake
+              </a>
+              <p style="color: #5A4B45; opacity: 0.5; font-size: 12px; margin-top: 24px;">
+                Made with 💛 on SendKindly
+              </p>
+            </div>
+          </div>
+        `;
+
+        // Fire-and-forget — don't block the response
+        sendEmail({
+          to: contrib.contributor_email!,
+          subject: `✨ ${recipientName} loved your contribution!`,
+          html: contributorHtml,
+        }).catch(err => console.error('Contributor email failed:', err));
+      }
+
+      console.log(`[thanks-email] Notified ${unique.length} contributor(s)`);
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {
