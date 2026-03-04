@@ -1,6 +1,6 @@
 # SendKindly — Claude Code Reference
 
-> Last updated: 2026-03-01
+> Last updated: 2026-03-04
 > Project: AIGF Cohort 5 — Demo Day March 28, 2026 (Bengaluru)
 > Team: Code & Heart — Prof Moosa (build), Naila (mobile/desktop testing), Viral (test cases), Sanjeev (Demo Day prep), Sammy (bug feedback)
 
@@ -54,7 +54,8 @@ Key columns:
 - `status` — text, CHECK IN ('draft', 'active', 'revealed', 'thanked', 'complete'), DEFAULT 'active'
 - `revealed_at` — timestamptz
 - `thanked_at` — timestamptz
-- `recipient_email` — text (collected at reveal time — not yet implemented in modal)
+- `recipient_email` — text (collected at reveal time via reveal modal)
+- `keepsake_theme` — text, DEFAULT 'classic' (classic/scrapbook/modern — selected in create wizard)
 
 > When adding CHECK constraints, always UPDATE existing rows first:
 > ```sql
@@ -158,10 +159,17 @@ Creator builds page (status: active)
 - [x] **AI Stickers** — DALL-E 3 generation, stored in Supabase storage
 - [x] **Edit/delete own contributions** — contributors can modify before reveal
 
+### Keepsake Themes (Mar 4)
+- [x] **Theme system** — Classic (default), Scrapbook, Modern — selected during create wizard, saved to `pages.keepsake_theme`
+- [x] **Scrapbook theme** — kraft paper textured background, washi tape accents on cards, alternating card rotations, handwriting font for contributor names (`font-caveat`)
+- [x] **Modern theme** — white dot-grid background, borderless cards, sans-serif headings, muted text
+- [x] **Theme applied to keepsake page** — `themeClass` on root, `keepsake-bg`, `contrib-card`, `contrib-name` CSS hooks
+- [x] **Theme applied to print layout** — all print components (TextNote, PhotoUnit, StickerUnit) use CSS hook classes, print-specific background overrides
+
 ### Email (Resend)
 - [x] **Reveal email** — sent to recipient when creator reveals (requires recipient_email)
 - [x] **Thanks email** — sent to creator when recipient submits thank you
-- [ ] **Contributor notification email** — not yet confirmed working end-to-end
+- [x] **Contributor notification email** — sent to contributors when recipient submits thank you (`/api/email/contributor-thanks`)
 
 ### Responsive Design (Feb 27 afternoon)
 - [x] **Navbar** — responsive Tailwind classes (`px-3 sm:px-6`, `text-xs sm:text-sm`, `gap-2 sm:gap-4`)
@@ -182,12 +190,12 @@ Creator builds page (status: active)
 
 ## Pending
 
-- [ ] **Reveal Modal with contact options** — replace current reveal button with modal offering Email / WhatsApp / Copy Link
-- [ ] **Recipient email collection** — `recipient_email` column exists but is never populated; needs input field in reveal modal
+- [x] **Reveal Modal with contact options** — modal with email input + WhatsApp / Email / Copy Link share options (done `fd1293a`)
+- [x] **Recipient email collection** — collected in reveal modal, saved to `pages.recipient_email` (done `fd1293a`)
+- [x] **Turbopack workspace root warning** — added `turbopack: { root: __dirname }` to next.config.ts (done `b1a7a4c`)
 - [ ] **Organiser drag-to-reorder** (Option B) — manual print order control for creators (love votes is Option A, done)
 - [ ] **Demo Day seed data** — one frozen perfect demo page in `thanked` state with love votes
-- [ ] **Mobile testing** — Naila to test love votes on iOS and Android
-- [ ] **Turbopack workspace root warning** — add `turbopack: { root: __dirname }` to next.config.ts
+- [ ] **Mobile testing** — Naila to test love votes + scrapbook theme on iOS and Android
 - [ ] **Middleware deprecation** — rename `src/middleware.ts` → `src/proxy.ts`
 
 ---
@@ -204,6 +212,8 @@ Creator builds page (status: active)
 | `/api/delete-page` | POST | Cascading delete: storage + contributions + thanks + replies + page | Service role |
 | `/api/love` | GET | Get love counts + visitor's loves for a page's contributions | Service role |
 | `/api/love` | POST | Toggle love on a contribution (insert or delete) | Service role |
+| `/api/archive` | POST | Update page status → complete (archive from dashboard) | Service role |
+| `/api/email/contributor-thanks` | POST | Notify contributors when recipient says thank you | Service role |
 
 > All status-changing API routes MUST use service role Supabase client. RLS blocks unauthenticated writes silently.
 
@@ -252,9 +262,19 @@ Creator builds page (status: active)
 - BackPage inlined on last content page if room (weight <= 0.80), otherwise separate page
 
 ### Dashboard Tabs (`src/app/dashboard/page.tsx`)
-- **Active** tab: `draft`, `active`, `revealed` statuses — shows share + manage tools
+- **Active** tab: `draft`, `active` statuses — shows share + manage tools
+- **Revealed** tab: `revealed` status — shows reveal date, share keepsake link
 - **Archived** tab: `thanked`, `complete` statuses — read-only, delete available
 - Tab counts shown in badges
+- Archive button moves `thanked` → `complete`
+
+### Keepsake Themes (`globals.css` + `KeepsakePageClient.tsx` + print components)
+- **Classic** (default): cream background, glassmorphism cards, serif headings — no extra CSS class
+- **Scrapbook**: `.theme-scrapbook` — kraft paper bg (`--sb-bg: #f0e4d4`), washi tape `::before` accents (green/pink/gold), alternating card rotations, sticky-note style cards, `font-caveat` handwriting names
+- **Modern**: `.theme-modern` — white dot-grid bg, borderless cards, `font-inter` headings, muted colors
+- Theme saved in `pages.keepsake_theme`, selected during create wizard step 1
+- Applied via `themeClass` on root container + CSS hooks: `.keepsake-bg`, `.contrib-card`, `.contrib-name`, `.keepsake-hero`
+- Print layout inherits theme via same class on `PrintableKeepsakeClient` root
 
 ---
 
@@ -385,6 +405,16 @@ Multiple Claude Code sessions across initial build. All committed locally and pu
 | Commit | Time | Description |
 |--------|------|-------------|
 | `f3cd85a` | — | feat: increase AI sticker limit from 5 to 20 per page |
+
+**2026-03-04 Repairs + Scrapbook Themes — 6 commits, each pushed individually**
+| Commit | Time | Description |
+|--------|------|-------------|
+| `89cd2bd` | — | feat: notify contributors via email when recipient says thank you |
+| `31bcd96` | — | fix: rename COLLECTING status label to ACTIVE on dashboard |
+| `fe11df3` | — | feat: add Revealed tab and Archive button to dashboard |
+| `aa621df` | — | feat: diverse AI suggestions + improve-my-text mode + name limit |
+| `aed2b5c` | — | feat: keepsake theme system with scrapbook + modern CSS themes |
+| `4c28379` | — | feat: apply keepsake theme to print layout and components |
 
 ---
 
