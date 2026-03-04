@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { createClient } from '@supabase/supabase-js';
+import { rateLimit } from '@/lib/rateLimit';
 
 export async function POST(request: NextRequest) {
   try {
+    const limited = rateLimit(request, { limit: 5, windowSeconds: 60, routeName: 'sticker' });
+    if (limited) return limited;
     if (!process.env.OPENAI_API_KEY) {
       console.error('OPENAI_API_KEY is not configured');
       return NextResponse.json(
@@ -35,7 +38,7 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
-    // Check usage limit (20 per page)
+    // Check usage limit (10 per page)
     const { count, error: countError } = await supabaseAdmin
       .from('ai_sticker_usage')
       .select('*', { count: 'exact', head: true })
@@ -49,7 +52,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if ((count ?? 0) >= 20) {
+    if ((count ?? 0) >= 10) {
       return NextResponse.json({ error: 'limit_reached' }, { status: 429 });
     }
 

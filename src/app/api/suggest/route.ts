@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { rateLimit } from '@/lib/rateLimit';
 
 export async function POST(request: NextRequest) {
   try {
+    const limited = rateLimit(request, { limit: 10, windowSeconds: 60, routeName: 'suggest' });
+    if (limited) return limited;
     // Use SK_ANTHROPIC_API_KEY to avoid collision with Claude Code's ANTHROPIC_API_KEY env override
     const apiKey = process.env.SK_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {

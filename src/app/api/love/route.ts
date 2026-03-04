@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { rateLimit } from '@/lib/rateLimit';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,6 +10,8 @@ const supabaseAdmin = createClient(
 /** Toggle a love on a contribution (insert or delete). */
 export async function POST(request: NextRequest) {
   try {
+    const limited = rateLimit(request, { limit: 30, windowSeconds: 60, routeName: 'love' });
+    if (limited) return limited;
     const { contributionId, visitorId } = await request.json();
 
     if (!contributionId || !visitorId) {
