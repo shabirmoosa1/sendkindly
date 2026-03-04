@@ -30,7 +30,7 @@ interface Page {
   contribution_count?: number;
 }
 
-type FilterTab = 'active' | 'archived';
+type FilterTab = 'active' | 'revealed' | 'archived';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -281,12 +281,14 @@ export default function DashboardPage() {
   // ─── Filtering ─────────────────────────────────────────────
 
   const filteredPages = pages.filter((page) => {
-    if (filter === 'active') return ['draft', 'active', 'revealed'].includes(page.status);
+    if (filter === 'active') return ['draft', 'active'].includes(page.status);
+    if (filter === 'revealed') return page.status === 'revealed';
     if (filter === 'archived') return ['thanked', 'complete'].includes(page.status);
     return true;
   });
 
-  const activeCount = pages.filter((p) => ['draft', 'active', 'revealed'].includes(p.status)).length;
+  const activeCount = pages.filter((p) => ['draft', 'active'].includes(p.status)).length;
+  const revealedCount = pages.filter((p) => p.status === 'revealed').length;
   const archivedCount = pages.filter((p) => ['thanked', 'complete'].includes(p.status)).length;
 
   // ─── Render ────────────────────────────────────────────────
@@ -327,6 +329,12 @@ export default function DashboardPage() {
             Active{activeCount > 0 ? ` (${activeCount})` : ''}
           </button>
           <button
+            onClick={() => setFilter('revealed')}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${filter === 'revealed' ? 'bg-crimson text-white ios-shadow' : 'glass text-cocoa hover:bg-white/60'}`}
+          >
+            Revealed{revealedCount > 0 ? ` (${revealedCount})` : ''}
+          </button>
+          <button
             onClick={() => setFilter('archived')}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${filter === 'archived' ? 'bg-crimson text-white ios-shadow' : 'glass text-cocoa hover:bg-white/60'}`}
           >
@@ -337,13 +345,15 @@ export default function DashboardPage() {
         {/* Empty state */}
         {filteredPages.length === 0 && !loading && (
           <div className="text-center py-20">
-            <div className="text-5xl sm:text-6xl mb-4">{filter === 'active' ? '🎉' : '📦'}</div>
+            <div className="text-5xl sm:text-6xl mb-4">{filter === 'active' ? '🎉' : filter === 'revealed' ? '🎁' : '📦'}</div>
             <h2 className="text-xl sm:text-2xl italic mb-3">
-              {filter === 'active' ? 'Create your first celebration!' : 'No archived celebrations yet'}
+              {filter === 'active' ? 'Create your first celebration!' : filter === 'revealed' ? 'No revealed celebrations' : 'No archived celebrations yet'}
             </h2>
             <p className="text-cocoa mb-6">
               {filter === 'active'
                 ? 'Start a page for someone special and invite friends to contribute.'
+                : filter === 'revealed'
+                ? 'Once you reveal a keepsake, it will appear here while you wait for a thank you.'
                 : 'Celebrations move here once the recipient has sent their thank you.'}
             </p>
             {filter === 'active' && (
@@ -461,6 +471,26 @@ export default function DashboardPage() {
                           {revealCopiedSlug === page.slug ? '✅ Copied!' : '🎁 Copy Reveal Link'}
                         </button>
                       </div>
+                    )}
+                    {/* Archive — for active/revealed celebrations */}
+                    {['draft', 'active', 'revealed'].includes(page.status) && (
+                      <button
+                        onClick={async () => {
+                          const res = await fetch('/api/archive', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ pageId: page.id }),
+                          });
+                          if (res.ok) {
+                            setPages((prev) => prev.map((p) => p.id === page.id ? { ...p, status: 'complete' } : p));
+                            setRevealToast(`"${page.recipient_name}" archived`);
+                            setTimeout(() => setRevealToast(null), 3000);
+                          }
+                        }}
+                        className="w-full py-2 rounded-full text-xs font-medium text-cocoa/50 hover:text-cocoa hover:bg-cocoa/5 transition-all mt-1"
+                      >
+                        📦 Archive celebration
+                      </button>
                     )}
                     {/* Delete celebration */}
                     <button
