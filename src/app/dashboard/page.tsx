@@ -44,6 +44,10 @@ export default function DashboardPage() {
   const [revealModal, setRevealModal] = useState<Page | null>(null);
   const [revealing, setRevealing] = useState(false);
   const [revealToast, setRevealToast] = useState<string | null>(null);
+  const [revealEmail, setRevealEmail] = useState('');
+  const [revealPhase, setRevealPhase] = useState<'confirm' | 'success'>('confirm');
+  const [revealEmailSent, setRevealEmailSent] = useState(false);
+  const [revealLinkCopied, setRevealLinkCopied] = useState(false);
   const [deleteModal, setDeleteModal] = useState<Page | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -157,6 +161,8 @@ export default function DashboardPage() {
     if (!revealModal) return;
     setRevealing(true);
 
+    const emailTrimmed = revealEmail.trim();
+
     try {
       const res = await fetch('/api/reveal', {
         method: 'POST',
@@ -164,6 +170,7 @@ export default function DashboardPage() {
         body: JSON.stringify({
           pageId: revealModal.id,
           slug: revealModal.slug,
+          recipientEmail: emailTrimmed || undefined,
         }),
       });
 
@@ -173,13 +180,15 @@ export default function DashboardPage() {
         console.error('Reveal error:', data);
         setRevealToast('Failed to reveal. Please try again.');
         setTimeout(() => setRevealToast(null), 3000);
-      } else {
-        setPages((prev) =>
-          prev.map((p) => p.id === revealModal.id ? { ...p, status: 'revealed' } : p)
-        );
-        setRevealToast(`Keepsake revealed! ${revealModal.recipient_name} has been notified ✨`);
-        setTimeout(() => setRevealToast(null), 3500);
+        setRevealing(false);
+        return;
       }
+
+      setPages((prev) =>
+        prev.map((p) => p.id === revealModal.id ? { ...p, status: 'revealed' } : p)
+      );
+      setRevealEmailSent(!!emailTrimmed);
+      setRevealPhase('success');
     } catch (err) {
       console.error('Reveal network error:', err);
       setRevealToast('Network error. Please try again.');
@@ -187,7 +196,43 @@ export default function DashboardPage() {
     }
 
     setRevealing(false);
+  };
+
+  const closeRevealModal = () => {
     setRevealModal(null);
+    setRevealEmail('');
+    setRevealPhase('confirm');
+    setRevealEmailSent(false);
+    setRevealLinkCopied(false);
+  };
+
+  const getRevealUrl = (slug: string) => getShareUrl(`/p/${slug}/keepsake?recipient=true`);
+
+  const getRevealMessage = (recipientName: string, slug: string) => {
+    const url = getRevealUrl(slug);
+    return `🎁 ${recipientName}, you have a special surprise waiting! Open your keepsake:\n\n${url}`;
+  };
+
+  const shareRevealWhatsApp = (recipientName: string, slug: string) => {
+    const text = getRevealMessage(recipientName, slug);
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const shareRevealEmail = (recipientName: string, slug: string) => {
+    const url = getRevealUrl(slug);
+    const subject = `🎁 A special surprise is waiting for you, ${recipientName}!`;
+    const body = `Hi ${recipientName}!\n\nSomeone who loves you has put together a special keepsake just for you. People who care about you have come together to share their heartfelt messages.\n\nOpen your surprise here:\n${url}\n\nMade with love on SendKindly`;
+    const to = revealEmail.trim();
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1${to ? `&to=${encodeURIComponent(to)}` : ''}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(gmailUrl, '_blank');
+  };
+
+  const copyRevealLink = async (slug: string) => {
+    if (!revealModal) return;
+    const text = getRevealMessage(revealModal.recipient_name, slug);
+    await copyToClipboard(text);
+    setRevealLinkCopied(true);
+    setTimeout(() => setRevealLinkCopied(false), 2000);
   };
 
   const handleDeleteConfirm = async () => {
@@ -406,7 +451,7 @@ export default function DashboardPage() {
                         <p className="text-xs text-cocoa/60 mb-1.5">🎁 Send this to {page.recipient_name} — they&apos;ll see a surprise reveal</p>
                         <button
                           onClick={async () => {
-                            const url = getShareUrl(`/p/${page.slug}/reveal`);
+                            const url = getShareUrl(`/p/${page.slug}/keepsake?recipient=true`);
                             await copyToClipboard(url);
                             setRevealCopiedSlug(page.slug);
                             setTimeout(() => setRevealCopiedSlug(null), 2000);
@@ -466,29 +511,98 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* Reveal Confirmation Modal */}
+      {/* Reveal Modal — two phases: confirm → success */}
       {revealModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
           <div className="glass rounded-3xl ios-shadow p-8 max-w-md w-full text-center animate-scale-in">
-            <div className="text-5xl mb-4">🎁</div>
-            <h3 className="text-xl italic mb-2">Ready to reveal this keepsake to {revealModal.recipient_name}?</h3>
-            <p className="text-sm text-cocoa/70 mb-6">Contributors will be notified.</p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setRevealModal(null)}
-                disabled={revealing}
-                className="flex-1 py-2.5 rounded-full text-sm font-medium border-2 border-cocoa/30 text-cocoa transition-all hover:opacity-90"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleRevealConfirm}
-                disabled={revealing}
-                className="flex-1 py-2.5 rounded-full text-sm font-medium bg-crimson text-white transition-all hover:opacity-90 disabled:opacity-50"
-              >
-                {revealing ? 'Revealing...' : 'Reveal Now ✨'}
-              </button>
-            </div>
+            {revealPhase === 'confirm' ? (
+              <>
+                <div className="text-5xl mb-4">🎁</div>
+                <h3 className="text-xl italic mb-2">Ready to reveal this keepsake to {revealModal.recipient_name}?</h3>
+                <p className="text-sm text-cocoa/70 mb-5">Once revealed, contributors can no longer add messages.</p>
+
+                {/* Recipient email input */}
+                <div className="text-left mb-6">
+                  <label htmlFor="reveal-email" className="block text-sm font-medium text-espresso mb-1.5">
+                    {revealModal.recipient_name}&apos;s email <span className="text-cocoa/50 font-normal">(optional)</span>
+                  </label>
+                  <input
+                    id="reveal-email"
+                    type="email"
+                    value={revealEmail}
+                    onChange={(e) => setRevealEmail(e.target.value)}
+                    placeholder={`${revealModal.recipient_name.split(' ')[0].toLowerCase()}@example.com`}
+                    className="w-full px-4 py-3 rounded-xl border border-cocoa/20 bg-white/80 text-espresso placeholder:text-cocoa/30 focus:outline-none focus:ring-2 focus:ring-crimson/30 focus:border-crimson/40 text-sm"
+                  />
+                  <p className="text-xs text-cocoa/50 mt-1.5">
+                    {revealEmail.trim()
+                      ? "We'll send them a beautiful reveal email with a link to their keepsake"
+                      : "You can share the reveal link yourself via WhatsApp or copy"}
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={closeRevealModal}
+                    disabled={revealing}
+                    className="flex-1 py-2.5 rounded-full text-sm font-medium border-2 border-cocoa/30 text-cocoa transition-all hover:opacity-90"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleRevealConfirm}
+                    disabled={revealing}
+                    className="flex-1 py-2.5 rounded-full text-sm font-medium bg-crimson text-white transition-all hover:opacity-90 disabled:opacity-50"
+                  >
+                    {revealing ? 'Revealing...' : 'Reveal Now 🎁'}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-5xl mb-4">✨</div>
+                <h3 className="text-xl italic mb-2">Keepsake revealed!</h3>
+
+                {revealEmailSent ? (
+                  <p className="text-sm text-green-600 font-medium mb-5">
+                    ✅ Reveal email sent to {revealEmail.trim()}
+                  </p>
+                ) : (
+                  <p className="text-sm text-cocoa/70 mb-5">
+                    Share the reveal link with {revealModal.recipient_name}:
+                  </p>
+                )}
+
+                {/* Share options */}
+                <div className="flex flex-col gap-2.5 mb-6">
+                  <button
+                    onClick={() => shareRevealWhatsApp(revealModal.recipient_name, revealModal.slug)}
+                    className="w-full py-2.5 rounded-full text-sm font-medium border-2 border-green-500 text-green-600 hover:bg-green-50 transition-all"
+                  >
+                    📱 Share via WhatsApp
+                  </button>
+                  <button
+                    onClick={() => shareRevealEmail(revealModal.recipient_name, revealModal.slug)}
+                    className="w-full py-2.5 rounded-full text-sm font-medium border-2 border-gold text-gold hover:bg-gold/5 transition-all"
+                  >
+                    ✉️ Share via Email
+                  </button>
+                  <button
+                    onClick={() => copyRevealLink(revealModal.slug)}
+                    className={`w-full py-2.5 rounded-full text-sm font-medium border-2 transition-all ${revealLinkCopied ? 'border-green-500 text-green-600' : 'border-cocoa/30 text-cocoa hover:border-cocoa/50'}`}
+                  >
+                    {revealLinkCopied ? '✅ Copied!' : '📋 Copy Reveal Link'}
+                  </button>
+                </div>
+
+                <button
+                  onClick={closeRevealModal}
+                  className="w-full py-2.5 rounded-full text-sm font-medium bg-crimson text-white transition-all hover:opacity-90"
+                >
+                  Done ✨
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

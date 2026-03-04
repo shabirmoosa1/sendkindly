@@ -4,8 +4,8 @@ import { sendEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
-    const { pageId, slug } = await request.json();
-    console.log('[reveal] Request received:', { pageId, slug });
+    const { pageId, slug, recipientEmail } = await request.json();
+    console.log('[reveal] Request received:', { pageId, slug, recipientEmail: recipientEmail ? '***' : 'none' });
 
     if (!pageId || !slug) {
       console.log('[reveal] Missing required fields');
@@ -21,6 +21,17 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
     console.log('[reveal] Supabase admin client created');
+
+    // Save recipient email if provided (before status update so reveal email can use it)
+    if (recipientEmail) {
+      const { error: emailError } = await supabaseAdmin
+        .from('pages')
+        .update({ recipient_email: recipientEmail })
+        .eq('id', pageId);
+      if (emailError) {
+        console.error('[reveal] Failed to save recipient email:', emailError);
+      }
+    }
 
     // Update status to 'revealed'
     const { data: pageData, error: updateError } = await supabaseAdmin
