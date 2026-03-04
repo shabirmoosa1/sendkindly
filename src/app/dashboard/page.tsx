@@ -147,7 +147,7 @@ export default function DashboardPage() {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'draft':    return '○ DRAFT';
-      case 'active':   return '● COLLECTING';
+      case 'active':   return '● ACTIVE';
       case 'revealed': return '✨ REVEALED';
       case 'thanked':  return '💛 THANKED';
       case 'complete': return '✓ COMPLETE';
