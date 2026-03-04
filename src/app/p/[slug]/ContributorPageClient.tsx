@@ -341,6 +341,7 @@ export default function ContributorPage() {
           recipientName: page.recipient_name,
           occasion: page.template_type,
           prompt: page.contribution_prompt || undefined,
+          existingText: messageText.trim() || undefined,
         }),
       });
       if (!res.ok) {
@@ -756,7 +757,8 @@ export default function ContributorPage() {
               <input
                 type="text"
                 value={contributorName}
-                onChange={(e) => setContributorName(e.target.value)}
+                onChange={(e) => setContributorName(e.target.value.slice(0, 40))}
+                maxLength={40}
                 placeholder="e.g., Aunt Priya"
                 className="w-full input-warm"
               />
@@ -779,7 +781,7 @@ export default function ContributorPage() {
                     disabled={loadingSuggestions || parseInt(localStorage.getItem(`sk-suggest-${page.id}`) || '0', 10) >= 3}
                     className="text-xs font-medium text-crimson hover:text-crimson/80 disabled:text-cocoa/40 disabled:cursor-not-allowed transition-colors"
                   >
-                    {loadingSuggestions ? 'Thinking...' : 'Need inspiration? ✨'}
+                    {loadingSuggestions ? 'Thinking...' : messageText.trim().length > 5 ? 'Improve my text ✨' : 'Need inspiration? ✨'}
                   </button>
                   <p className="text-xs text-cocoa/60">{messageText.length}/500</p>
                 </div>
